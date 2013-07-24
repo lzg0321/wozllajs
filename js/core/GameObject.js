@@ -5,13 +5,18 @@
 WozllaJS.define('GameObject', function($) {
 
     function GameObject() {
-        this._componentTable = {};
+        this.tags = {};
+        this.active = true;
+        this.transform = new $.Transform();
+        this.children = [];
         this.components = {
             render : [],
             update : [],
             lateUpdate : [],
             collide : []
         };
+        this._childrenTable = {};
+        this._componentTable = {};
     }
 
     GameObject.prototype = {
@@ -39,9 +44,14 @@ WozllaJS.define('GameObject', function($) {
         active : null,
 
         /**
-         * The camera bind to this GameObject
+         * The children of this GameObject
          */
-        camera : null,
+        children : null,
+
+        /**
+         * The children table of this GameObject, using to search GameObject
+         */
+        _childrenTable : null,
 
         /**
          * An group of array contains all Component objects, using to iterator quickly Component objects

@@ -20,7 +20,7 @@ WozllaJS.define('Component', function($) {
          * @param gameObject
          * @private
          */
-        _bindGameObject : function(gameObject) {
+        bindGameObject : function(gameObject) {
             this.gameObject = gameObject;
         },
 
