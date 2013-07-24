@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>start game</title>
+
+</head>
+<body>
+<canvas id="display"></canvas>
+
+<script src="../js/WozllaJS.js"></script>
+<script src="../js/Engine.js"></script>
+<script src="../js/Time.js"></script>
+
+<script src="../js/core/GameObject.js"></script>
+<script src="../js/core/Component.js"></script>
+<script src="../js/core/Behavior.js"></script>
+<script src="../js/core/Renderer.js"></script>
+<script src="../js/core/Collider.js"></script>
+
+<script>
+    W.Engine.init(960, 640, document.getElementById('display'));
+    W.Engine.startMainLoop();
+    W.Engine.addMainLoopListener(function() {
+       console.log(W.Time.delta);
+    });
+</script>
+
+
+</body>
+</html>
