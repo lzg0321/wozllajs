@@ -1,4 +1,4 @@
-WozllaJS
+wozllajs
 ========
 
-WozllaJS is A javasript game framework refer to the Unity3D engine, make developer develope game easily.
+We make making games easy. Wozllajs is A javascript gaming framework referencing Unity3D architecture.
