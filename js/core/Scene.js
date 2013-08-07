@@ -60,6 +60,8 @@ WozllaJS.define('Scene', function($) {
         renderGameObject : function(gameObject, context) {
             var components = gameObject.components.render;
             var i, len=components.length;
+            context.save();
+            gameObject.transform.applyToContext(context);
             for(i=0; i<len; i++) {
                 components[i].render(context);
             }
@@ -68,6 +70,7 @@ WozllaJS.define('Scene', function($) {
             for(i=0; i<len; i++) {
                 this.renderGameObject(children[i], context);
             }
+            context.restore();
         }
     };
 

@@ -14,7 +14,7 @@ WozllaJS.define('Renderer', function($) {
          *
          * @public
          */
-        type : 'Renderer',
+        type : ['Renderer'],
 
         /**
          * @abstract

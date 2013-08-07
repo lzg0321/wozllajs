@@ -14,7 +14,7 @@ WozllaJS.define('Collider', function($) {
          *
          * @public
          */
-        type : 'Collider',
+        type : ['Collider'],
 
         /**
          * if true, it means this Collider will compare others Collider by method collide

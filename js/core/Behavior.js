@@ -14,7 +14,7 @@ WozllaJS.define('Behavior', function($) {
          *
          * @public
          */
-        type : 'Behavior',
+        type : ['Behavior'],
 
 
         /**
