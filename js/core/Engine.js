@@ -37,6 +37,10 @@ WozllaJS.define('Engine', function($) {
             loopListeners.push(listener);
         },
 
+        removeMainLoopListener : function(listener) {
+
+        },
+
         startMainLoop : function() {
             running = true;
 
