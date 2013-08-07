@@ -87,6 +87,12 @@ wozlla.Class = (function() {
             var staticProp;
             for(staticProp in statics) {
                 Class[staticProp] = statics[staticProp];
+                Object.defineProperty(Class.prototype, staticProp, {
+                    enumerable: false,
+                    configurable: false,
+                    writable: false,
+                    value: statics[staticProp]
+                });
             }
         }
 
