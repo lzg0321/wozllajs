@@ -7,8 +7,6 @@ wozlla.Class = (function() {
 
     var root = wozlla;
 
-    var Class = {};
-
     _this.define = function(className, definitions) {
 
         var i, len;
