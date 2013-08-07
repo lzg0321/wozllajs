@@ -1,3 +1,5 @@
+var wozlla = {};
+var W = wozlla;
 
 var WozllaJS = new function() {
 
