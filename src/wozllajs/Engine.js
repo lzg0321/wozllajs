@@ -1,10 +1,10 @@
 /**
  * 主循环引擎
  */
-Class.module('wozllajs.Engine', function() {
+Class.module('wozlla.Engine', function() {
 
     var EVENT_TYPE = 'Engine';
-    var engineEventDispatcher = wozllajs.util.EventDispatcher();
+    var engineEventDispatcher = wozlla.util.EventDispatcher();
     var running = true;
 
     function frame() {

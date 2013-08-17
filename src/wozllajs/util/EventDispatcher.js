@@ -1,6 +1,6 @@
-Class.module('wozllajs.util.EventDispatcher', function() {
+Class.module('wozlla.util.EventDispatcher', function() {
 
-    var listenerMap = wozllajs.util.Array2D();
+    var listenerMap = wozlla.util.Array2D();
 
     return {
         addEventListener : function(type, listener) {
