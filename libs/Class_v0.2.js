@@ -107,6 +107,7 @@ var Class = (function() {
             Class.$super = that.getClass(extend);
             Class.prototype = Object.create(Class.$super.prototype);
         } else {
+            Class.$super = Base;
             Class.prototype = new Base();
         }
 
