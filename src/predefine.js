@@ -1,3 +1,4 @@
+// global vars
 window.requestAnimationFrame =
     window.requestAnimationFrame ||
     window.webkitRequestAnimationFrame ||
@@ -6,3 +7,5 @@ window.requestAnimationFrame =
     function(frameCall, intervalTime) {
         setTimeout(frameCall, intervalTime);
     };
+
+// Array
