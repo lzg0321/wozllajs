@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Engine | class-test</title>
+    <script src="../../libs/Class_v0.2.js"></script>
+    <script src="../../src/predefine.js"></script>
+    <script src="../../src/wozllajs/util/Array2D.js"></script>
+    <script src="../../src/wozllajs/util/EventDispatcher.js"></script>
+    <script src="../../src/wozllajs/Engine.js"></script>
+    <script>
+        var engine = wozllajs.Engine();
+        engine.addListener(function() {
+            console.log('yes');
+        });
+        engine.start();
+        setTimeout(function() {
+            engine.stop();
+        }, 100);
+    </script>
+</head>
+<body>
+
+</body>
+</html>
