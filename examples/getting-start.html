@@ -3,12 +3,14 @@
 <head>
     <title></title>
     <script src="../libs/Class_v0.2.js"></script>
+    <script src="../libs/preloadjs-0.3.1.min.js"></script>
     <script src="../libs/Matrix2D.js"></script>
     <script src="../src/predefine.js"></script>
     <script src="../src/wozllajs/wozllajs.js"></script>
     <script src="../src/wozllajs/util/Array2D.js"></script>
     <script src="../src/wozllajs/util/EventDispatcher.js"></script>
     <script src="../src/wozllajs/Engine.js"></script>
+    <script src="../src/wozllajs/ResourceManager.js"></script>
     <script src="../src/wozllajs/Display.js"></script>
     <script src="../src/wozllajs/Transform.js"></script>
     <script src="../src/wozllajs/AbstractGameObject.js"></script>
@@ -18,7 +20,7 @@
     <script src="../src/wozllajs/Component.js"></script>
 </head>
 <body>
-<div id="root" style="width: 961px; margin: 0 auto;"></div>
+<div id="root" style="width: 961px; margin: 0 auto; border: 1px solid #555; height: 640px;"></div>
 <script>
     var engine,
         display,
@@ -29,9 +31,54 @@
     engine = wozllajs.initEngine(document.getElementById('root'));
     display = wozllajs.createDisplay('main', 960, 640, 0);
     scene = Class.create('wozlla.Scene');
-    scene.init();
-    display.setScene(scene);
-    engine.start();
+
+    var obj = Class.create('wozlla.GameObject', {
+        id : 'test'
+    });
+
+    Class.define('x.Rect', {
+
+        extend : 'wozlla.Component',
+
+        image : null,
+
+        getResources : function(res) {
+            res.push({
+                id : 'logo',
+                src : 'logo.png'
+            });
+        },
+
+        init : function() {
+            this.image = wozlla.ResourceManager.getResource('logo');
+        },
+
+        draw : function(context) {
+            context.drawImage(this.image, 0, 0);
+        }
+    });
+
+    Class.define('x.Animation', {
+        extend : 'wozlla.Component',
+        update : function() {
+            var x = this.gameObject.transform.x += 1;
+            if(x > 960) {
+                this.gameObject.transform.x = 0;
+            }
+        }
+    });
+
+    obj.addComponent(Class.create('x.Rect'));
+    obj.addComponent(Class.create('x.Animation'));
+    scene.addObject(obj);
+
+    scene.loadResources({
+        onComplete : function() {
+            scene.init();
+            display.setScene(scene);
+            engine.start();
+        }
+    });
 
 
 
