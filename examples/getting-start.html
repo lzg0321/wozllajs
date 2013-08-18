@@ -10,13 +10,31 @@
     <script src="../src/wozllajs/util/EventDispatcher.js"></script>
     <script src="../src/wozllajs/Engine.js"></script>
     <script src="../src/wozllajs/Display.js"></script>
+    <script src="../src/wozllajs/Transform.js"></script>
+    <script src="../src/wozllajs/AbstractGameObject.js"></script>
+    <script src="../src/wozllajs/GameObject.js"></script>
+    <script src="../src/wozllajs/Camera.js"></script>
+    <script src="../src/wozllajs/Scene.js"></script>
+    <script src="../src/wozllajs/Component.js"></script>
 </head>
 <body>
 <div id="root" style="width: 961px; margin: 0 auto;"></div>
 <script>
-    wozllajs.initEngine(document.getElementById('root'));
-    wozllajs.createDisplay('map', 960, 640, 0);
-    wozllajs.createDisplay('ui', 960, 640, 1);
+    var engine,
+        display,
+        camera,
+        scene,
+        gameObject;
+
+    engine = wozllajs.initEngine(document.getElementById('root'));
+    display = wozllajs.createDisplay('main', 960, 640, 0);
+    scene = Class.create('wozlla.Scene');
+    scene.init();
+    display.setScene(scene);
+    engine.start();
+
+
+
 </script>
 </body>
 </html>

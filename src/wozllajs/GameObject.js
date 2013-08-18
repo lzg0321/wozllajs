@@ -1,88 +1,105 @@
 Class.define('wozlla.GameObject', {
 
-    include : ['wozlla.Transform'],
+    extend : 'wozlla.AbstractGameObject',
 
-    id : null,
+    updates : [],
+    lateUpdates : [],
+    draws : [],
 
-    active : true,
-
-    visible : true,
-
-    parent : null,
-
-    objects : null,
-
-    objectMap : null,
-
-    components : null,
-
-    componentMap : null,
-
-    initialize : function() {
+    addComponent : function(component) {
         this.callParent(arguments);
-        this.objects = [];
-        this.objectMap = {};
-        this.components = [];
-        this.componentMap = {};
+        if(component.update) {
+            this.updates.push(component);
+        }
+        if(component.lateUpdates) {
+            this.lateUpdates.push(component);
+        }
+        if(component.draw) {
+            this.draws.push(component);
+        }
     },
 
-    addObject : function(obj) {
-        this.objectMap[obj.id] = obj;
-        this.objects.push(obj);
-        obj.parent = this;
-    },
-
-    removeObject : function(idOrObj) {
-        var objects = this.objects;
-        var id = typeof idOrObj === 'string' ? idOrObj : idOrObj.id;
-        var idx, i, len;
-        for(i=0,len=objects.length; i<len; i++) {
-            if(objects[i].id === id) {
-                idx = i;
-                break;
+    removeComponent : function(component) {
+        if(this.callParent(arguments) !== -1) {
+            if(component.update) {
+                this.updates.remove(component);
+            }
+            if(component.lateUpdates) {
+                this.lateUpdates.remove(component);
+            }
+            if(component.draw) {
+                this.draws.remove(component);
             }
         }
-        if(idx !== undefined) {
-            objects.splice(idx, 1);
-            delete this.objectMap[id];
+    },
+
+    init : function() {
+        var i, len;
+        for(i=0, len=this._components.length; i<len; i++) {
+            this._components.init();
         }
-        return idx;
     },
 
-    remove : function() {
-        this.parent.removeObject(this);
-        this.parent = null;
+    destroy : function() {
+        var i, len;
+        for(i=0, len=this._components.length; i<len; i++) {
+            this._components.destroy();
+        }
     },
 
-    getObjectById : function(id) {
-        return this.objectMap[id];
-    },
+    update : function(camera) {
+        var objects = this._objects;
+        var components = this.updates,
+            i, len;
+        var obj;
 
-    findObjectById : function(id) {
-        var obj = this.getObjectById(id);
-        if(!obj) {
-            var objects = this.objects;
-            var i, len;
-
-            for(i=0,len=objects.length; i<len; i++) {
-                obj = objects[i].findObjectById(id);
-                if(obj) break;
+        for(i=0, len=components.length; i<len; i++) {
+            components[i].update(camera);
+        }
+        for(i=0, len=objects.length; i<len; i++) {
+            obj = objects[i];
+            if(obj.active) {
+                obj.lateUpdate(camera);
             }
         }
-        return obj;
+
     },
 
-    findObjectByPath : function(path) {
-        var paths = path.split('.');
-        var pathRootObj = this.findObjectById(paths.shift());
-        if(!pathRootObj) {
-            return null;
+    lateUpdate : function(camera) {
+        var objects = this._objects;
+        var components = this.lateUpdates,
+            i, len;
+        var obj;
+
+        for(i=0, len=components.length; i<len; i++) {
+            components[i].lateUpdate(camera);
         }
-        var target = pathRootObj;
-        while(paths.length > 0 && target) {
-            target=target.getObjectById(paths.shift())
+        for(i=0, len=objects.length; i<len; i++) {
+            obj = objects[i];
+            if(obj.active) {
+                obj.lateUpdate(camera);
+            }
         }
-        return target;
+    },
+
+    draw : function(context, cameraRect) {
+        var objects = this._objects;
+        var components = this.draws,
+            i, len = components.length;
+        var obj;
+
+        context.save();
+        this.updateContext(context);
+        for(i=0; i<len; i++) {
+            components[i].draw(context, cameraRect);
+        }
+        for(i=0, len=objects.length; i<len; i++) {
+            obj = objects[i];
+            if(obj.active && obj.visible) {
+                obj.draw(context, cameraRect);
+            }
+        }
+        context.restore();
     }
 
 });

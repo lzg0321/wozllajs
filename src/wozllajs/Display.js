@@ -1,9 +1,9 @@
 Class.define('wozlla.Display', {
 
     statics : {
-        Displays : {},
+        S_displays : {},
         get : function(id) {
-            return this.Displays[id];
+            return this.S_displays[id];
         }
     },
 
@@ -12,28 +12,58 @@ Class.define('wozlla.Display', {
     width : 0,
     height : 0,
     zIndex : 0,
+    camera : null,
+
+    scene : null,
+
+    fps : null,
+
+    _loop : null,
 
     initialize : function(params) {
+        var _this = this;
         this.callParent(arguments);
         this.canvas = document.createElement('canvas');
-        this.canvas.id = 'display_' + this.id;
+        this.canvas.id = 'wozlla_Display_' + this.id;
         this.canvas.style.position = 'absolute';
         this.canvas.style.top = '0px';
         this.canvas.style.left = '0px';
         this.canvas.style.zIndex = this.zIndex;
         this.canvas.width = this.width;
         this.canvas.height = this.height;
-    },
-
-    createCamera : function() {
-        return Class.create('wozlla.Camera', {
+        this.camera = Class.create('wozlla.Camera', {
+            display : this,
             context : this.canvas.getContext('2d')
         });
+
+        this._loop = function() {
+            var camera = _this.camera;
+            var scene = _this.scene;
+            var context = camera.context;
+            if(scene) {
+
+                scene.update(camera);
+                scene.lateUpdate(camera);
+
+                context.save();
+                camera.updateContext(context);
+                scene.draw(context, camera);
+                context.restore();
+
+            }
+        };
+
+        wozllajs.getEngine().addListener(this._loop);
     },
 
     dispose : function() {
         this._disposeCanvas();
-        delete this.Displays[this.id];
+        delete this.S_displays[this.id];
+        wozllajs.getEngine().removeListener(this._loop);
+    },
+
+    setScene : function(scene) {
+        this.scene = scene;
     },
 
     _disposeCanvas : function() {

@@ -12,6 +12,7 @@ var wozllajs = (function() {
             }
             rootElement = element || document.body;
             engine = wozlla.Engine();
+            return engine;
         },
 
         getEngine : function() {

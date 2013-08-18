@@ -1,6 +1,8 @@
 Class.define('wozlla.Camera', {
 
-    include : ['wozlla.Transform'],
+    extend : 'wozlla.GameObject',
+
+    display : null,
 
     context : null
 
