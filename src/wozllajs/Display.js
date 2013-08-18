@@ -47,6 +47,15 @@ Class.define('wozlla.Display', {
 
                 context.save();
                 camera.updateContext(context);
+                if(scene.backgroundColor) {
+                    var fillStyle = context.fillStyle;
+                    context.fillStyle = this.backgroundColor;
+                    context.fillRect(0, 0, camera.width, camera.height);
+                    context.fillStyle = fillStyle;
+                }
+                else {
+                    context.clearRect(0, 0, camera.width, camera.height);
+                }
                 scene.draw(context, camera);
                 context.restore();
 

@@ -8,16 +8,21 @@ Class.define('wozlla.Component', {
         this.gameObject = gameObject;
     },
 
+    getResources : function(res) {},
+
     init : function() {},
 
     destroy : function() {}
 
     /**
-     *
      * @abstract
-     *
      */
     // update : function(camera) {},
+
+    /**
+     * @abstract
+     */
+    // lateUpdate : function(camera) {},
 
     /**
      * @abstract

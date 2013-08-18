@@ -27,6 +27,10 @@ Class.module('wozlla.Engine', function() {
         },
         stop : function() {
             running = false;
+        },
+
+        runStep : function() {
+            engineEventDispatcher.fireEvent(EVENT_TYPE);
         }
     }
 

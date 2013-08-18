@@ -4,6 +4,8 @@ Class.define('wozlla.Scene', {
 
     isScene : true,
 
+    backgroundColor : null,
+
     initialize : function() {
         this.callParent(arguments);
         if(!this.id) {

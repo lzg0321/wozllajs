@@ -3,6 +3,7 @@ Class.module('wozlla.Transform', function() {
     var matrix = new createjs.Matrix2D();
 
     return {
+
         x : 0,
         y : 0,
         regX : 0,
@@ -24,36 +25,34 @@ Class.module('wozlla.Transform', function() {
             return o;
         },
 
-        localToGlobal : function(x, y, mtx) {
-            mtx = this.getConcatenatedMatrix(mtx);
+        localToGlobal : function(x, y) {
+            var mtx = this.getConcatenatedMatrix();
             if (mtx == null) { return null; }
             mtx.append(1, 0, 0, 1, x, y);
             return { x : mtx.tx, y : mtx.ty };
         },
 
-        globalToLocal : function(x, y, mtx) {
-            mtx = this.getConcatenatedMatrix(mtx);
+        globalToLocal : function(x, y) {
+            var mtx = this.getConcatenatedMatrix();
             if (mtx == null) { return null; }
             mtx.invert();
             mtx.append(1, 0, 0, 1, x, y);
             return { x : mtx.tx, y : mtx.ty };
         },
 
-        getConcatenatedMatrix : function(mtx) {
-            if (mtx) { mtx.identity(); }
-            else { mtx = new createjs.Matrix2D(); }
+        getConcatenatedMatrix : function() {
             var o = this;
             while (o != null) {
-                mtx.prependTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY)
+                matrix.prependTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY)
                     .prependProperties(o.alpha);
                 o = o.parent;
             }
-            return mtx;
+            return matrix;
         },
 
-        getMatrix : function(mtx) {
+        getMatrix : function() {
             var o = this;
-            return (mtx ? mtx.identity() : new createjs.Matrix2D())
+            return matrix
                 .appendTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY)
                 .appendProperties(o.alpha);
         },

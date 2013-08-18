@@ -4,6 +4,8 @@ Class.define('wozlla.AbstractGameObject', {
 
     id : null,
 
+    transform : null,
+
     active : true,
 
     visible : true,
@@ -20,6 +22,7 @@ Class.define('wozlla.AbstractGameObject', {
 
     initialize : function() {
         this.callParent(arguments);
+        this.transform = this;
         this._objects = [];
         this._objectMap = {};
         this._components = [];
