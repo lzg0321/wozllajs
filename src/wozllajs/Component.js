@@ -8,11 +8,19 @@ Class.define('wozlla.Component', {
         this.gameObject = gameObject;
     },
 
-    getResources : function(res) {},
-
     init : function() {},
 
-    destroy : function() {}
+    destroy : function() {},
+
+    getResourceById : function(id) {
+        return wozlla.ResourceManager.getResource(id);
+    },
+
+    /**
+     * @param res
+     * @private
+     */
+    _getResources : function(res) {}
 
     /**
      * @abstract

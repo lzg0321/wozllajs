@@ -40,19 +40,9 @@ Class.define('wozlla.GameObject', {
         }
     },
 
-    getResources : function(res) {
-        var i, len;
-        for(i=0, len=this._components.length; i<len; i++) {
-            this._components[i].getResources(res);
-        }
-        for(i=0, len=this._objects.length; i<len; i++) {
-            this._objects[i].getResources(res);
-        }
-    },
-
     loadResources : function(params) {
         var res = [];
-        this.getResources(res);
+        this._getResources(res);
         wozlla.ResourceManager.load({
             items : res,
             onProgress : params.onProgress,
@@ -129,6 +119,16 @@ Class.define('wozlla.GameObject', {
             }
         }
         context.restore();
+    },
+
+    _getResources : function(res) {
+        var i, len;
+        for(i=0, len=this._components.length; i<len; i++) {
+            this._components[i]._getResources(res);
+        }
+        for(i=0, len=this._objects.length; i<len; i++) {
+            this._objects[i]._getResources(res);
+        }
     }
 
 });
