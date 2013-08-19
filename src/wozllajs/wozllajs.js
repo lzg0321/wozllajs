@@ -28,6 +28,14 @@ var wozllajs = (function() {
             return this.create(componentMap[name], params);
         },
 
+        createScene : function(id) {
+            return this.create('wozlla.Scene', { id : id });
+        },
+
+        createGameObject : function(params) {
+            return this.create('wozlla.GameObject', params);
+        },
+
         initEngine : function(element) {
             if(element) {
                 element.style.position = 'relative';
