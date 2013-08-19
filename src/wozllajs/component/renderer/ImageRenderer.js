@@ -1,4 +1,6 @@
-Class.define('wozlla.component.renderer.ImageRenderer', {
+wozllajs.defineComponent('wozlla.component.renderer.ImageRenderer', {
+
+    alias : 'image',
 
     extend : 'wozlla.Component',
 

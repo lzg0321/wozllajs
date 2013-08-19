@@ -1,4 +1,4 @@
-Class.define('wozlla.AbstractGameObject', {
+wozllajs.define('wozlla.AbstractGameObject', {
 
     include : ['wozlla.Transform'],
 

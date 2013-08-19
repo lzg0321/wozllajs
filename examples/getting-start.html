@@ -36,36 +36,38 @@
     display = wozllajs.createDisplay('main', 960, 640, 0);
 
     // create a scene object, it's a tree structure.
-    scene = Class.create('wozlla.Scene');
+    scene = wozllajs.create('wozlla.Scene');
 
     // create a game object with reg position
-    gameObject = Class.create('wozlla.GameObject', {
+    gameObject = wozllajs.create('wozlla.GameObject', {
         id : 'test',
         regX : 101/2,
         regY : 59/2
     });
 
     // define an animation component
-    Class.define('x.Animation', {
+    wozllajs.defineComponent('x.Animation', {
+        alias : 'xAnimation',
         extend : 'wozlla.Component',
         update : function() {
-            var x = this.gameObject.x += 1;
-            var y = this.gameObject.y += 1;
-            this.gameObject.rotation += 1;
-            if(x > 960) {
-                this.gameObject.x = 0;
+            var obj = this.gameObject;
+            obj.x += 1;
+            obj.y += 1;
+            obj.rotation += 1;
+            if(obj.x > 960) {
+                obj.x = 0;
             }
-            if(y > 640) {
-                this.gameObject.y = 0;
+            if(obj.y > 640) {
+                obj.y = 0;
             }
         }
     });
 
     // add components to the gameObject
-    gameObject.addComponent(Class.create('wozlla.component.renderer.ImageRenderer', {
+    gameObject.addComponent(wozllajs.createComponent('image', {
         src : 'logo.png'
     }));
-    gameObject.addComponent(Class.create('x.Animation'));
+    gameObject.addComponent(wozllajs.createComponent('xAnimation'));
 
     // put it to scene
     scene.addObject(gameObject);

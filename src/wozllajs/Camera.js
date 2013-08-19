@@ -1,4 +1,4 @@
-Class.define('wozlla.Camera', {
+wozllajs.define('wozlla.Camera', {
 
     extend : 'wozlla.GameObject',
 

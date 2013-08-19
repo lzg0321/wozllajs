@@ -1,4 +1,4 @@
-Class.module('wozlla.Transform', function() {
+wozllajs.module('wozlla.Transform', function() {
 
     var matrix = new createjs.Matrix2D();
 

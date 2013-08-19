@@ -1,3 +1,6 @@
+/**
+ * @see http://github.com/zzm2q/Class
+ */
 (function() {
 
     var Debug = (function() {

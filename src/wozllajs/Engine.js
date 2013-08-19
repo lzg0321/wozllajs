@@ -1,7 +1,7 @@
 /**
- * 主循环引擎
+ * a module for game main loop management
  */
-Class.module('wozlla.Engine', function() {
+wozllajs.module('wozlla.Engine', function() {
 
     var EVENT_TYPE = 'Engine';
     var engineEventDispatcher = wozlla.util.EventDispatcher();

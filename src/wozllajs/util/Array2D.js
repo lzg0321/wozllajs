@@ -8,7 +8,7 @@
  * }
  */
 
-Class.module('wozlla.util.Array2D', function() {
+wozllajs.module('wozlla.util.Array2D', function() {
 
     var data = {};
 

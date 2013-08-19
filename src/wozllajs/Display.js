@@ -1,4 +1,4 @@
-Class.define('wozlla.Display', {
+wozllajs.define('wozlla.Display', {
 
     statics : {
         S_displays : {},

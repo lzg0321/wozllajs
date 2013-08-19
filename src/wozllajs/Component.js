@@ -1,4 +1,4 @@
-Class.define('wozlla.Component', {
+wozllajs.define('wozlla.Component', {
 
     id : null,
 

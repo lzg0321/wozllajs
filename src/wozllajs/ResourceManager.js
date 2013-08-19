@@ -1,4 +1,4 @@
-Class.singleton('wozlla.ResourceManager', function() {
+wozllajs.singleton('wozlla.ResourceManager', function() {
 
     var queue = new createjs.LoadQueue();
 

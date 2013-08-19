@@ -4,7 +4,29 @@ var wozllajs = (function() {
 
     var engine;
 
+    var componentMap = {};
+
     return {
+
+        define : Class.define,
+
+        module : Class.module,
+
+        create : Class.create,
+
+        singleton : Class.singleton,
+
+        defineComponent : function(namespace, definition) {
+            var alias = definition.alias;
+            delete definition.alias;
+            this.define(namespace, definition);
+            componentMap[namespace] = namespace;
+            componentMap[alias] = namespace;
+        },
+
+        createComponent : function(name, params) {
+            return this.create(componentMap[name], params);
+        },
 
         initEngine : function(element) {
             if(element) {

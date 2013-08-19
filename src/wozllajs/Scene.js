@@ -1,4 +1,4 @@
-Class.define('wozlla.Scene', {
+wozllajs.define('wozlla.Scene', {
 
     extend : 'wozlla.GameObject',
 
