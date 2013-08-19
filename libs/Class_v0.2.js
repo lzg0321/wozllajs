@@ -42,10 +42,7 @@
 
         initialize : function(params) {
             for(var key in params) {
-                // if define the property, set value
-                if(this.$class.prototype.hasOwnProperty(key)) {
-                    this[key] = params[key];
-                }
+                this[key] = params[key];
             }
         },
         callParent : function(args) {
