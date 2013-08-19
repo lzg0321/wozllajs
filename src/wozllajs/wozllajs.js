@@ -59,6 +59,6 @@ var wozllajs = (function() {
             rootElement.appendChild(display.canvas);
             return display;
         }
-    }
+    };
 
 })();
