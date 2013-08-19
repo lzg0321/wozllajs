@@ -23,7 +23,10 @@ Class.singleton('wozlla.ResourceManager', function() {
                     progress : loaded/total
                 });
             });
-            queue.addEventListener('complete', params.onComplete);
+            queue.addEventListener('complete', function() {
+                queue.removeAllEventListeners();
+                params.onComplete && params.onComplete();
+            });
             queue.loadManifest(params.items);
         }
     }
