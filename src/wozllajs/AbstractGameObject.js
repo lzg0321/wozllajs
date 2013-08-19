@@ -1,14 +1,24 @@
+/**
+ * 抽象的GameObject,定义GameObject的数据结构
+ * GameObject定义了一个树状的数据结构，每一个节点都
+ * 是一个GameObject的实例。
+ * GameObject包含了一组component用于定义自己的行为和表现.
+ *
+ * AbstractGameObject定义结构，获取和查找外于该树的其它GameObject.
+ * 以及获取当前GameObject的组件{wozlla.Component}子类实例
+ *
+ * @class {wozlla.AbstractGameObject}
+ */
 wozllajs.define('wozlla.AbstractGameObject', {
 
+    /**
+     * mixin Transform module, 使该对象具备Transform的属性和方法
+     */
     include : ['wozlla.Transform'],
 
     id : null,
 
     transform : null,
-
-    active : true,
-
-    visible : true,
 
     parent : null,
 
@@ -27,14 +37,6 @@ wozllajs.define('wozlla.AbstractGameObject', {
         this._objectMap = {};
         this._components = [];
         this._componentMap = {};
-    },
-
-    setActive : function(active) {
-        this.active = active;
-    },
-
-    setVisible : function(visible) {
-        this.visible = visible;
     },
 
     addObject : function(obj) {

@@ -2,6 +2,12 @@ wozllajs.define('wozlla.GameObject', {
 
     extend : 'wozlla.AbstractGameObject',
 
+    inited : false,
+
+    active : true,
+
+    visible : true,
+
     _updates : null,
     _lateUpdates : null,
     _draws : null,
@@ -11,6 +17,14 @@ wozllajs.define('wozlla.GameObject', {
         this._updates = [];
         this._lateUpdates = [];
         this._draws = [];
+    },
+
+    setActive : function(active) {
+        this.active = active;
+    },
+
+    setVisible : function(visible) {
+        this.visible = visible;
     },
 
     addComponent : function(component) {
@@ -58,6 +72,7 @@ wozllajs.define('wozlla.GameObject', {
         for(i=0, len=this._objects.length; i<len; i++) {
             this._objects[i].init();
         }
+        this.inited = true;
     },
 
     destroy : function() {
@@ -77,7 +92,7 @@ wozllajs.define('wozlla.GameObject', {
         }
         for(i=0, len=objects.length; i<len; i++) {
             obj = objects[i];
-            if(obj.active) {
+            if(obj.inited && obj.active) {
                 obj.update(camera);
             }
         }
@@ -95,7 +110,7 @@ wozllajs.define('wozlla.GameObject', {
         }
         for(i=0, len=objects.length; i<len; i++) {
             obj = objects[i];
-            if(obj.active) {
+            if(obj.inited && obj.active) {
                 obj.lateUpdate(camera);
             }
         }
@@ -114,7 +129,7 @@ wozllajs.define('wozlla.GameObject', {
         }
         for(i=0, len=objects.length; i<len; i++) {
             obj = objects[i];
-            if(obj.active && obj.visible) {
+            if(obj.inited && obj.active && obj.visible) {
                 obj.draw(context, cameraRect);
             }
         }

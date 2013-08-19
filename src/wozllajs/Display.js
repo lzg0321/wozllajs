@@ -1,21 +1,62 @@
+/**
+ * 该类代表一个显示对象，即一个Display对应一个canvas, 该canvas会被添加到
+ * {wozlla.Engine}的rootElement中。
+ * Display包含一个camera用于定义自身所处的位置变化，包含一个{wozlla.Scene}
+ * 对象表示需要显示的对象和组件。
+ * 当用到多个Display时使用zIndex去区分Display所处的层的深度。
+ *
+ */
 wozllajs.define('wozlla.Display', {
 
     statics : {
+        /**
+         * 存储所有创建的Display
+         */
         S_displays : {},
+        /**
+         * 根据id获取所对应有Display
+         * @param id
+         * @return {wozlla.Display}
+         */
         get : function(id) {
             return this.S_displays[id];
         }
     },
 
+    /**
+     * @field {CanvasElement}
+     */
     canvas : null,
+    /**
+     * unique key for this Display
+     */
     id : null,
+
+    /**
+     * the size of this Display
+     */
     width : 0,
     height : 0,
+
+    /**
+     * the z of this Display
+     */
     zIndex : 0,
+
+    /**
+     * 定义该Display的显示区域的信息
+     * @field {wozlla.Camera}
+     */
     camera : null,
 
+    /**
+     * 当前运行中的{wozlla.Scene}
+     */
     scene : null,
 
+    /**
+     * 指定当前运行的fps
+     */
     fps : null,
 
     _loop : null,
@@ -40,7 +81,7 @@ wozllajs.define('wozlla.Display', {
             var camera = _this.camera;
             var scene = _this.scene;
             var context = camera.context;
-            if(scene) {
+            if(scene && scene.inited && scene.active) {
 
                 scene.update(camera);
                 scene.lateUpdate(camera);
@@ -65,12 +106,19 @@ wozllajs.define('wozlla.Display', {
         wozllajs.getEngine().addListener(this._loop);
     },
 
+    /**
+     * 卸载和释放当前Display资源
+     */
     dispose : function() {
         this._disposeCanvas();
         delete this.S_displays[this.id];
         wozllajs.getEngine().removeListener(this._loop);
     },
 
+    /**
+     * 设置当前Display运行的{wozlla.Scene}
+     * @param scene
+     */
     setScene : function(scene) {
         this.scene = scene;
     },

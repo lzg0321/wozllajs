@@ -1,3 +1,6 @@
+/**
+ * 一个基于 createjs.LoadQueue 的ResourceManager, 很简单，直接看代码
+ */
 wozllajs.singleton('wozlla.ResourceManager', function() {
 
     var queue = new createjs.LoadQueue();
