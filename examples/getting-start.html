@@ -36,10 +36,10 @@
     display = wozllajs.createDisplay('main', 960, 640, 0);
 
     // create a scene object, it's a tree structure.
-    scene = wozllajs.create('wozlla.Scene');
+    scene = wozllajs.createScene('test');
 
     // create a game object with reg position
-    gameObject = wozllajs.create('wozlla.GameObject', {
+    gameObject = wozllajs.createGameObject({
         id : 'test',
         regX : 101/2,
         regY : 59/2
