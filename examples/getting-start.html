@@ -29,16 +29,23 @@
         scene,
         gameObject;
 
+    // init engine
     engine = wozllajs.initEngine(document.getElementById('root'));
+
+    // create a display, display creates a canvas
     display = wozllajs.createDisplay('main', 960, 640, 0);
+
+    // create a scene object, it's a tree structure.
     scene = Class.create('wozlla.Scene');
 
+    // create a game object with reg position
     gameObject = Class.create('wozlla.GameObject', {
         id : 'test',
         regX : 101/2,
         regY : 59/2
     });
 
+    // define an animation component
     Class.define('x.Animation', {
         extend : 'wozlla.Component',
         update : function() {
@@ -54,16 +61,22 @@
         }
     });
 
+    // add components to the gameObject
     gameObject.addComponent(Class.create('wozlla.component.renderer.ImageRenderer', {
         src : 'logo.png'
     }));
     gameObject.addComponent(Class.create('x.Animation'));
+
+    // put it to scene
     scene.addObject(gameObject);
 
+    // load resource and init
     scene.loadResources({
         onComplete : function() {
             scene.init();
             display.setScene(scene);
+
+            // start animationFrame main loop
             engine.start();
         }
     });
