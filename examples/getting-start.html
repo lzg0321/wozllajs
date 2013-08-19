@@ -18,6 +18,7 @@
     <script src="../src/wozllajs/Camera.js"></script>
     <script src="../src/wozllajs/Scene.js"></script>
     <script src="../src/wozllajs/Component.js"></script>
+    <script src="../src/wozllajs/component/renderer/ImageRenderer.js"></script>
 </head>
 <body>
 <div id="root" style="width: 961px; margin: 0 auto; border: 1px solid #555; height: 640px;"></div>
@@ -36,28 +37,6 @@
         id : 'test'
     });
 
-    Class.define('x.Rect', {
-
-        extend : 'wozlla.Component',
-
-        image : null,
-
-        getResources : function(res) {
-            res.push({
-                id : 'logo',
-                src : 'logo.png'
-            });
-        },
-
-        init : function() {
-            this.image = wozlla.ResourceManager.getResource('logo');
-        },
-
-        draw : function(context) {
-            context.drawImage(this.image, 0, 0);
-        }
-    });
-
     Class.define('x.Animation', {
         extend : 'wozlla.Component',
         update : function() {
@@ -68,7 +47,9 @@
         }
     });
 
-    obj.addComponent(Class.create('x.Rect'));
+    obj.addComponent(Class.create('wozlla.component.renderer.ImageRenderer', {
+        src : 'logo.png'
+    }));
     obj.addComponent(Class.create('x.Animation'));
     scene.addObject(obj);
 
