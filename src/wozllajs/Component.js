@@ -37,6 +37,11 @@ wozllajs.define('wozlla.Component', {
     id : null,
 
     /**
+     * @field alias {string} 组件的别名
+     */
+    alias : null,
+
+    /**
      * 所属GameObject
      */
     gameObject : null,
@@ -45,6 +50,17 @@ wozllajs.define('wozlla.Component', {
      * 一个数据指该组件具备如何的特性, 这个变量是冗余设计的，子类实现时尽量标识
      */
     natures : null,
+
+    initialize : function() {
+        this.callParent(arguments);
+        if(!this.id) {
+            this.id = this.$className;
+        }
+        if(!this.alias) {
+            this.alias = this.$className;
+        }
+
+    },
 
     /**
      * 该组件被加入某个GameObject时调用
