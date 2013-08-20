@@ -157,6 +157,7 @@ wozllajs.define('wozlla.AbstractGameObject', {
         var _this = this;
         this._components.push(component);
         this._componentMap[component.id] = component;
+        this._componentMap[component.alias] = component;
         component.setGameObject(this);
     },
 
@@ -171,6 +172,7 @@ wozllajs.define('wozlla.AbstractGameObject', {
         idx = this._components.remove(component);
         if(idx !== -1) {
             delete this._componentMap[component.id];
+            delete this._componentMap[component.alias];
             component.setGameObject(null);
         }
         return idx;
