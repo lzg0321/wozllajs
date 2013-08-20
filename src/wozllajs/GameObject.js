@@ -1,11 +1,30 @@
+/**
+ * 继承自{wozlla.AbstractGameObject}, 为GameObject添加游戏运行中
+ * 所需功能。
+ *
+ * update, lateUpdate, draw 这三个方法在{wozlla.Display}上会每帧
+ * 被调用，前两者通常用于组件更新数据，而draw用于显示内容
+ *
+ * @class {wozlla.GameObject}
+ */
 wozllajs.define('wozlla.GameObject', {
 
     extend : 'wozlla.AbstractGameObject',
 
+    /**
+     * 是否已经执行完init方法, 外部不应改变此变量，要激活或者显示对象请
+     * 使用setActive, setVisible
+     */
     inited : false,
 
+    /**
+     * 是否激活此GameObject，true表示update, lateUpdate，draw会被调用, false则反之
+     */
     active : true,
 
+    /**
+     * 是否显示此GameObject, true表示draw会被调用, false则反之，此变量不影响update的调用
+     */
     visible : true,
 
     _updates : null,
@@ -19,14 +38,26 @@ wozllajs.define('wozlla.GameObject', {
         this._draws = [];
     },
 
+    /**
+     * 设置当前GameObject的active
+     * @param active {boolean}
+     */
     setActive : function(active) {
         this.active = active;
     },
 
+    /**
+     * 设置当前GameObject的visible
+     * @param visible {boolean}
+     */
     setVisible : function(visible) {
         this.visible = visible;
     },
 
+    /**
+     * 将组件添加到当前GameObject中，同时根据component所实现的方法分别加到不同的功能的数组中
+     * @param component
+     */
     addComponent : function(component) {
         this.callParent(arguments);
         if(component.update) {
@@ -40,6 +71,10 @@ wozllajs.define('wozlla.GameObject', {
         }
     },
 
+    /**
+     * 将组件从当前GameObject中移除，同时根据component所实现的方法从不同的功能的数组中移除
+     * @param component
+     */
     removeComponent : function(component) {
         if(this.callParent(arguments) !== -1) {
             if(component.update) {
@@ -54,6 +89,11 @@ wozllajs.define('wozlla.GameObject', {
         }
     },
 
+    /**
+     * 这个方法结合_getResources使用，这个方法会收集该GameObject以及它所有的子孙的资源，
+     * 并使用{wozlla.ResourceManager}去加载。
+     * @param params
+     */
     loadResources : function(params) {
         var res = [];
         this._getResources(res);
@@ -64,6 +104,9 @@ wozllajs.define('wozlla.GameObject', {
         });
     },
 
+    /**
+     * 初始化当前GameObject
+     */
     init : function() {
         var i, len;
         for(i=0, len=this._components.length; i<len; i++) {
@@ -75,6 +118,9 @@ wozllajs.define('wozlla.GameObject', {
         this.inited = true;
     },
 
+    /**
+     * 销毁当前GameObject
+     */
     destroy : function() {
         var i, len;
         for(i=0, len=this._components.length; i<len; i++) {

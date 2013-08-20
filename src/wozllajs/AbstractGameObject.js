@@ -16,18 +16,43 @@ wozllajs.define('wozlla.AbstractGameObject', {
      */
     include : ['wozlla.Transform'],
 
+    /**
+     * unique key to identified this game object
+     */
     id : null,
 
+    /**
+     * transform of this GameObject, curentlly is GameObject itself.
+     */
     transform : null,
 
+    /**
+     * parent GameObject
+     */
     parent : null,
 
+    /**
+     * children GameObject
+     * 对于2d游戏，这个变量里的所有GameObject的排列顺序决定了他们层的深度
+     * 排在前面的则越靠近背景，排在后面的越靠近用户的眼睛
+     * @field {Array}
+     */
     _objects : null,
 
+    /**
+     * children GameObject store in this map, for quickly searching by id
+     */
     _objectMap : null,
 
+    /**
+     *  all components in this array
+     *  @field {Array}
+     */
     _components : null,
 
+    /**
+     * all components store in this map, for quickly searching by id
+     */
     _componentMap : null,
 
     initialize : function() {
@@ -39,12 +64,21 @@ wozllajs.define('wozlla.AbstractGameObject', {
         this._componentMap = {};
     },
 
+    /**
+     * add a GameObject as child of this GameObject
+     * @param obj
+     */
     addObject : function(obj) {
         this._objectMap[obj.id] = obj;
         this._objects.push(obj);
         obj.parent = this;
     },
 
+    /**
+     * remove a GameObject from children of this GameObject
+     * @param idOrObj
+     * @return {int} a index of removed GameObject at '_objects'
+     */
     removeObject : function(idOrObj) {
         var objects = this._objects;
         var obj = typeof idOrObj === 'string' ? this._objectMap[idOrObj] : idOrObj;
@@ -56,15 +90,28 @@ wozllajs.define('wozlla.AbstractGameObject', {
         return idx;
     },
 
+    /**
+     * remove this GameObject from it's parent.
+     */
     remove : function() {
         this.parent.removeObject(this);
         this.parent = null;
     },
 
+    /**
+     * get a GameObject from next level children by id
+     * @param id
+     * @return {*}
+     */
     getObjectById : function(id) {
         return this._objectMap[id];
     },
 
+    /**
+     * find a GameObject from all it's children by id
+     * @param id
+     * @return {*}
+     */
     findObjectById : function(id) {
         var obj = this.getObjectById(id);
         if(!obj) {
@@ -79,6 +126,16 @@ wozllajs.define('wozlla.AbstractGameObject', {
         return obj;
     },
 
+    /**
+     * find a GameObject from it's children by path
+     * for example:
+     *
+     * // it's true
+     * obj.findObjectByPath('a.b.c') === obj.findObjectById('a').getObjectById('b').getObjectById('c')
+     *
+     * @param path
+     * @return {*}
+     */
     findObjectByPath : function(path) {
         var paths = path.split('.');
         var pathRootObj = this.findObjectById(paths.shift());
@@ -87,11 +144,15 @@ wozllajs.define('wozlla.AbstractGameObject', {
         }
         var target = pathRootObj;
         while(paths.length > 0 && target) {
-            target=target.getObjectById(paths.shift())
+            target = target.getObjectById(paths.shift())
         }
         return target;
     },
 
+    /**
+     * add a component to this GameObject
+     * @param component
+     */
     addComponent : function(component) {
         var _this = this;
         this._components.push(component);
@@ -99,14 +160,27 @@ wozllajs.define('wozlla.AbstractGameObject', {
         component.setGameObject(this);
     },
 
+    /**
+     * remove a component from this GameObject
+     * @param component
+     * @return {*}
+     */
     removeComponent : function(component) {
         var i, len, idx;
         component.destroy && component.destroy();
         idx = this._components.remove(component);
-        delete this._componentMap[component.id];
+        if(idx !== -1) {
+            delete this._componentMap[component.id];
+            component.setGameObject(null);
+        }
         return idx;
     },
 
+    /**
+     * get a component from this GameObject by id
+     * @param id
+     * @return {*}
+     */
     getComponent : function(id) {
         return this._componentMap[id];
     }
