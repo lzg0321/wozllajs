@@ -1,5 +1,5 @@
 /**
- * 该类代表一个显示对象，即一个Display对应一个canvas, 该canvas会被添加到
+ * 该类代表一个显示设备，即一个Display对应一个canvas, 该canvas会被添加到
  * {wozlla.Engine}的rootElement中。
  * Display包含一个camera用于定义自身所处的位置变化，包含一个{wozlla.Scene}
  * 对象表示需要显示的对象和组件。
