@@ -1,6 +1,6 @@
 wozllajs.defineComponent('wozlla.component.renderer.ImageRenderer', {
 
-    alias : 'image',
+    alias : 'renderer.image',
 
     natures : [
         wozlla.Component.NATURE_RENDER
