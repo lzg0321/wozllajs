@@ -58,6 +58,17 @@ var wozllajs = (function() {
             });
             rootElement.appendChild(display.canvas);
             return display;
+        },
+
+        singleSceneStartup : function(params) {
+            var root = params.rootElement;
+            root = typeof root === 'string' ? document.getElementById(root) : root;
+            var engine = wozllajs.initEngine(root);
+            var display = wozllajs.createDisplay('singleSceneDisplay', params.width, params.height, 0);
+            var scene = wozllajs.createScene('singleScene');
+            display.setScene(scene);
+            engine.start();
+            return scene;
         }
     };
 

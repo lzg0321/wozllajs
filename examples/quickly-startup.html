@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <script src="../libs/Class_v0.2.js"></script>
+    <script src="../libs/preloadjs-0.3.1.min.js"></script>
+    <script src="../libs/Matrix2D.js"></script>
+    <script src="../src/predefine.js"></script>
+    <script src="../src/wozllajs/wozllajs.js"></script>
+    <script src="../src/wozllajs/util/Array2D.js"></script>
+    <script src="../src/wozllajs/util/EventDispatcher.js"></script>
+    <script src="../src/wozllajs/Engine.js"></script>
+    <script src="../src/wozllajs/ResourceManager.js"></script>
+    <script src="../src/wozllajs/Display.js"></script>
+    <script src="../src/wozllajs/Transform.js"></script>
+    <script src="../src/wozllajs/AbstractGameObject.js"></script>
+    <script src="../src/wozllajs/GameObject.js"></script>
+    <script src="../src/wozllajs/Camera.js"></script>
+    <script src="../src/wozllajs/Scene.js"></script>
+    <script src="../src/wozllajs/Component.js"></script>
+    <script src="../src/wozllajs/component/renderer/ImageRenderer.js"></script>
+</head>
+<body>
+<div id="root" style="width: 961px; margin: 0 auto; border: 1px solid #555; height: 640px;"></div>
+<script>
+
+    // startup with single scene model
+    var scene = wozllajs.singleSceneStartup({
+        rootElement : 'root', // canvas wrap element
+        width : 960, // size of canvas
+        height : 640
+    });
+
+    // create a GameObject for this demo
+    var gameObject = wozllajs.createGameObject({
+        id : 'test',
+        x : 200,
+        y : 200
+    });
+
+    // add a image component
+    gameObject.addComponent(wozllajs.createComponent('image', {
+        src : 'logo.png'
+    }));
+
+    // add gameObject to scene
+    scene.addObject(gameObject);
+
+    // load resources
+    scene.loadResources({
+        onComplete : function() {
+            scene.init(); // scene will update after init
+        }
+    });
+
+
+
+</script>
+</body>
+</html>
