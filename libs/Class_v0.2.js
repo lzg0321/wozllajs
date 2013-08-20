@@ -130,6 +130,7 @@
 
             // process namespace
             Class.$className = className;
+            Class.prototype.$className = className;
             Class.prototype.$class = Class;
             registerNamespace(className, Class);
 
