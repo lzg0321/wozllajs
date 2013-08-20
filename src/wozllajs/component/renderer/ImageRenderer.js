@@ -21,15 +21,15 @@ wozllajs.defineComponent('wozlla.component.renderer.ImageRenderer', {
 
     init : function() {
         this.image = this.getResourceById(this.src);
+        if(!this.renderWidth || !this.renderHeight) {
+            this.renderWidth = this.image.width;
+            this.renderHeight = this.image.height;
+        }
     },
 
     draw : function(context) {
         if(this.image) {
-            if(this.renderWidth && this.renderHeight) {
-                context.drawImage(this.image, 0, 0, this.renderWidth, this.renderHeight);
-            } else {
-                context.drawImage(this.image, 0, 0);
-            }
+            context.drawImage(this.image, 0, 0, this.renderWidth, this.renderHeight);
         }
     },
 
