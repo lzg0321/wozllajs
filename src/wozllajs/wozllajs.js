@@ -17,11 +17,9 @@ var wozllajs = (function() {
         singleton : Class.singleton,
 
         defineComponent : function(namespace, definition) {
-            var alias = definition.alias;
-            delete definition.alias;
             this.define(namespace, definition);
             componentMap[namespace] = namespace;
-            componentMap[alias] = namespace;
+            componentMap[definition.alias] = namespace;
         },
 
         createComponent : function(name, params) {
