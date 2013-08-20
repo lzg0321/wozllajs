@@ -24,6 +24,13 @@
  */
 wozllajs.define('wozlla.Component', {
 
+    statics : {
+        NATURE_RENDER : 1,
+        NATURE_LAYOUT : 2,
+        NATURE_BEHAVIOR : 3,
+        NATURE_OTHER : 4
+    },
+
     /**
      * @field id {string} 组件的id
      */
@@ -33,6 +40,11 @@ wozllajs.define('wozlla.Component', {
      * 所属GameObject
      */
     gameObject : null,
+
+    /**
+     * 一个数据指该组件具备如何的特性, 这个变量是冗余设计的，子类实现时尽量标识
+     */
+    natures : null,
 
     /**
      * 该组件被加入某个GameObject时调用

@@ -2,6 +2,10 @@ wozllajs.defineComponent('wozlla.component.renderer.ImageRenderer', {
 
     alias : 'image',
 
+    natures : [
+        wozlla.Component.NATURE_RENDER
+    ],
+
     extend : 'wozlla.Component',
 
     image : null,
