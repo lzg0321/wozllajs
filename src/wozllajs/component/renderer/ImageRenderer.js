@@ -15,10 +15,6 @@ wozllajs.defineComponent('wozlla.component.renderer.ImageRenderer', {
     renderWidth : null,
     renderHeight : null,
 
-    initialize : function() {
-        this.callParent(arguments);
-    },
-
     init : function() {
         this.image = this.getResourceById(this.src);
         if(!this.renderWidth || !this.renderHeight) {
