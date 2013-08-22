@@ -47,7 +47,8 @@ wozllajs.define('wozlla.Component', {
     gameObject : null,
 
     /**
-     * 一个数据指该组件具备如何的特性, 这个变量是冗余设计的，子类实现时尽量标识
+     * 一个数据指该组件具备如何的特性, 这个变量是冗余设计的，子类实现时尽量标识，
+     * 标识请参照 statics.NATURE_XXXX
      */
     natures : null,
 
@@ -59,7 +60,6 @@ wozllajs.define('wozlla.Component', {
         if(!this.alias) {
             this.alias = this.$className;
         }
-
     },
 
     /**
