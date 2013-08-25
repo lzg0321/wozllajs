@@ -77,14 +77,15 @@ wozllajs.define('wozlla.Display', {
             context : this.canvas.getContext('2d')
         });
 
-        this._loop = function() {
+        this._loop = function(params) {
+            var time = params.time;
             var camera = _this.camera;
             var scene = _this.scene;
             var context = camera.context;
             if(scene && scene.inited && scene.active) {
 
-                scene.update(camera);
-                scene.lateUpdate(camera);
+                scene.update(time, camera);
+                scene.lateUpdate(time, camera);
 
                 context.save();
                 if(scene.backgroundColor) {

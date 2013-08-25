@@ -7,14 +7,21 @@ wozllajs.module('wozlla.Engine', function() {
 
     var EVENT_TYPE = 'Engine';
     var engineEventDispatcher = wozlla.util.EventDispatcher();
+    var time = wozlla.Time();
     var running = true;
 
     /**
      * 主循环中一帧
      */
     function frame() {
-        if(!running) return;
-        engineEventDispatcher.fireEvent(EVENT_TYPE);
+        if(!running) {
+            time.reset();
+            return;
+        }
+        time.update();
+        engineEventDispatcher.fireEvent(EVENT_TYPE, {
+            time : time
+        });
         requestAnimationFrame(frame, 1000/100);
     }
 
@@ -55,6 +62,10 @@ wozllajs.module('wozlla.Engine', function() {
          */
         runStep : function() {
             engineEventDispatcher.fireEvent(EVENT_TYPE);
+        },
+
+        getTime : function() {
+            return time;
         }
     }
 
