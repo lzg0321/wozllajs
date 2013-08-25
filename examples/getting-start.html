@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title></title>
+    <title>getting start | wozllajs</title>
     <script src="../libs/Class_v0.2.js"></script>
     <script src="../libs/preloadjs-0.3.1.min.js"></script>
     <script src="../libs/Matrix2D.js"></script>
@@ -9,6 +9,7 @@
     <script src="../src/wozllajs/wozllajs.js"></script>
     <script src="../src/wozllajs/util/Array2D.js"></script>
     <script src="../src/wozllajs/util/EventDispatcher.js"></script>
+    <script src="../src/wozllajs/Time.js"></script>
     <script src="../src/wozllajs/Engine.js"></script>
     <script src="../src/wozllajs/ResourceManager.js"></script>
     <script src="../src/wozllajs/Display.js"></script>
@@ -49,11 +50,11 @@
     wozllajs.defineComponent('x.Animation', {
         alias : 'xAnimation',
         extend : 'wozlla.Component',
-        update : function() {
+        update : function(time, camera) {
             var obj = this.gameObject;
             obj.x += 1;
             obj.y += 1;
-            obj.rotation += 1;
+            obj.rotation += time.delta / 20;
             if(obj.x > 960) {
                 obj.x = 0;
             }
@@ -65,7 +66,7 @@
 
     // add components to the gameObject
     gameObject.addComponent(wozllajs.createComponent('renderer.image', {
-        src : 'logo.png'
+        src : 'images/logo.png'
     }));
     gameObject.addComponent(wozllajs.createComponent('xAnimation'));
 
