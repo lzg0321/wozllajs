@@ -1,0 +1,79 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>animation sheet | wozllajs</title>
+    <script src="../libs/Class_v0.2.js"></script>
+    <script src="../libs/preloadjs-0.3.1.min.js"></script>
+    <script src="../libs/Matrix2D.js"></script>
+    <script src="../src/predefine.js"></script>
+    <script src="../src/wozllajs/wozllajs.js"></script>
+    <script src="../src/wozllajs/util/Array2D.js"></script>
+    <script src="../src/wozllajs/util/EventDispatcher.js"></script>
+    <script src="../src/wozllajs/Time.js"></script>
+    <script src="../src/wozllajs/Engine.js"></script>
+    <script src="../src/wozllajs/ResourceManager.js"></script>
+    <script src="../src/wozllajs/Display.js"></script>
+    <script src="../src/wozllajs/Transform.js"></script>
+    <script src="../src/wozllajs/AbstractGameObject.js"></script>
+    <script src="../src/wozllajs/GameObject.js"></script>
+    <script src="../src/wozllajs/Camera.js"></script>
+    <script src="../src/wozllajs/Scene.js"></script>
+    <script src="../src/wozllajs/Component.js"></script>
+    <script src="../src/wozllajs/component/renderer/AnimationSheetRenderer.js"></script>
+
+    <script src="data/animationSheetData.js"></script>
+</head>
+<body>
+<div id="root" style="width: 961px; margin: 0 auto; border: 1px solid #555; height: 640px;"></div>
+<script>
+    var engine,
+        display,
+        camera,
+        scene,
+        gameObject;
+
+    // init engine
+    engine = wozllajs.initEngine(document.getElementById('root'));
+
+    // create a display, display creates a canvas
+    display = wozllajs.createDisplay('main', 960, 640, 0);
+
+    // create a scene object, it's a tree structure.
+    scene = wozllajs.createScene('test');
+
+    // create a game object with reg position
+    gameObject = wozllajs.createGameObject({
+        id : 'test',
+        x : 200,
+        y : 100
+    });
+
+    // add components to the gameObject
+    var animationSheetRenderer = wozllajs.createComponent('renderer.animationSheet', animationSheetData);
+    gameObject.addComponent(animationSheetRenderer);
+
+    // put it to scene
+    scene.addObject(gameObject);
+
+    // load resource and init
+    scene.loadResources({
+        onComplete : function() {
+            scene.init();
+            display.setScene(scene);
+
+            // start animationFrame main loop
+            engine.start();
+
+            setInterval(function() {
+                animationSheetRenderer.play(['Move', 'Attack']);
+            }, 2000);
+        }
+    });
+
+
+
+</script>
+</body>
+</html>
