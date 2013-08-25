@@ -71,3 +71,12 @@ var wozllajs = (function() {
     };
 
 })();
+
+(function() {
+
+    var toString = Object.prototype.toString;
+
+    wozllajs.isArray = function(testObj) {
+        return toString.call(testObj) === '[object Array]';
+    };
+})();
