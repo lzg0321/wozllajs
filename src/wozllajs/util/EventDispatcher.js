@@ -41,7 +41,7 @@ wozllajs.module('wozlla.util.EventDispatcher', function() {
             } else {
                 for(i=0, len=listeners.length; i<len; i++) {
                     listener = listeners[i];
-                    listener.apply(listener, params);
+                    listener.apply(listener, [params]);
                 }
             }
         }
