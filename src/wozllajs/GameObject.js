@@ -31,7 +31,7 @@ wozllajs.define('wozlla.GameObject', {
     _lateUpdates : null,
     _draws : null,
 
-    _resources : null;
+    _resources : null,
 
     initialize : function() {
         this.callParent(arguments);
@@ -98,10 +98,9 @@ wozllajs.define('wozlla.GameObject', {
      * @param params
      */
     loadResources : function(params) {
-        var res = [];
         this._getResources(this._resources);
         wozlla.ResourceManager.load({
-            items : res,
+            items : this._resources,
             onProgress : params.onProgress,
             onComplete : params.onComplete
         });
