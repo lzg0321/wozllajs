@@ -11,13 +11,13 @@ wozllajs.defineComponent('wozlla.component.renderer.AnimationSheetRenderer', {
 
     image : null,
 
-    playingFrameSequence : null,
+    _playingFrameSequence : null,
 
-    currentIndex : 0,
+    _currentIndex : 0,
 
-    currentFrame : null,
+    _currentFrame : null,
 
-    currentFrameStartTime : null,
+    _currentFrameStartTime : null,
 
     src : null,
 
@@ -40,27 +40,27 @@ wozllajs.defineComponent('wozlla.component.renderer.AnimationSheetRenderer', {
             return;
         }
         
-        if(!this.currentFrameStartTime) {
-            this.currentFrameStartTime = time.now;
+        if(!this._currentFrameStartTime) {
+            this._currentFrameStartTime = time.now;
         }
 
-        if(!this.playingFrameSequence) {
-            this.playingFrameSequence = this.animations[this.defaultAnimation];
+        if(!this._playingFrameSequence) {
+            this._playingFrameSequence = this.animations[this.defaultAnimation];
         }
 
-        if(time.now - this.currentFrameStartTime >= this.frameTime) {
-            this.currentFrameStartTime = time.now;
-            this.currentIndex ++;
-            if(this.currentIndex >= this.playingFrameSequence.length) {
-                this.currentIndex = 0;
-                this.playingFrameSequence = this.animations[this.defaultAnimation];
+        if(time.now - this._currentFrameStartTime >= this.frameTime) {
+            this._currentFrameStartTime = time.now;
+            this._currentIndex ++;
+            if(this._currentIndex >= this._playingFrameSequence.length) {
+                this._currentIndex = 0;
+                this._playingFrameSequence = this.animations[this.defaultAnimation];
             }
-            this.currentFrame = this.frames[this.playingFrameSequence[this.currentIndex]];
+            this._currentFrame = this.frames[this._playingFrameSequence[this._currentIndex]];
         }
     },
 
     draw : function(context) {
-        var frame = this.currentFrame, w, h, ox, oy;
+        var frame = this._currentFrame, w, h, ox, oy;
         if(this.image && frame) {
             w = frame.width || frame.w;
             h = frame.height || frame.h;
@@ -79,8 +79,8 @@ wozllajs.defineComponent('wozlla.component.renderer.AnimationSheetRenderer', {
         for(i=0,len=animations.length; i<len; i++) {
             sequence = sequence.concat(this.animations[animations[i]]);
         }
-        this.playingFrameSequence = sequence;
-        this.currentIndex = 0;
+        this._playingFrameSequence = sequence;
+        this._currentIndex = 0;
         if(defaultAnimation) {
             this.defaultAnimation = defaultAnimation;
         }
