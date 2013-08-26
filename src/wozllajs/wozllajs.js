@@ -79,4 +79,8 @@ var wozllajs = (function() {
     wozllajs.isArray = function(testObj) {
         return toString.call(testObj) === '[object Array]';
     };
+
+    wozllajs.is = function(testObj, type) {
+        return toString.call(testObj).toLowerCase() === type.toLowerCase();
+    }
 })();
