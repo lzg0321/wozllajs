@@ -31,11 +31,14 @@ wozllajs.define('wozlla.GameObject', {
     _lateUpdates : null,
     _draws : null,
 
+    _resources : null;
+
     initialize : function() {
         this.callParent(arguments);
         this._updates = [];
         this._lateUpdates = [];
         this._draws = [];
+        this._resources = [];
     },
 
     /**
@@ -96,12 +99,29 @@ wozllajs.define('wozlla.GameObject', {
      */
     loadResources : function(params) {
         var res = [];
-        this._getResources(res);
+        this._getResources(this._resources);
         wozlla.ResourceManager.load({
             items : res,
             onProgress : params.onProgress,
             onComplete : params.onComplete
         });
+    },
+
+    /**
+     *  释放该GameObject下的资源
+     *  @param whiteList 不释放的列表
+     */
+    releaseResources : function(whiteList) {
+        var res = this._resources;
+        var resource;
+        for(var i=0, len=res.length; i<len; i++) {
+            resource = res[i];
+            if(wozllajs.is(resource, 'Image')) {
+                if(whiteList && whiteList.indexOf(resource.src) === -1) {
+                    wozllajs.ResourceManager.disposeImage(resource);
+                }
+            }
+        }
     },
 
     /**

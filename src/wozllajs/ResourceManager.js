@@ -11,6 +11,10 @@ wozllajs.singleton('wozlla.ResourceManager', function() {
             return queue.getResult(id);
         },
 
+        removeResource : function(id) {
+            queue.remove(id);
+        },
+
         load : function(params) {
             if(params.items.length === 0) {
                 setTimeout(params.onProgress, 0);
@@ -31,6 +35,12 @@ wozllajs.singleton('wozlla.ResourceManager', function() {
                 params.onComplete && params.onComplete();
             });
             queue.loadManifest(params.items);
+        },
+
+        disposeImage : function(image) {
+            if(image && image.dispose) {
+                image.dispose();
+            }
         }
     }
 
