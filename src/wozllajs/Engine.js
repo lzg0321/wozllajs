@@ -5,6 +5,15 @@
  */
 wozllajs.module('wozlla.Engine', function() {
 
+    var requestAnimationFrame =
+        window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        function(frameCall, intervalTime) {
+            setTimeout(frameCall, intervalTime);
+        };
+
     var EVENT_TYPE = 'Engine';
     var engineEventDispatcher = wozlla.util.EventDispatcher();
     var time = wozlla.Time();

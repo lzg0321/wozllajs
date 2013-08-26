@@ -74,6 +74,30 @@ var wozllajs = (function() {
 
 (function() {
 
+    // Array
+    !Array.prototype.remove &&
+    Array.prototype.remove = function(obj) {
+        var idx = this.indexOf(obj);
+        if(idx !== -1) {
+            this.splice(idx, 1);
+        }
+    };
+
+    !Array.prototype.indexOf &&
+    Array.prototype.indexOf = function(obj) {
+        var i, len;
+        for(i=0, len=this.length; i<len; i++) {
+            if(this[i] === obj) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+});
+
+(function() {
+
     var toString = Object.prototype.toString;
 
     wozllajs.isArray = function(testObj) {
@@ -83,4 +107,5 @@ var wozllajs = (function() {
     wozllajs.is = function(testObj, type) {
         return toString.call(testObj).toLowerCase() === type.toLowerCase();
     }
+    
 })();
