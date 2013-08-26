@@ -14,15 +14,21 @@
     // Array
 
     Array.prototype.remove = function(obj) {
+        var idx = this.indexOf(obj);
+        if(idx !== -1) {
+            this.splice(idx, 1);
+        }
+    };
+
+    Array.prototype.indexOf = function(obj) {
         var i, len;
         for(i=0, len=this.length; i<len; i++) {
             if(this[i] === obj) {
-                this.splice(i, 1);
                 return i;
             }
         }
         return -1;
-    };
+    }
 
 
 });
