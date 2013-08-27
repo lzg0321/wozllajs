@@ -18,7 +18,7 @@
     <script src="../src/wozllajs/core/Collider.js"></script>
     <script src="../src/wozllajs/core/Behaviour.js"></script>
     <script src="../src/wozllajs/renderer/AnimationSheetRenderer.js"></script>
-    <script src="data/bel.js"></script>
+    <script src="data/attack_data.js"></script>
 </head>
 <body>
 <div id="root" style="width: 960px; margin: 0 auto; border: 1px solid #555; height: 640px;">
@@ -30,7 +30,7 @@
     var gameObject = new wozllajs.GameObject('test');
     gameObject.transform.x = 150;
     gameObject.transform.y = 150;
-    gameObject.setRenderer(wozllajs.createComponent('renderer.animationSheet', belData));
+    gameObject.setRenderer(wozllajs.createComponent('renderer.animationSheet', attack_data));
     stage.addObject(gameObject);
 
     stage.loadResources({

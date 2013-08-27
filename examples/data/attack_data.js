@@ -1,5 +1,5 @@
-var belData = {
-	"src" : "images/bel.png",
+var attack_data = {
+	"src" : "images/attack.png",
 	"frameTime" : 120,
 	"defaultAnimation" : "Attack",
 	"frames" : 
