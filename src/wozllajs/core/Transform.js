@@ -1,19 +1,17 @@
-/**
- * Transform模块定义一个对象的位置、旋转、缩放。概括地说就是变型。
- * Transform通过parent指向父Transform, 因此Transform是
- * 树状结构中的一个节点
- *
- * @class {wozlla.Transform}
- */
+this.wozllajs = this.wozllajs || {};
 
-wozllajs.module('wozlla.Transform', function() {
+(function() {
+	"use strict";
 
-    // 一个类用于帮助从Transform到canvas的context中的transform参数
+	// 一个createjs类用于帮助从Transform到canvas的context中的transform参数
     var matrix = new createjs.Matrix2D();
 
-    return {
+	var Transform = function() {
+		this.initialize();
+	};
 
-        /**
+	Transform.prototype = {
+		/**
          * The position of the Transform,
          */
         x : 0,
@@ -52,6 +50,8 @@ wozllajs.module('wozlla.Transform', function() {
          * @field {wozlla.Transform}
          */
         parent : null,
+
+        initialize : function() {},
 
         /**
          * Get the top parent of Transform
@@ -127,6 +127,8 @@ wozllajs.module('wozlla.Transform', function() {
             context.transform(mtx.a,  mtx.b, mtx.c, mtx.d, mtx.tx, mtx.ty);
             context.globalAlpha *= o.alpha;
         }
-    }
+    };
 
-});
+    wozllajs.Transform = Transform;
+
+})();

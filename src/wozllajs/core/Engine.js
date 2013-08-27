@@ -1,11 +1,8 @@
-/**
- * 该类封装了requestAnimationFrame去控制游戏的主循环
- *
- * @module {wozlla.Engine}
- */
-wozllajs.module('wozlla.Engine', function() {
+this.wozllajs = this.wozllajs || {};
 
-    var requestAnimationFrame =
+this.wozllajs.Engine = (function() {
+
+	var requestAnimationFrame =
         window.requestAnimationFrame ||
         window.webkitRequestAnimationFrame ||
         window.mozRequestAnimationFrame ||
@@ -14,24 +11,24 @@ wozllajs.module('wozlla.Engine', function() {
             setTimeout(frameCall, intervalTime);
         };
 
+
+    var Time = wozllajs.Time;
     var EVENT_TYPE = 'Engine';
-    var engineEventDispatcher = wozlla.util.EventDispatcher();
-    var time = wozlla.Time();
+    var engineEventDispatcher = new wozllajs.EventDispatcher();
     var running = true;
+    var frameTime;
 
     /**
      * 主循环中一帧
      */
     function frame() {
         if(!running) {
-            time.reset();
+            Time.reset();
             return;
         }
-        time.update();
-        engineEventDispatcher.fireEvent(EVENT_TYPE, {
-            time : time
-        });
-        requestAnimationFrame(frame, 1000/100);
+        Time.update();
+        engineEventDispatcher.fireEvent(EVENT_TYPE);
+        requestAnimationFrame(frame, frameTime);
     }
 
     return {
@@ -41,6 +38,19 @@ wozllajs.module('wozlla.Engine', function() {
          * @param listener {function}
          */
         addListener : function(listener) {
+            // special for Stage
+            var stage;
+            if(listener.isStage) {
+                stage = listener;
+                if(stage.__engineTick) {
+                    return;
+                }
+                stage.__engineTick = function() {
+                    stage.update();
+                    stage.draw();
+                };
+                listener = stage.__engineTick;
+            }
             engineEventDispatcher.addEventListener(EVENT_TYPE, listener);
         },
         /**
@@ -48,15 +58,25 @@ wozllajs.module('wozlla.Engine', function() {
          * @param listener {function}
          */
         removeListener : function(listener) {
+            var stage;
+            if(listener.isStage) {
+                stage = listener;
+                if(!stage.__engineTick) {
+                    return;
+                }
+                listener = stage.__engineTick;
+                stage.__engineTick = null;
+            }
             engineEventDispatcher.removeEventListener(EVENT_TYPE, listener);
         },
 
         /**
          * 开始主循环或重新开始主循环
          */
-        start : function() {
+        start : function(newFrameTime) {
+            frameTime = newFrameTime || 10;
             running = true;
-            requestAnimationFrame(frame, 1000/100);
+            requestAnimationFrame(frame, frameTime);
         },
 
         /**
@@ -70,12 +90,10 @@ wozllajs.module('wozlla.Engine', function() {
          * 运行一步
          */
         runStep : function() {
+            Time.update();
+            Time.delta = frameTime;
             engineEventDispatcher.fireEvent(EVENT_TYPE);
-        },
-
-        getTime : function() {
-            return time;
         }
     }
 
-});
+})();

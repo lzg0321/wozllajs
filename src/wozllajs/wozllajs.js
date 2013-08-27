@@ -1,111 +1,79 @@
-var wozllajs = (function() {
+this.wozllajs = this.wozllajs || {};
 
-    var rootElement;
+(function() {
 
-    var engine;
-
-    var componentMap = {};
-
-    return {
-
-        define : Class.define,
-
-        module : Class.module,
-
-        create : Class.create,
-
-        singleton : Class.singleton,
-
-        defineComponent : function(namespace, definition) {
-            this.define(namespace, definition);
-            componentMap[namespace] = namespace;
-            componentMap[definition.alias] = namespace;
-        },
-
-        createComponent : function(name, params) {
-            return this.create(componentMap[name], params);
-        },
-
-        createScene : function(id) {
-            return this.create('wozlla.Scene', { id : id });
-        },
-
-        createGameObject : function(params) {
-            return this.create('wozlla.GameObject', params);
-        },
-
-        initEngine : function(element) {
-            if(element) {
-                element.style.position = 'relative';
+    // Array
+    if(!Array.prototype.remove) {
+        Array.prototype.remove = function(obj) {
+            var idx = this.indexOf(obj);
+            if(idx !== -1) {
+                this.splice(idx, 1);
             }
-            rootElement = element || document.body;
-            engine = wozlla.Engine();
-            return engine;
-        },
+        };
+    }
 
-        getEngine : function() {
-            return engine;
-        },
-
-        createDisplay : function(id, width, height, zIndex) {
-            var display = Class.create('wozlla.Display', {
-                id : id,
-                width : width || window.innerWidth,
-                height : height || window.innerHeight,
-                zIndex : zIndex
-            });
-            rootElement.appendChild(display.canvas);
-            return display;
-        },
-
-        singleSceneStartup : function(params) {
-            var root = params.rootElement;
-            root = typeof root === 'string' ? document.getElementById(root) : root;
-            var engine = wozllajs.initEngine(root);
-            var display = wozllajs.createDisplay('singleSceneDisplay', params.width, params.height, 0);
-            var scene = wozllajs.createScene('singleScene');
-            display.setScene(scene);
-            engine.start();
-            return scene;
-        }
-    };
+    if(!Array.prototype.indexOf) {
+        Array.prototype.indexOf = function(obj) {
+            var i, len;
+            for(i=0, len=this.length; i<len; i++) {
+                if(this[i] === obj) {
+                    return i;
+                }
+            }
+            return -1;
+        };
+    }
 
 })();
 
 (function() {
 
-    // Array
-    !Array.prototype.remove &&
-    Array.prototype.remove = function(obj) {
-        var idx = this.indexOf(obj);
-        if(idx !== -1) {
-            this.splice(idx, 1);
-        }
-    };
-
-    !Array.prototype.indexOf &&
-    Array.prototype.indexOf = function(obj) {
-        var i, len;
-        for(i=0, len=this.length; i<len; i++) {
-            if(this[i] === obj) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-});
-
-(function() {
-
     var toString = Object.prototype.toString;
 
+    var componentMap = {}; 
+
     wozllajs.isArray = function(testObj) {
-        return toString.call(testObj) === '[object Array]';
+        return wozllajs.is(testObj, 'Array');
     };
 
     wozllajs.is = function(testObj, type) {
         return toString.call(testObj).toLowerCase() === type.toLowerCase();
-    }
+    };
+
+    wozllajs.printComponent = function() {
+        console.log('ComponentMap: ', componentMap);
+    };
+
+    wozllajs.createComponent = function(namespace, params) {
+        var cmpConstructor = componentMap[namespace];
+        if(!cmpConstructor) {
+            throw new Error("Can't find Component '" + namespace + "'");
+        }
+        return new cmpConstructor(params);
+    };
+
+    wozllajs.defineComponent = function(namespace, maker) {
+        var NSList = namespace.split(".");
+        var step = wozllajs;
+        var k = null;
+        var cmpConstructor;
+        var cmpProto;
+        while (k = NSList.shift()) {
+            if (NSList.length) {
+                if (step[k] === undefined) {
+                    step[k] = {};
+                }
+                step = step[k];
+            } else {
+                if(step[k]) {
+                    console.log('The namespace "' + namespace + '" has been regsitered, override it.');
+                }
+                cmpConstructor = step[k] = maker();
+                cmpProto = cmpConstructor.prototype;
+                componentMap[namespace] = cmpConstructor;
+                componentMap[cmpProto.alias] = cmpConstructor;
+            }
+        }
+    };
     
 })();

@@ -1,55 +1,56 @@
-wozllajs.defineComponent('wozlla.component.renderer.AnimationSheetRenderer', {
+wozllajs.defineComponent('renderer.AnimationSheetRenderer', function() {
 
-    alias : 'renderer.animationSheet',
+    var Time = wozllajs.Time;
 
-    natures : [
-        wozlla.Component.NATURE_RENDER,
-        wozlla.Component.NATURE_BEHAVIOR
-    ],
+	var AnimationSheetRenderer = function(params) {
+		this.initialize(params);
+	};
 
-    extend : 'wozlla.Component',
+	var p = AnimationSheetRenderer.prototype = Object.create(wozllajs.Renderer.prototype);
 
-    image : null,
+    p.alias = 'renderer.animationSheet';
 
-    _playingFrameSequence : null,
+    p.image = null;
 
-    _currentIndex : 0,
+    p._playingFrameSequence = null;
 
-    _currentFrame : null,
+    p._currentIndex = 0;
 
-    _currentFrameStartTime : null,
+    p._currentFrame = null;
 
-    src : null,
+    p._currentFrameStartTime = null;
 
-    frameTime : 33,
+    p.src = null;
 
-    frames : null,
+    p.frameTime = 33;
 
-    animations : null,
+    p.frames = null;
 
-    defaultAnimation : null,
+    p.animations = null;
 
-    init : function() {
+    p.defaultAnimation = null;
+
+    p.initComponent = function() {
         if(this.src) {
             this.image = this.getResourceById(this.src);
         }
-    },
+    };
 
-    update : function(time, update) {
+    p.update = function() {
         if(!this.frames) {
             return;
         }
-        
+
         if(!this._currentFrameStartTime) {
-            this._currentFrameStartTime = time.now;
+            this._currentFrameStartTime = Time.now;
         }
 
         if(!this._playingFrameSequence) {
             this._playingFrameSequence = this.animations[this.defaultAnimation];
         }
 
-        if(time.now - this._currentFrameStartTime >= this.frameTime) {
-            this._currentFrameStartTime = time.now;
+        if(Time.now - this._currentFrameStartTime >= this.frameTime) {
+            this._currentFrameStartTime = Time.now;
             this._currentIndex ++;
             if(this._currentIndex >= this._playingFrameSequence.length) {
                 this._currentIndex = 0;
@@ -57,9 +58,9 @@ wozllajs.defineComponent('wozlla.component.renderer.AnimationSheetRenderer', {
             }
             this._currentFrame = this.frames[this._playingFrameSequence[this._currentIndex]];
         }
-    },
+    };
 
-    draw : function(context) {
+    p.draw = function(context) {
         var frame = this._currentFrame, w, h, ox, oy;
         if(this.image && frame) {
             w = frame.width || frame.w;
@@ -68,9 +69,9 @@ wozllajs.defineComponent('wozlla.component.renderer.AnimationSheetRenderer', {
             oy = frame.offsetY || frame.oy || 0;
             context.drawImage(this.image, frame.x, frame.y, w, h, ox, oy, w, h);
         }
-    },
+    };
 
-    play : function(animations, defaultAnimation) {
+    p.play = function(animations, defaultAnimation) {
         var sequence = [];
         var i, len;
         if(!wozllajs.isArray(animations)) {
@@ -84,14 +85,14 @@ wozllajs.defineComponent('wozlla.component.renderer.AnimationSheetRenderer', {
         if(defaultAnimation) {
             this.defaultAnimation = defaultAnimation;
         }
-    },
+    };
 
-    _getResources : function(res) {
+    p._collectResources = function(collection) {
         if(this.src) {
-            res.push(this.src);
+            collection.push(this.src);
         }
-    }
+    };
 
-
+    return AnimationSheetRenderer;
 
 });

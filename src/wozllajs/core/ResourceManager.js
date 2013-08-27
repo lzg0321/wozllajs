@@ -1,7 +1,6 @@
-/**
- * 一个基于 createjs.LoadQueue 的ResourceManager, 很简单，直接看代码
- */
-wozllajs.singleton('wozlla.ResourceManager', function() {
+this.wozllajs = this.wozllajs || {};
+
+this.wozllajs.ResourceManager = (function() {
 
     var queue = new createjs.LoadQueue();
 
@@ -38,10 +37,8 @@ wozllajs.singleton('wozlla.ResourceManager', function() {
         },
 
         disposeImage : function(image) {
-            if(image && image.dispose) {
-                image.dispose();
-            }
+            image && image.dispose && image.dispose();
         }
     }
 
-});
+})();

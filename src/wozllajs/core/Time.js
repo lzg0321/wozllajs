@@ -1,6 +1,8 @@
-Class.module('wozlla.Time', function() {
+this.wozllajs = this.wozllajs || {};
 
-    return {
+this.wozllajs.Time = (function() {
+
+	return {
 
         delta : 0,
 
@@ -20,4 +22,4 @@ Class.module('wozlla.Time', function() {
         }
     };
 
-});
+})();

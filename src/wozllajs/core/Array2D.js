@@ -1,40 +1,29 @@
-/**
- * 一个二堆数组数据结构, 结构如下:
- * {
- *     "key1" : [],
- *     "key2" : [],
- *     "key3" : [],
- *     ...
- * }
- */
+this.wozllajs = this.wozllajs || {};
 
-wozllajs.module('wozlla.util.Array2D', function() {
+(function() {
 
-    var data = {};
+	var Array2D = function() {
+		this.data = {};
+	};
 
-    return {
-        /**
-         * 将val加到一个以key为键的数组中，如果没以key为键的数则创建一个空数组
-         * @param key
-         * @param val
-         */
+	Array2D.prototype = {
         push : function(key, val) {
-            data[key] = data[key] || [];
-            data[key].push(val);
+            this.data[key] = this.data[key] || [];
+            this.data[key].push(val);
         },
         get : function(key) {
             if(key === undefined) {
                 return data;
             }
-            return data[key];
+            return this.data[key];
         },
         sort : function(key, sorter) {
-            data[key].sort(sorter);
+            this.data[key].sort(sorter);
             return this;
         },
         remove : function(key, val) {
             var idx, i, len;
-            var array = data[key];
+            var array = this.data[key];
             if(!array) {
                 return false;
             }
@@ -52,10 +41,13 @@ wozllajs.module('wozlla.util.Array2D', function() {
         },
         clear : function(key) {
             if(key) {
-                data[key] = undefined;
+                this.data[key] = undefined;
             } else {
-                data = {};
+                this.data = {};
             }
         }
-    }
-});
+    };
+
+    wozllajs.Array2D = Array2D;
+
+})();

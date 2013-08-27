@@ -1,25 +1,29 @@
-wozllajs.module('wozlla.util.EventDispatcher', function() {
+this.wozllajs = this.wozllajs || {};
 
-    var listenerMap = wozlla.util.Array2D();
+(function() {
 
-    return {
+	var EventDispatcher = function() {
+		this.listenerMap = new wozllajs.Array2D();
+	}
+	
+	EventDispatcher.prototype = {
         addEventListener : function(type, listener) {
-            listenerMap.push(type, listener);
+            this.listenerMap.push(type, listener);
         },
         removeEventListener : function(type, listener) {
-            listenerMap.remove(type, listener);
+            this.listenerMap.remove(type, listener);
         },
         getListenersByType : function(type) {
-            return listenerMap.get(type);
+            return this.listenerMap.get(type);
         },
         getListenerMap : function() {
-            return listenerMap;
+            return this.listenerMap;
         },
         clearByType : function(type) {
-            listenerMap.clear(type);
+            this.listenerMap.clear(type);
         },
         clear : function() {
-            listenerMap.clear();
+            this.listenerMap.clear();
         },
         fireEvent : function(type, params, async) {
             var i, len, listener;
@@ -45,6 +49,8 @@ wozllajs.module('wozlla.util.EventDispatcher', function() {
                 }
             }
         }
-    }
+    };
 
-});
+    wozllajs.EventDispatcher = EventDispatcher;
+
+})();
