@@ -4,7 +4,7 @@ this.wozllajs = this.wozllajs || {};
 
 	var EventDispatcher = function() {
 		this.listenerMap = new wozllajs.Array2D();
-	}
+	};
 	
 	EventDispatcher.prototype = {
         addEventListener : function(type, listener) {
