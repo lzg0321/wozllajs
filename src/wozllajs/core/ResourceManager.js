@@ -3,6 +3,7 @@ this.wozllajs = this.wozllajs || {};
 this.wozllajs.ResourceManager = (function() {
 
     var queue = new createjs.LoadQueue();
+    queue.setUseXHR(false);
 
     return {
 
