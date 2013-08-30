@@ -260,4 +260,4 @@ var attack_data = {
 			21
 		]
 	}
-};
+}

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>getting start | wozllajs</title>
+    <title>multi-canvas | wozllajs</title>
     <script src="../libs/easeljs-0.6.1.min.js"></script>
     <script src="../libs/preloadjs-0.3.1.min.js"></script>
     <script src="../src/wozllajs/wozllajs.js"></script>
@@ -23,12 +23,14 @@
     <script src="data/XiaoGe.js"></script>
 </head>
 <body>
-<div id="root" style="width: 960px; margin: 0 auto; border: 1px solid #555; height: 640px;">
-    <canvas id="main"></canvas>
+<div id="root" style="position: relative; width: 960px; margin: 0 auto; border: 1px solid #555; height: 640px;">
+    <canvas id="main" style="position: absolute; z-index: 0; top: 0; left: 0;"></canvas>
+    <canvas id="other" style="position: absolute; z-index: 1; top: 0; left: 0;"></canvas>
 </div>
 <script>
-    var canvas = document.getElementById('main');
-    var stage = new wozllajs.Stage('sampleStageId', canvas, 960, 640);
+    var stage = new wozllajs.Stage('sampleStageId', 'main', 960, 640);
+    var stage2 = new wozllajs.Stage('sampleStageId2', 'other', 960, 640);
+
     var gameObject = new wozllajs.GameObject('test');
     gameObject.transform.x = 150;
     gameObject.transform.y = 150;
@@ -41,7 +43,20 @@
         }
     });
 
+    var gameObject2 = new wozllajs.GameObject('test');
+    gameObject2.transform.x = 150;
+    gameObject2.transform.y = 150;
+    gameObject2.setRenderer(wozllajs.createComponent('renderer.animationSheet', XiaoGe_data));
+    stage2.addObject(gameObject2);
+
+    stage2.loadResources({
+        onComplete : function() {
+            stage2.initComponent();
+        }
+    });
+
     wozllajs.Engine.addListener(stage);
+    wozllajs.Engine.addListener(stage2);
     wozllajs.Engine.start();
 
 </script>
