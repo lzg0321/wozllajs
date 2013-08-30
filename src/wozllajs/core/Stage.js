@@ -52,6 +52,13 @@ this.wozllajs = this.wozllajs || {};
 		this.GameObject_draw(this.stageContext, visibleRect);
 	};
 
+    p.resize = function(width, height) {
+        this.stageCanvas.width = width;
+        this.stageCanvas.height = height;
+        this.width = width;
+        this.height = height;
+    };
+
 	wozllajs.Stage = Stage;
 	
 })();
