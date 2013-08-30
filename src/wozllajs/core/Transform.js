@@ -126,6 +126,19 @@ this.wozllajs = this.wozllajs || {};
             mtx = matrix.identity().appendTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY);
             context.transform(mtx.a,  mtx.b, mtx.c, mtx.d, mtx.tx, mtx.ty);
             context.globalAlpha *= o.alpha;
+        },
+
+        applyTransform : function(transform) {
+            this.x = transform.x;
+            this.y = transform.y;
+            this.regX = transform.regX;
+            this.regY = transform.regY;
+            this.scaleX = transform.scaleX;
+            this.scaleY = transform.scaleY;
+            this.rotation = transform.rotation;
+            this.alpha = transform.alpha;
+            this.skewX = transform.skewX;
+            this.skewY = transform.skewY;
         }
     };
 
