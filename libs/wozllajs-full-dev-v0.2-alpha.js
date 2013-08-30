@@ -133,71 +133,1523 @@ a.preventDefault&&a.preventDefault();for(var c=a.changedTouches,g=a.type,d=0,e=c
 m,!1);window.addEventListener("MSPointerCancel",m,!1);b.__touch.preventDefault&&(a.style.msTouchAction="none");b.__touch.activeIDs={}};c._IE_disable=function(b){var a=b.__touch.f;window.removeEventListener("MSPointerMove",a,!1);window.removeEventListener("MSPointerUp",a,!1);window.removeEventListener("MSPointerCancel",a,!1);b.canvas&&b.canvas.removeEventListener("MSPointerDown",a,!1)};c._IE_handleEvent=function(b,a){if(b){b.__touch.preventDefault&&a.preventDefault&&a.preventDefault();var c=a.type,
 g=a.pointerId,d=b.__touch.activeIDs;if("MSPointerDown"==c)a.srcElement==b.canvas&&(d[g]=!0,this._handleStart(b,g,a,a.pageX,a.pageY));else if(d[g])if("MSPointerMove"==c)this._handleMove(b,g,a,a.pageX,a.pageY);else if("MSPointerUp"==c||"MSPointerCancel"==c)delete d[g],this._handleEnd(b,g,a)}};c._handleStart=function(b,a,c,g,d){var e=b.__touch;if(e.multitouch||!e.count){var f=e.pointers;f[a]||(f[a]=!0,e.count++,b._handlePointerDown(a,c,g,d))}};c._handleMove=function(b,a,c,g,d){b.__touch.pointers[a]&&
 b._handlePointerMove(a,c,g,d)};c._handleEnd=function(b,a,c){var g=b.__touch,d=g.pointers;d[a]&&(g.count--,b._handlePointerUp(a,c,!0),delete d[a])};createjs.Touch=c})();(function(){var c=this.createjs=this.createjs||{},c=c.EaselJS=c.EaselJS||{};c.version="0.6.1";c.buildDate="Tue, 14 May 2013 21:43:02 GMT"})();
-/**
-* PreloadJS
-* Visit http://createjs.com/ for documentation, updates and examples.
-*
-* Copyright (c) 2011 gskinner.com, inc.
-* 
-* Distributed under the terms of the MIT license.
-* http://www.opensource.org/licenses/mit-license.html
-*
-* This notice shall be included in all copies or substantial portions of the Software.
-**/(function(){var c=this.createjs=this.createjs||{},c=c.PreloadJS=c.PreloadJS||{};c.version="0.3.1";c.buildDate="Thu, 09 May 2013 22:04:32 GMT"})();this.createjs=this.createjs||{};
-(function(){var c=function(){this.initialize()},a=c.prototype;c.initialize=function(d){d.addEventListener=a.addEventListener;d.removeEventListener=a.removeEventListener;d.removeAllEventListeners=a.removeAllEventListeners;d.hasEventListener=a.hasEventListener;d.dispatchEvent=a.dispatchEvent};a._listeners=null;a.initialize=function(){};a.addEventListener=function(d,b){var e=this._listeners;e?this.removeEventListener(d,b):e=this._listeners={};var a=e[d];a||(a=e[d]=[]);a.push(b);return b};a.removeEventListener=
-function(d,b){var e=this._listeners;if(e){var a=e[d];if(a)for(var f=0,c=a.length;f<c;f++)if(a[f]==b){c==1?delete e[d]:a.splice(f,1);break}}};a.removeAllEventListeners=function(d){d?this._listeners&&delete this._listeners[d]:this._listeners=null};a.dispatchEvent=function(d,b){var e=false,a=this._listeners;if(d&&a){typeof d=="string"&&(d={type:d});a=a[d.type];if(!a)return e;d.target=b||this;for(var a=a.slice(),f=0,c=a.length;f<c;f++)var h=a[f],e=h.handleEvent?e||h.handleEvent(d):e||h(d)}return!!e};
-a.hasEventListener=function(d){var b=this._listeners;return!(!b||!b[d])};a.toString=function(){return"[EventDispatcher]"};createjs.EventDispatcher=c})();this.createjs=this.createjs||{};
-(function(){var c=function(){this.init()};c.prototype={};var a=c.prototype;c.FILE_PATTERN=/^(?:(\w+:)\/{2}(\w+(?:\.\w+)*\/?))?([/.]*?(?:[^?]+)?\/)?((?:[^/?]+)\.(\w+))(?:\?(\S+)?)?$/;a.loaded=false;a.canceled=false;a.progress=0;a._item=null;a._basePath=null;a.onProgress=null;a.onLoadStart=null;a.onComplete=null;a.onError=null;a.addEventListener=null;a.removeEventListener=null;a.removeAllEventListeners=null;a.dispatchEvent=null;a.hasEventListener=null;a._listeners=null;createjs.EventDispatcher.initialize(a);
-a.getItem=function(){return this._item};a.init=function(){};a.load=function(){};a.close=function(){};a._sendLoadStart=function(){this._isCanceled()||(this.onLoadStart&&this.onLoadStart({target:this}),this.dispatchEvent("loadStart"),this.dispatchEvent("loadstart"))};a._sendProgress=function(d){if(!this._isCanceled()){var b=null;if(typeof d=="number")this.progress=d,b={loaded:this.progress,total:1};else if(b=d,this.progress=d.loaded/d.total,isNaN(this.progress)||this.progress==Infinity)this.progress=
-0;b.target=this;b.type="progress";b.progress=this.progress;this.onProgress&&this.onProgress(b);this.dispatchEvent(b)}};a._sendComplete=function(){this._isCanceled()||(this.onComplete&&this.onComplete({target:this}),this.dispatchEvent("complete"))};a._sendError=function(d){if(!this._isCanceled())d==null&&(d={}),d.target=this,d.type="error",this.onError&&this.onError(d),this.dispatchEvent(d)};a._isCanceled=function(){return window.createjs==null||this.canceled?true:false};a._parseURI=function(d){return!d?
-null:d.match(c.FILE_PATTERN)};a._formatQueryString=function(d,b){if(d==null)throw Error("You must specify data.");var e=[],a;for(a in d)e.push(a+"="+escape(d[a]));b&&(e=e.concat(b));return e.join("&")};a.buildPath=function(a,b,e){if(b!=null){var j=this._parseURI(a);if(j[1]==null||j[1]=="")a=b+a}if(e==null)return a;b=[];j=a.indexOf("?");if(j!=-1)var f=a.slice(j+1),b=b.concat(f.split("&"));return j!=-1?a.slice(0,j)+"?"+this._formatQueryString(e,b):a+"?"+this._formatQueryString(e,b)};a.toString=function(){return"[PreloadJS AbstractLoader]"};
-createjs.AbstractLoader=c})();this.createjs=this.createjs||{};
-(function(){var c=function(b,e){this.init(b,e)},a=c.prototype=new createjs.AbstractLoader;c.LOAD_TIMEOUT=8E3;c.BINARY="binary";c.CSS="css";c.IMAGE="image";c.JAVASCRIPT="javascript";c.JSON="json";c.JSONP="jsonp";c.SOUND="sound";c.SVG="svg";c.TEXT="text";c.XML="xml";c.POST="POST";c.GET="GET";a.useXHR=true;a.stopOnError=false;a.maintainScriptOrder=true;a.next=null;a.onFileLoad=null;a.onFileProgress=null;a._typeCallbacks=null;a._extensionCallbacks=null;a._loadStartWasDispatched=false;a._maxConnections=
-1;a._currentlyLoadingScript=null;a._currentLoads=null;a._loadQueue=null;a._loadQueueBackup=null;a._loadItemsById=null;a._loadItemsBySrc=null;a._loadedResults=null;a._loadedRawResults=null;a._numItems=0;a._numItemsLoaded=0;a._scriptOrder=null;a._loadedScripts=null;a.init=function(b,e){this._numItems=this._numItemsLoaded=0;this._loadStartWasDispatched=this._paused=false;this._currentLoads=[];this._loadQueue=[];this._loadQueueBackup=[];this._scriptOrder=[];this._loadedScripts=[];this._loadItemsById=
-{};this._loadItemsBySrc={};this._loadedResults={};this._loadedRawResults={};this._typeCallbacks={};this._extensionCallbacks={};this._basePath=e;this.setUseXHR(b)};a.setUseXHR=function(b){return this.useXHR=b!=false&&window.XMLHttpRequest!=null};a.removeAll=function(){this.remove()};a.remove=function(b){var e=null;b&&!(b instanceof Array)?e=[b]:b&&(e=b);b=false;if(e){for(;e.length;){for(var a=e.pop(),d=this.getResult(a),c=this._loadQueue.length-1;c>=0;c--)if(h=this._loadQueue[c].getItem(),h.id==a||
-h.src==a){this._loadQueue.splice(c,1)[0].cancel();break}for(c=this._loadQueueBackup.length-1;c>=0;c--)if(h=this._loadQueueBackup[c].getItem(),h.id==a||h.src==a){this._loadQueueBackup.splice(c,1)[0].cancel();break}if(d)delete this._loadItemsById[d.id],delete this._loadItemsBySrc[d.src],this._disposeItem(d);else for(var c=this._currentLoads.length-1;c>=0;c--){var h=this._currentLoads[c].getItem();if(h.id==a||h.src==a){this._currentLoads.splice(c,1)[0].cancel();b=true;break}}}b&&this._loadNext()}else{this.close();
-for(a in this._loadItemsById)this._disposeItem(this._loadItemsById[a]);this.init(this.useXHR)}};a.reset=function(){this.close();for(var b in this._loadItemsById)this._disposeItem(this._loadItemsById[b]);b=[];for(i=0,l=this._loadQueueBackup.length;i<l;i++)b.push(this._loadQueueBackup[i].getItem());this.loadManifest(b,false)};c.isBinary=function(b){switch(b){case createjs.LoadQueue.IMAGE:case createjs.LoadQueue.BINARY:return true;default:return false}};a.installPlugin=function(b){if(!(b==null||b.getPreloadHandlers==
-null)){b=b.getPreloadHandlers();if(b.types!=null)for(var a=0,d=b.types.length;a<d;a++)this._typeCallbacks[b.types[a]]=b.callback;if(b.extensions!=null)for(a=0,d=b.extensions.length;a<d;a++)this._extensionCallbacks[b.extensions[a]]=b.callback}};a.setMaxConnections=function(b){this._maxConnections=b;!this._paused&&this._loadQueue.length>0&&this._loadNext()};a.loadFile=function(b,a,d){b==null?this._sendError({text:"PRELOAD_NO_FILE"}):(this._addItem(b,d),a!==false?this.setPaused(false):this.setPaused(true))};
-a.loadManifest=function(b,a,d){var c=null;if(b instanceof Array){if(b.length==0){this._sendError({text:"PRELOAD_MANIFEST_EMPTY"});return}c=b}else{if(b==null){this._sendError({text:"PRELOAD_MANIFEST_NULL"});return}c=[b]}for(var b=0,o=c.length;b<o;b++)this._addItem(c[b],d);a!==false?this.setPaused(false):this.setPaused(true)};a.load=function(){this.setPaused(false)};a.getItem=function(b){return this._loadItemsById[b]||this._loadItemsBySrc[b]};a.getResult=function(b,a){var d=this._loadItemsById[b]||
-this._loadItemsBySrc[b];if(d==null)return null;d=d.id;return a&&this._loadedRawResults[d]?this._loadedRawResults[d]:this._loadedResults[d]};a.setPaused=function(b){(this._paused=b)||this._loadNext()};a.close=function(){for(;this._currentLoads.length;)this._currentLoads.pop().cancel();this._scriptOrder.length=0;this._loadedScripts.length=0;this.loadStartWasDispatched=false};a._addItem=function(b,a){var d=this._createLoadItem(b);if(d!=null){var c=this._createLoader(d,a);c!=null&&(this._loadQueue.push(c),
-this._loadQueueBackup.push(c),this._numItems++,this._updateProgress(),this.maintainScriptOrder&&d.type==createjs.LoadQueue.JAVASCRIPT&&c instanceof createjs.XHRLoader&&(this._scriptOrder.push(d),this._loadedScripts.push(null)))}};a._createLoadItem=function(b){var a=null;switch(typeof b){case "string":a={src:b};break;case "object":a=window.HTMLAudioElement&&b instanceof HTMLAudioElement?{tag:b,src:a.tag.src,type:createjs.LoadQueue.SOUND}:b}b=this._parseURI(a.src);if(b!=null)a.ext=b[5];if(a.type==null)a.type=
-this._getTypeByExtension(a.ext);if(a.type==createjs.LoadQueue.JSON&&a.callback!=null)a.type=createjs.LoadQueue.JSONP;if(a.type==createjs.LoadQueue.JSONP&&a.callback==null)throw Error("callback is required for loading JSONP requests.");if(a.tag==null)a.tag=this._createTag(a.type);if(a.id==null||a.id=="")a.id=a.src;if(b=this._typeCallbacks[a.type]||this._extensionCallbacks[a.ext]){b=b(a.src,a.type,a.id,a.data);if(b===false)return null;else if(b!==true){if(b.src!=null)a.src=b.src;if(b.id!=null)a.id=
-b.id;if(b.tag!=null&&b.tag.load instanceof Function)a.tag=b.tag;if(b.completeHandler!=null)a.completeHandler=b.completeHandler}if(b.type)a.type=b.type;b=this._parseURI(a.src);if(b!=null&&b[5]!=null)a.ext=b[5].toLowerCase()}this._loadItemsById[a.id]=a;return this._loadItemsBySrc[a.src]=a};a._createLoader=function(b,a){var d=this.useXHR;switch(b.type){case createjs.LoadQueue.JSON:case createjs.LoadQueue.XML:case createjs.LoadQueue.TEXT:d=true;break;case createjs.LoadQueue.SOUND:case createjs.LoadQueue.JSONP:d=
-false}if(a==null)a=this._basePath;return d?new createjs.XHRLoader(b,a):new createjs.TagLoader(b,a)};a._loadNext=function(){if(!this._paused){if(!this._loadStartWasDispatched)this._sendLoadStart(),this._loadStartWasDispatched=true;if(this._numItems==this._numItemsLoaded)this.loaded=true,this._sendComplete(),this.next&&this.next.load&&this.next.load();for(var a=0,d=this._loadQueue.length;a<d;a++){if(this._currentLoads.length>=this._maxConnections)break;var c=this._loadQueue[a];if(this.maintainScriptOrder&&
-c instanceof createjs.TagLoader&&c.getItem().type==createjs.LoadQueue.JAVASCRIPT){if(this._currentlyLoadingScript)continue;this._currentlyLoadingScript=true}this._loadQueue.splice(a,1);a--;d--;this._loadItem(c)}}};a._loadItem=function(a){a.addEventListener("progress",createjs.proxy(this._handleProgress,this));a.addEventListener("complete",createjs.proxy(this._handleFileComplete,this));a.addEventListener("error",createjs.proxy(this._handleFileError,this));this._currentLoads.push(a);this._sendFileStart(a.getItem());
-a.load()};a._handleFileError=function(a){var d=a.target;this._numItemsLoaded++;this._updateProgress();a={item:d.getItem()};this._sendError(a);this.stopOnError||(this._removeLoadItem(d),this._loadNext())};a._handleFileComplete=function(a){var a=a.target,d=a.getItem();this._loadedResults[d.id]=a.getResult();a instanceof createjs.XHRLoader&&(this._loadedRawResults[d.id]=a.getResult(true));this._removeLoadItem(a);if(this.maintainScriptOrder&&d.type==createjs.LoadQueue.JAVASCRIPT)if(a instanceof createjs.TagLoader)this._currentlyLoadingScript=
-false;else{this._loadedScripts[this._scriptOrder.indexOf(d)]=d;this._checkScriptLoadOrder(a);return}this._processFinishedLoad(d,a)};a._processFinishedLoad=function(a,d){this._numItemsLoaded++;this._updateProgress();this._sendFileComplete(a,d);this._loadNext()};a._checkScriptLoadOrder=function(){for(var a=this._loadedScripts.length,d=0;d<a;d++){var c=this._loadedScripts[d];if(c===null)break;c!==true&&(this._processFinishedLoad(c),this._loadedScripts[d]=true,d--,a--)}};a._removeLoadItem=function(a){for(var d=
-this._currentLoads.length,c=0;c<d;c++)if(this._currentLoads[c]==a){this._currentLoads.splice(c,1);break}};a._handleProgress=function(a){a=a.target;this._sendFileProgress(a.getItem(),a.progress);this._updateProgress()};a._updateProgress=function(){var a=this._numItemsLoaded/this._numItems,d=this._numItems-this._numItemsLoaded;if(d>0){for(var c=0,f=0,o=this._currentLoads.length;f<o;f++)c+=this._currentLoads[f].progress;a+=c/d*(d/this._numItems)}this._sendProgress(a)};a._disposeItem=function(a){delete this._loadedResults[a.id];
-delete this._loadedRawResults[a.id];delete this._loadItemsById[a.id];delete this._loadItemsBySrc[a.src]};a._createTag=function(a){var d=null;switch(a){case createjs.LoadQueue.IMAGE:return document.createElement("img");case createjs.LoadQueue.SOUND:return d=document.createElement("audio"),d.autoplay=false,d;case createjs.LoadQueue.JSONP:case createjs.LoadQueue.JAVASCRIPT:return d=document.createElement("script"),d.type="text/javascript",d;case createjs.LoadQueue.CSS:return d=this.useXHR?document.createElement("style"):
-document.createElement("link"),d.rel="stylesheet",d.type="text/css",d;case createjs.LoadQueue.SVG:return this.useXHR?d=document.createElement("svg"):(d=document.createElement("object"),d.type="image/svg+xml"),d}return null};a._getTypeByExtension=function(a){switch(a.toLowerCase()){case "jpeg":case "jpg":case "gif":case "png":case "webp":case "bmp":return createjs.LoadQueue.IMAGE;case "ogg":case "mp3":case "wav":return createjs.LoadQueue.SOUND;case "json":return createjs.LoadQueue.JSON;case "xml":return createjs.LoadQueue.XML;
-case "css":return createjs.LoadQueue.CSS;case "js":return createjs.LoadQueue.JAVASCRIPT;case "svg":return createjs.LoadQueue.SVG;default:return createjs.LoadQueue.TEXT}};a._sendFileProgress=function(a,d){if(this._isCanceled())this._cleanUp();else{var c={target:this,type:"fileprogress",progress:d,loaded:d,total:1,item:a};this.onFileProgress&&this.onFileProgress(c);this.dispatchEvent(c)}};a._sendFileComplete=function(a,d){if(!this._isCanceled()){var c={target:this,type:"fileload",loader:d,item:a,result:this._loadedResults[a.id],
-rawResult:this._loadedRawResults[a.id]};a.completeHandler&&a.completeHandler(c);this.onFileLoad&&this.onFileLoad(c);this.dispatchEvent(c)}};a._sendFileStart=function(a){this.dispatchEvent({target:this,type:"filestart",item:a})};a.toString=function(){return"[PreloadJS LoadQueue]"};c.proxy=function(a,d){return function(){return a.apply(d,arguments)}};createjs.LoadQueue=c;if(!createjs.proxy)createjs.proxy=function(a,d){var c=Array.prototype.slice.call(arguments,2);return function(){return a.apply(d,
-Array.prototype.slice.call(arguments,0).concat(c))}};var d=function(){};d.init=function(){var a=navigator.userAgent;d.isFirefox=a.indexOf("Firefox")>-1;d.isOpera=window.opera!=null;d.isChrome=a.indexOf("Chrome")>-1;d.isIOS=a.indexOf("iPod")>-1||a.indexOf("iPhone")>-1||a.indexOf("iPad")>-1};d.init();createjs.LoadQueue.BrowserDetect=d;if(!Array.prototype.indexOf)Array.prototype.indexOf=function(a){if(this==null)throw new TypeError;var d=Object(this),c=d.length>>>0;if(c===0)return-1;var f=0;arguments.length>
-1&&(f=Number(arguments[1]),f!=f?f=0:f!=0&&f!=Infinity&&f!=-Infinity&&(f=(f>0||-1)*Math.floor(Math.abs(f))));if(f>=c)return-1;for(f=f>=0?f:Math.max(c-Math.abs(f),0);f<c;f++)if(f in d&&d[f]===a)return f;return-1}})();this.createjs=this.createjs||{};
-(function(){var c=function(a,b){this.init(a,b)},a=c.prototype=new createjs.AbstractLoader;a._loadTimeout=null;a._tagCompleteProxy=null;a._isAudio=false;a._tag=null;a._jsonResult=null;a.init=function(a,b){this._item=a;this._basePath=b;this._tag=a.tag;this._isAudio=window.HTMLAudioElement&&a.tag instanceof HTMLAudioElement;this._tagCompleteProxy=createjs.proxy(this._handleLoad,this)};a.getResult=function(){return this._item.type==createjs.LoadQueue.JSONP?this._jsonResult:this._tag};a.cancel=function(){this.canceled=
-true;this._clean();this.getItem()};a.load=function(){var a=this._item,b=this._tag;clearTimeout(this._loadTimeout);this._loadTimeout=setTimeout(createjs.proxy(this._handleTimeout,this),createjs.LoadQueue.LOAD_TIMEOUT);if(this._isAudio)b.src=null,b.preload="auto";b.onerror=createjs.proxy(this._handleError,this);this._isAudio?(b.onstalled=createjs.proxy(this._handleStalled,this),b.addEventListener("canplaythrough",this._tagCompleteProxy,false)):(b.onload=createjs.proxy(this._handleLoad,this),b.onreadystatechange=
-createjs.proxy(this._handleReadyStateChange,this));var c=this.buildPath(a.src,this._basePath,a.values);switch(a.type){case createjs.LoadQueue.CSS:b.href=c;break;case createjs.LoadQueue.SVG:b.data=c;break;default:b.src=c}if(a.type==createjs.LoadQueue.JSONP){if(a.callback==null)throw Error("callback is required for loading JSONP requests.");if(window[a.callback]!=null)throw Error('JSONP callback "'+a.callback+'" already exists on window. You need to specify a different callback. Or re-name the current one.');
-window[a.callback]=createjs.proxy(this._handleJSONPLoad,this)}if(a.type==createjs.LoadQueue.SVG||a.type==createjs.LoadQueue.JSONP||a.type==createjs.LoadQueue.JSON||a.type==createjs.LoadQueue.JAVASCRIPT||a.type==createjs.LoadQueue.CSS)this._startTagVisibility=b.style.visibility,b.style.visibility="hidden",(document.body||document.getElementsByTagName("body")[0]).appendChild(b);b.load!=null&&b.load()};a._handleJSONPLoad=function(a){this._jsonResult=a};a._handleTimeout=function(){this._clean();this._sendError({reason:"PRELOAD_TIMEOUT"})};
-a._handleStalled=function(){};a._handleError=function(){this._clean();this._sendError()};a._handleReadyStateChange=function(){clearTimeout(this._loadTimeout);var a=this.getItem().tag;(a.readyState=="loaded"||a.readyState=="complete")&&this._handleLoad()};a._handleLoad=function(){if(!this._isCanceled()){var a=this.getItem(),b=a.tag;if(!(this.loaded||this.isAudio&&b.readyState!==4)){this.loaded=true;switch(a.type){case createjs.LoadQueue.SVG:case createjs.LoadQueue.JSONP:b.style.visibility=this._startTagVisibility,
-(document.body||document.getElementsByTagName("body")[0]).removeChild(b)}this._clean();this._sendComplete()}}};a._clean=function(){clearTimeout(this._loadTimeout);var a=this.getItem().tag;a.onload=null;a.removeEventListener&&a.removeEventListener("canplaythrough",this._tagCompleteProxy,false);a.onstalled=null;a.onprogress=null;a.onerror=null;a.parentNode&&a.parentNode.removeChild(a);a=this.getItem();a.type==createjs.LoadQueue.JSONP&&(window[a.callback]=null)};a.toString=function(){return"[PreloadJS TagLoader]"};
-createjs.TagLoader=c})();this.createjs=this.createjs||{};
-(function(){var c=function(a,b){this.init(a,b)},a=c.prototype=new createjs.AbstractLoader;a._request=null;a._loadTimeout=null;a._xhrLevel=1;a._response=null;a._rawResponse=null;a.init=function(a,b){this._item=a;this._basePath=b;this._createXHR(a)};a.getResult=function(a){return a&&this._rawResponse?this._rawResponse:this._response};a.cancel=function(){this.canceled=true;this._clean();this._request.abort()};a.load=function(){if(this._request==null)this._handleError();else{this._request.onloadstart=
-createjs.proxy(this._handleLoadStart,this);this._request.onprogress=createjs.proxy(this._handleProgress,this);this._request.onabort=createjs.proxy(this._handleAbort,this);this._request.onerror=createjs.proxy(this._handleError,this);this._request.ontimeout=createjs.proxy(this._handleTimeout,this);if(this._xhrLevel==1)this._loadTimeout=setTimeout(createjs.proxy(this._handleTimeout,this),createjs.LoadQueue.LOAD_TIMEOUT);this._request.onload=createjs.proxy(this._handleLoad,this);this._request.onreadystatechange=
-createjs.proxy(this._handleReadyStateChange,this);try{!this._item.values||this._item.method==createjs.LoadQueue.GET?this._request.send():this._item.method==createjs.LoadQueue.POST&&this._request.send(this._formatQueryString(this._item.values))}catch(a){this._sendError({source:a})}}};a.getAllResponseHeaders=function(){return this._request.getAllResponseHeaders instanceof Function?this._request.getAllResponseHeaders():null};a.getResponseHeader=function(a){return this._request.getResponseHeader instanceof
-Function?this._request.getResponseHeader(a):null};a._handleProgress=function(a){a.loaded>0&&a.total==0||this._sendProgress({loaded:a.loaded,total:a.total})};a._handleLoadStart=function(){clearTimeout(this._loadTimeout);this._sendLoadStart()};a._handleAbort=function(){this._clean();this._sendError()};a._handleError=function(){this._clean();this._sendError()};a._handleReadyStateChange=function(){this._request.readyState==4&&this._handleLoad()};a._handleLoad=function(){if(!this.loaded)this.loaded=true,
-this._checkError()?(this._response=this._getResponse(),this._clean(),this._generateTag()&&this._sendComplete()):this._handleError()};a._handleTimeout=function(){this._clean();this._sendError({reason:"PRELOAD_TIMEOUT"})};a._checkError=function(){switch(parseInt(this._request.status)){case 404:case 0:return false}return true};a._getResponse=function(){if(this._response!=null)return this._response;if(this._request.response!=null)return this._request.response;try{if(this._request.responseText!=null)return this._request.responseText}catch(a){}try{if(this._request.responseXML!=
-null)return this._request.responseXML}catch(b){}return null};a._createXHR=function(a){var b=document.createElement("a");b.href=this.buildPath(a.src,this._basePath);var c=document.createElement("a");c.href=location.href;b=b.hostname!=""&&(b.port!=c.port||b.protocol!=c.protocol||b.hostname!=c.hostname);c=null;if(b&&window.XDomainRequest)c=new XDomainRequest;else if(window.XMLHttpRequest)c=new XMLHttpRequest;else try{c=new ActiveXObject("Msxml2.XMLHTTP.6.0")}catch(j){try{c=new ActiveXObject("Msxml2.XMLHTTP.3.0")}catch(f){try{c=
-new ActiveXObject("Msxml2.XMLHTTP")}catch(o){return false}}}a.type==createjs.LoadQueue.TEXT&&c.overrideMimeType&&c.overrideMimeType("text/plain; charset=x-user-defined");this._xhrLevel=typeof c.responseType==="string"?2:1;var h=null,h=a.method==createjs.LoadQueue.GET?this.buildPath(a.src,this._basePath,a.values):this.buildPath(a.src,this._basePath);c.open(a.method||createjs.LoadQueue.GET,h,true);b&&c instanceof XMLHttpRequest&&this._xhrLevel==1&&c.setRequestHeader("Origin",location.origin);a.values&&
-a.method==createjs.LoadQueue.POST&&c.setRequestHeader("Content-Type","application/x-www-form-urlencoded");if(createjs.LoadQueue.isBinary(a.type))c.responseType="arraybuffer";this._request=c;return true};a._clean=function(){clearTimeout(this._loadTimeout);var a=this._request;a.onloadstart=null;a.onprogress=null;a.onabort=null;a.onerror=null;a.onload=null;a.ontimeout=null;a.onloadend=null;a.onreadystatechange=null};a._generateTag=function(){var a=this._item.tag;switch(this._item.type){case createjs.LoadQueue.IMAGE:return a.onload=
-createjs.proxy(this._handleTagReady,this),a.src=this.buildPath(this._item.src,this._basePath,this._item.values),this._rawResponse=this._response,this._response=a,false;case createjs.LoadQueue.JAVASCRIPT:a=document.createElement("script");this._rawResponse=a.text=this._response;this._response=a;break;case createjs.LoadQueue.CSS:document.getElementsByTagName("head")[0].appendChild(a);if(a.styleSheet)a.styleSheet.cssText=this._response;else{var b=document.createTextNode(this._response);a.appendChild(b)}this._rawResponse=
-this._response;this._response=a;break;case createjs.LoadQueue.XML:this._response=b=this._parseXML(this._response,"text/xml");break;case createjs.LoadQueue.SVG:b=this._parseXML(this._response,"image/svg+xml");this._rawResponse=this._response;b.documentElement!=null?(a.appendChild(b.documentElement),this._response=a):this._response=b;break;case createjs.LoadQueue.JSON:a={};try{a=JSON.parse(this._response)}catch(c){a=c}this._rawResponse=this._response;this._response=a}return true};a._parseXML=function(a,
-b){var c=null;window.DOMParser?c=(new DOMParser).parseFromString(a,b):(c=new ActiveXObject("Microsoft.XMLDOM"),c.async=false,c.loadXML(a));return c};a._handleTagReady=function(){this._sendComplete()};a.toString=function(){return"[PreloadJS XHRLoader]"};createjs.XHRLoader=c})();typeof JSON!=="object"&&(JSON={});
-(function(){function c(a){return a<10?"0"+a:a}function a(a){e.lastIndex=0;return e.test(a)?'"'+a.replace(e,function(a){var b=o[a];return typeof b==="string"?b:"\\u"+("0000"+a.charCodeAt(0).toString(16)).slice(-4)})+'"':'"'+a+'"'}function d(b,c){var e,n,m,p,q=j,k,g=c[b];g&&typeof g==="object"&&typeof g.toJSON==="function"&&(g=g.toJSON(b));typeof h==="function"&&(g=h.call(c,b,g));switch(typeof g){case "string":return a(g);case "number":return isFinite(g)?String(g):"null";case "boolean":case "null":return String(g);
-case "object":if(!g)return"null";j+=f;k=[];if(Object.prototype.toString.apply(g)==="[object Array]"){p=g.length;for(e=0;e<p;e+=1)k[e]=d(e,g)||"null";m=k.length===0?"[]":j?"[\n"+j+k.join(",\n"+j)+"\n"+q+"]":"["+k.join(",")+"]";j=q;return m}if(h&&typeof h==="object"){p=h.length;for(e=0;e<p;e+=1)typeof h[e]==="string"&&(n=h[e],(m=d(n,g))&&k.push(a(n)+(j?": ":":")+m))}else for(n in g)Object.prototype.hasOwnProperty.call(g,n)&&(m=d(n,g))&&k.push(a(n)+(j?": ":":")+m);m=k.length===0?"{}":j?"{\n"+j+k.join(",\n"+
-j)+"\n"+q+"}":"{"+k.join(",")+"}";j=q;return m}}if(typeof Date.prototype.toJSON!=="function")Date.prototype.toJSON=function(){return isFinite(this.valueOf())?this.getUTCFullYear()+"-"+c(this.getUTCMonth()+1)+"-"+c(this.getUTCDate())+"T"+c(this.getUTCHours())+":"+c(this.getUTCMinutes())+":"+c(this.getUTCSeconds())+"Z":null},String.prototype.toJSON=Number.prototype.toJSON=Boolean.prototype.toJSON=function(){return this.valueOf()};var b=/[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
-e=/[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,j,f,o={"\u0008":"\\b","\t":"\\t","\n":"\\n","\u000c":"\\f","\r":"\\r",'"':'\\"',"\\":"\\\\"},h;if(typeof JSON.stringify!=="function")JSON.stringify=function(a,b,c){var e;f=j="";if(typeof c==="number")for(e=0;e<c;e+=1)f+=" ";else typeof c==="string"&&(f=c);if((h=b)&&typeof b!=="function"&&(typeof b!=="object"||typeof b.length!=="number"))throw Error("JSON.stringify");return d("",
-{"":a})};if(typeof JSON.parse!=="function")JSON.parse=function(a,c){function d(a,b){var e,f,g=a[b];if(g&&typeof g==="object")for(e in g)Object.prototype.hasOwnProperty.call(g,e)&&(f=d(g,e),f!==void 0?g[e]=f:delete g[e]);return c.call(a,b,g)}var e,a=String(a);b.lastIndex=0;b.test(a)&&(a=a.replace(b,function(a){return"\\u"+("0000"+a.charCodeAt(0).toString(16)).slice(-4)}));if(/^[\],:{}\s]*$/.test(a.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,"@").replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,
-"]").replace(/(?:^|:|,)(?:\s*\[)+/g,"")))return e=eval("("+a+")"),typeof c==="function"?d({"":e},""):e;throw new SyntaxError("JSON.parse");}})();
+/**!
+ * @license PreloadJS
+ * Visit http://createjs.com/ for documentation, updates and examples.
+ *
+ * Copyright (c) 2011-2013 gskinner.com, inc.
+ *
+ * Distributed under the terms of the MIT license.
+ * http://www.opensource.org/licenses/mit-license.html
+ *
+ * This notice shall be included in all copies or substantial portions of the Software.
+ **/this.createjs = this.createjs || {};
+(function() {
+    var Event = function(type, bubbles, cancelable) {
+        this.initialize(type, bubbles, cancelable)
+    };
+    var p = Event.prototype;
+    p.type = null;
+    p.target = null;
+    p.currentTarget = null;
+    p.eventPhase = 0;
+    p.bubbles = false;
+    p.cancelable = false;
+    p.timeStamp = 0;
+    p.defaultPrevented = false;
+    p.propagationStopped = false;
+    p.immediatePropagationStopped = false;
+    p.removed = false;
+    p.initialize = function(type, bubbles, cancelable) {
+        this.type = type;
+        this.bubbles = bubbles;
+        this.cancelable = cancelable;
+        this.timeStamp = (new Date).getTime()
+    };
+    p.preventDefault = function() {
+        this.defaultPrevented = true
+    };
+    p.stopPropagation = function() {
+        this.propagationStopped = true
+    };
+    p.stopImmediatePropagation = function() {
+        this.immediatePropagationStopped = this.propagationStopped = true
+    };
+    p.remove = function() {
+        this.removed = true
+    };
+    p.clone = function() {
+        return new Event(this.type, this.bubbles, this.cancelable)
+    };
+    p.toString = function() {
+        return"[Event (type=" + this.type + ")]"
+    };
+    createjs.Event = Event
+})();
+this.createjs = this.createjs || {};
+(function() {
+    var EventDispatcher = function() {
+        this.initialize()
+    };
+    var p = EventDispatcher.prototype;
+    EventDispatcher.initialize = function(target) {
+        target.addEventListener = p.addEventListener;
+        target.on = p.on;
+        target.removeEventListener = target.off = p.removeEventListener;
+        target.removeAllEventListeners = p.removeAllEventListeners;
+        target.hasEventListener = p.hasEventListener;
+        target.dispatchEvent = p.dispatchEvent;
+        target._dispatchEvent = p._dispatchEvent
+    };
+    p._listeners = null;
+    p._captureListeners = null;
+    p.initialize = function() {
+    };
+    p.addEventListener = function(type, listener, useCapture) {
+        var listeners;
+        if(useCapture) {
+            listeners = this._captureListeners = this._captureListeners || {}
+        }else {
+            listeners = this._listeners = this._listeners || {}
+        }
+        var arr = listeners[type];
+        if(arr) {
+            this.removeEventListener(type, listener, useCapture)
+        }
+        arr = listeners[type];
+        if(!arr) {
+            listeners[type] = [listener]
+        }else {
+            arr.push(listener)
+        }
+        return listener
+    };
+    p.on = function(type, listener, scope, once, data, useCapture) {
+        if(listener.handleEvent) {
+            scope = scope || listener;
+            listener = listener.handleEvent
+        }
+        scope = scope || this;
+        return this.addEventListener(type, function(evt) {
+            listener.call(scope, evt, data);
+            once && evt.remove()
+        }, useCapture)
+    };
+    p.removeEventListener = function(type, listener, useCapture) {
+        var listeners = useCapture ? this._captureListeners : this._listeners;
+        if(!listeners) {
+            return
+        }
+        var arr = listeners[type];
+        if(!arr) {
+            return
+        }
+        for(var i = 0, l = arr.length;i < l;i++) {
+            if(arr[i] == listener) {
+                if(l == 1) {
+                    delete listeners[type]
+                }else {
+                    arr.splice(i, 1)
+                }
+                break
+            }
+        }
+    };
+    p.off = p.removeEventListener;
+    p.removeAllEventListeners = function(type) {
+        if(!type) {
+            this._listeners = this._captureListeners = null
+        }else {
+            if(this._listeners) {
+                delete this._listeners[type]
+            }
+            if(this._captureListeners) {
+                delete this._captureListeners[type]
+            }
+        }
+    };
+    p.dispatchEvent = function(eventObj, target) {
+        if(typeof eventObj == "string") {
+            var listeners = this._listeners;
+            if(!listeners || !listeners[eventObj]) {
+                return false
+            }
+            eventObj = new createjs.Event(eventObj)
+        }
+        eventObj.target = target || this;
+        if(!eventObj.bubbles || !this.parent) {
+            this._dispatchEvent(eventObj, 2)
+        }else {
+            var top = this, list = [top];
+            while(top.parent) {
+                list.push(top = top.parent)
+            }
+            var i, l = list.length;
+            for(i = l - 1;i >= 0 && !eventObj.propagationStopped;i--) {
+                list[i]._dispatchEvent(eventObj, 1 + (i == 0))
+            }
+            for(i = 1;i < l && !eventObj.propagationStopped;i++) {
+                list[i]._dispatchEvent(eventObj, 3)
+            }
+        }
+        return eventObj.defaultPrevented
+    };
+    p.hasEventListener = function(type) {
+        var listeners = this._listeners, captureListeners = this._captureListeners;
+        return!!(listeners && listeners[type] || captureListeners && captureListeners[type])
+    };
+    p.toString = function() {
+        return"[EventDispatcher]"
+    };
+    p._dispatchEvent = function(eventObj, eventPhase) {
+        var l, listeners = eventPhase == 1 ? this._captureListeners : this._listeners;
+        if(eventObj && listeners) {
+            var arr = listeners[eventObj.type];
+            if(!arr || !(l = arr.length)) {
+                return
+            }
+            eventObj.currentTarget = this;
+            eventObj.eventPhase = eventPhase;
+            eventObj.removed = false;
+            arr = arr.slice();
+            for(var i = 0;i < l && !eventObj.immediatePropagationStopped;i++) {
+                var o = arr[i];
+                if(o.handleEvent) {
+                    o.handleEvent(eventObj)
+                }else {
+                    o(eventObj)
+                }
+                if(eventObj.removed) {
+                    this.off(eventObj.type, o, eventPhase == 1);
+                    eventObj.removed = false
+                }
+            }
+        }
+    };
+    createjs.EventDispatcher = EventDispatcher
+})();
+this.createjs = this.createjs || {};
+(function() {
+    createjs.indexOf = function(array, searchElement) {
+        for(var i = 0, l = array.length;i < l;i++) {
+            if(searchElement === array[i]) {
+                return i
+            }
+        }
+        return-1
+    }
+})();
+this.createjs = this.createjs || {};
+(function() {
+    createjs.proxy = function(method, scope) {
+        var aArgs = Array.prototype.slice.call(arguments, 2);
+        return function() {
+            return method.apply(scope, Array.prototype.slice.call(arguments, 0).concat(aArgs))
+        }
+    }
+})();
+this.createjs = this.createjs || {};
+(function() {
+    var s = createjs.PreloadJS = createjs.PreloadJS || {};
+    s.version = "NEXT";
+    s.buildDate = "Fri, 30 Aug 2013 06:49:55 GMT"
+})();
+this.createjs = this.createjs || {};
+(function() {
+    var AbstractLoader = function() {
+        this.init()
+    };
+    AbstractLoader.prototype = {};
+    var p = AbstractLoader.prototype;
+    var s = AbstractLoader;
+    s.FILE_PATTERN = /^(?:(\w+:)\/{2}(\w+(?:\.\w+)*\/?))?([/.]*?(?:[^?]+)?\/)?((?:[^/?]+)\.(\w+))(?:\?(\S+)?)?$/;
+    p.loaded = false;
+    p.canceled = false;
+    p.progress = 0;
+    p._item = null;
+    p._basePath = null;
+    p.addEventListener = null;
+    p.removeEventListener = null;
+    p.removeAllEventListeners = null;
+    p.dispatchEvent = null;
+    p.hasEventListener = null;
+    p._listeners = null;
+    createjs.EventDispatcher.initialize(p);
+    p.getItem = function() {
+        return this._item
+    };
+    p.init = function() {
+    };
+    p.load = function() {
+    };
+    p.close = function() {
+    };
+    p._sendLoadStart = function() {
+        if(this._isCanceled()) {
+            return
+        }
+        this.dispatchEvent("loadstart")
+    };
+    p._sendProgress = function(value) {
+        if(this._isCanceled()) {
+            return
+        }
+        var event = null;
+        if(typeof value == "number") {
+            this.progress = value;
+            event = new createjs.Event("progress");
+            event.loaded = this.progress;
+            event.total = 1
+        }else {
+            event = value;
+            this.progress = value.loaded / value.total;
+            if(isNaN(this.progress) || this.progress == Infinity) {
+                this.progress = 0
+            }
+        }
+        event.progress = this.progress;
+        this.hasEventListener("progress") && this.dispatchEvent(event)
+    };
+    p._sendComplete = function() {
+        if(this._isCanceled()) {
+            return
+        }
+        this.dispatchEvent("complete")
+    };
+    p._sendError = function(event) {
+        if(this._isCanceled() || !this.hasEventListener("error")) {
+            return
+        }
+        if(event == null) {
+            event = new createjs.Event("error")
+        }
+        this.dispatchEvent(event)
+    };
+    p._isCanceled = function() {
+        if(window.createjs == null || this.canceled) {
+            return true
+        }
+        return false
+    };
+    p._parseURI = function(path) {
+        if(!path) {
+            return null
+        }
+        return path.match(s.FILE_PATTERN)
+    };
+    p._formatQueryString = function(data, query) {
+        if(data == null) {
+            throw new Error("You must specify data.");
+        }
+        var params = [];
+        for(var n in data) {
+            params.push(n + "=" + escape(data[n]))
+        }
+        if(query) {
+            params = params.concat(query)
+        }
+        return params.join("&")
+    };
+    p.buildPath = function(src, _basePath, data) {
+        if(_basePath != null) {
+            var match = this._parseURI(src);
+            if(match == null || match[1] == null || match[1] == "") {
+                src = _basePath + src
+            }
+        }
+        if(data == null) {
+            return src
+        }
+        var query = [];
+        var idx = createjs.indexOf(src, "?");
+        if(idx != -1) {
+            var q = src.slice(idx + 1);
+            query = query.concat(q.split("&"))
+        }
+        if(idx != -1) {
+            return src.slice(0, idx) + "?" + this._formatQueryString(data, query)
+        }else {
+            return src + "?" + this._formatQueryString(data, query)
+        }
+    };
+    p.toString = function() {
+        return"[PreloadJS AbstractLoader]"
+    };
+    createjs.AbstractLoader = AbstractLoader
+})();
+this.createjs = this.createjs || {};
+(function() {
+    var LoadQueue = function(useXHR, basePath) {
+        this.init(useXHR, basePath)
+    };
+    var p = LoadQueue.prototype = new createjs.AbstractLoader;
+    var s = LoadQueue;
+    s.LOAD_TIMEOUT = 8E3;
+    s.BINARY = "binary";
+    s.CSS = "css";
+    s.IMAGE = "image";
+    s.JAVASCRIPT = "javascript";
+    s.JSON = "json";
+    s.JSONP = "jsonp";
+    s.SOUND = "sound";
+    s.SVG = "svg";
+    s.TEXT = "text";
+    s.XML = "xml";
+    s.POST = "POST";
+    s.GET = "GET";
+    p.useXHR = true;
+    p.stopOnError = false;
+    p.maintainScriptOrder = true;
+    p.next = null;
+    p._typeCallbacks = null;
+    p._extensionCallbacks = null;
+    p._loadStartWasDispatched = false;
+    p._maxConnections = 1;
+    p._currentlyLoadingScript = null;
+    p._currentLoads = null;
+    p._loadQueue = null;
+    p._loadQueueBackup = null;
+    p._loadItemsById = null;
+    p._loadItemsBySrc = null;
+    p._loadedResults = null;
+    p._loadedRawResults = null;
+    p._numItems = 0;
+    p._numItemsLoaded = 0;
+    p._scriptOrder = null;
+    p._loadedScripts = null;
+    p.init = function(useXHR, basePath) {
+        this._numItems = this._numItemsLoaded = 0;
+        this._paused = false;
+        this._loadStartWasDispatched = false;
+        this._currentLoads = [];
+        this._loadQueue = [];
+        this._loadQueueBackup = [];
+        this._scriptOrder = [];
+        this._loadedScripts = [];
+        this._loadItemsById = {};
+        this._loadItemsBySrc = {};
+        this._loadedResults = {};
+        this._loadedRawResults = {};
+        this._typeCallbacks = {};
+        this._extensionCallbacks = {};
+        this._basePath = basePath;
+        this.setUseXHR(useXHR)
+    };
+    p.setUseXHR = function(value) {
+        this.useXHR = value != false && window.XMLHttpRequest != null;
+        return this.useXHR
+    };
+    p.removeAll = function() {
+        this.remove()
+    };
+    p.remove = function(idsOrUrls) {
+        var args = null;
+        if(idsOrUrls && !(idsOrUrls instanceof Array)) {
+            args = [idsOrUrls]
+        }else {
+            if(idsOrUrls) {
+                args = idsOrUrls
+            }else {
+                if(arguments.length > 0) {
+                    return
+                }
+            }
+        }
+        var itemsWereRemoved = false;
+        if(!args) {
+            this.close();
+            for(var n in this._loadItemsById) {
+                this._disposeItem(this._loadItemsById[n])
+            }
+            this.init(this.useXHR)
+        }else {
+            while(args.length) {
+                var item = args.pop();
+                var r = this.getResult(item);
+                for(i = this._loadQueue.length - 1;i >= 0;i--) {
+                    loadItem = this._loadQueue[i].getItem();
+                    if(loadItem.id == item || loadItem.src == item) {
+                        this._loadQueue.splice(i, 1)[0].cancel();
+                        break
+                    }
+                }
+                for(i = this._loadQueueBackup.length - 1;i >= 0;i--) {
+                    loadItem = this._loadQueueBackup[i].getItem();
+                    if(loadItem.id == item || loadItem.src == item) {
+                        this._loadQueueBackup.splice(i, 1)[0].cancel();
+                        break
+                    }
+                }
+                if(r) {
+                    delete this._loadItemsById[r.id];
+                    delete this._loadItemsBySrc[r.src];
+                    this._disposeItem(r)
+                }else {
+                    for(var i = this._currentLoads.length - 1;i >= 0;i--) {
+                        var loadItem = this._currentLoads[i].getItem();
+                        if(loadItem.id == item || loadItem.src == item) {
+                            this._currentLoads.splice(i, 1)[0].cancel();
+                            itemsWereRemoved = true;
+                            break
+                        }
+                    }
+                }
+            }
+            if(itemsWereRemoved) {
+                this._loadNext()
+            }
+        }
+    };
+    p.reset = function() {
+        this.close();
+        for(var n in this._loadItemsById) {
+            this._disposeItem(this._loadItemsById[n])
+        }
+        var a = [];
+        for(i = 0, l = this._loadQueueBackup.length;i < l;i++) {
+            a.push(this._loadQueueBackup[i].getItem())
+        }
+        this.loadManifest(a, false)
+    };
+    s.isBinary = function(type) {
+        switch(type) {
+            case createjs.LoadQueue.IMAGE:
+                ;
+            case createjs.LoadQueue.BINARY:
+                return true;
+            default:
+                return false
+        }
+    };
+    p.installPlugin = function(plugin) {
+        if(plugin == null || plugin.getPreloadHandlers == null) {
+            return
+        }
+        var map = plugin.getPreloadHandlers();
+        if(map.types != null) {
+            for(var i = 0, l = map.types.length;i < l;i++) {
+                this._typeCallbacks[map.types[i]] = map.callback
+            }
+        }
+        if(map.extensions != null) {
+            for(i = 0, l = map.extensions.length;i < l;i++) {
+                this._extensionCallbacks[map.extensions[i]] = map.callback
+            }
+        }
+    };
+    p.setMaxConnections = function(value) {
+        this._maxConnections = value;
+        if(!this._paused && this._loadQueue.length > 0) {
+            this._loadNext()
+        }
+    };
+    p.loadFile = function(file, loadNow, basePath) {
+        if(file == null) {
+            var event = new createjs.Event("error");
+            event.text = "PRELOAD_NO_FILE";
+            this._sendError(event);
+            return
+        }
+        this._addItem(file, basePath);
+        if(loadNow !== false) {
+            this.setPaused(false)
+        }else {
+            this.setPaused(true)
+        }
+    };
+    p.loadManifest = function(manifest, loadNow, basePath) {
+        var data = null;
+        if(manifest instanceof Array) {
+            if(manifest.length == 0) {
+                var event = new createjs.Event("error");
+                event.text = "PRELOAD_MANIFEST_EMPTY";
+                this._sendError(event);
+                return
+            }
+            data = manifest
+        }else {
+            if(manifest == null) {
+                var event = new createjs.Event("error");
+                event.text = "PRELOAD_MANIFEST_NULL";
+                this._sendError(event);
+                return
+            }
+            data = [manifest]
+        }
+        for(var i = 0, l = data.length;i < l;i++) {
+            this._addItem(data[i], basePath)
+        }
+        if(loadNow !== false) {
+            this.setPaused(false)
+        }else {
+            this.setPaused(true)
+        }
+    };
+    p.load = function() {
+        this.setPaused(false)
+    };
+    p.getItem = function(value) {
+        return this._loadItemsById[value] || this._loadItemsBySrc[value]
+    };
+    p.getResult = function(value, rawResult) {
+        var item = this._loadItemsById[value] || this._loadItemsBySrc[value];
+        if(item == null) {
+            return null
+        }
+        var id = item.id;
+        if(rawResult && this._loadedRawResults[id]) {
+            return this._loadedRawResults[id]
+        }
+        return this._loadedResults[id]
+    };
+    p.setPaused = function(value) {
+        this._paused = value;
+        if(!this._paused) {
+            this._loadNext()
+        }
+    };
+    p.close = function() {
+        while(this._currentLoads.length) {
+            this._currentLoads.pop().cancel()
+        }
+        this._scriptOrder.length = 0;
+        this._loadedScripts.length = 0;
+        this.loadStartWasDispatched = false
+    };
+    p._addItem = function(value, basePath) {
+        var item = this._createLoadItem(value);
+        if(item == null) {
+            return
+        }
+        var loader = this._createLoader(item, basePath);
+        if(loader != null) {
+            this._loadQueue.push(loader);
+            this._loadQueueBackup.push(loader);
+            this._numItems++;
+            this._updateProgress();
+            if(this.maintainScriptOrder && item.type == createjs.LoadQueue.JAVASCRIPT && loader instanceof createjs.XHRLoader) {
+                this._scriptOrder.push(item);
+                this._loadedScripts.push(null)
+            }
+        }
+    };
+    p._createLoadItem = function(value) {
+        var item = null;
+        switch(typeof value) {
+            case "string":
+                item = {src:value};
+                break;
+            case "object":
+                if(window.HTMLAudioElement && value instanceof HTMLAudioElement) {
+                    item = {tag:value, src:item.tag.src, type:createjs.LoadQueue.SOUND}
+                }else {
+                    item = value
+                }
+                break;
+            default:
+                return null
+        }
+        var match = this._parseURI(item.src);
+        if(match != null) {
+            item.ext = match[5]
+        }
+        if(item.type == null) {
+            item.type = this._getTypeByExtension(item.ext)
+        }
+        if(item.type == createjs.LoadQueue.JSON && item.callback != null) {
+            item.type = createjs.LoadQueue.JSONP
+        }
+        if(item.type == createjs.LoadQueue.JSONP && item.callback == null) {
+            throw new Error("callback is required for loading JSONP requests.");
+        }
+        if(item.tag == null) {
+            item.tag = this._createTag(item.type)
+        }
+        if(item.id == null || item.id == "") {
+            item.id = item.src
+        }
+        var customHandler = this._typeCallbacks[item.type] || this._extensionCallbacks[item.ext];
+        if(customHandler) {
+            var result = customHandler(item.src, item.type, item.id, item.data);
+            if(result === false) {
+                return null
+            }else {
+                if(result === true) {
+                }else {
+                    if(result.src != null) {
+                        item.src = result.src
+                    }
+                    if(result.id != null) {
+                        item.id = result.id
+                    }
+                    if(result.tag != null && result.tag.load instanceof Function) {
+                        item.tag = result.tag
+                    }
+                    if(result.completeHandler != null) {
+                        item.completeHandler = result.completeHandler
+                    }
+                }
+            }
+            if(result.type) {
+                item.type = result.type
+            }
+            match = this._parseURI(item.src);
+            if(match != null && match[5] != null) {
+                item.ext = match[5].toLowerCase()
+            }
+        }
+        this._loadItemsById[item.id] = item;
+        this._loadItemsBySrc[item.src] = item;
+        return item
+    };
+    p._createLoader = function(item, basePath) {
+        var useXHR = this.useXHR;
+        switch(item.type) {
+            case createjs.LoadQueue.JSON:
+                ;
+            case createjs.LoadQueue.XML:
+                ;
+            case createjs.LoadQueue.TEXT:
+                useXHR = true;
+                break;
+            case createjs.LoadQueue.SOUND:
+                ;
+            case createjs.LoadQueue.JSONP:
+                useXHR = false;
+                break;
+            case null:
+                return null
+        }
+        if(basePath == null) {
+            basePath = this._basePath
+        }
+        if(useXHR) {
+            return new createjs.XHRLoader(item, basePath)
+        }else {
+            return new createjs.TagLoader(item, basePath)
+        }
+    };
+    p._loadNext = function() {
+        if(this._paused) {
+            return
+        }
+        if(!this._loadStartWasDispatched) {
+            this._sendLoadStart();
+            this._loadStartWasDispatched = true
+        }
+        if(this._numItems == this._numItemsLoaded) {
+            this.loaded = true;
+            this._sendComplete();
+            if(this.next && this.next.load) {
+                this.next.load()
+            }
+        }else {
+            this.loaded = false
+        }
+        for(var i = 0;i < this._loadQueue.length;i++) {
+            if(this._currentLoads.length >= this._maxConnections) {
+                break
+            }
+            var loader = this._loadQueue[i];
+            if(this.maintainScriptOrder && loader instanceof createjs.TagLoader && loader.getItem().type == createjs.LoadQueue.JAVASCRIPT) {
+                if(this._currentlyLoadingScript) {
+                    continue
+                }
+                this._currentlyLoadingScript = true
+            }
+            this._loadQueue.splice(i, 1);
+            i--;
+            this._loadItem(loader)
+        }
+    };
+    p._loadItem = function(loader) {
+        loader.addEventListener("progress", createjs.proxy(this._handleProgress, this));
+        loader.addEventListener("complete", createjs.proxy(this._handleFileComplete, this));
+        loader.addEventListener("error", createjs.proxy(this._handleFileError, this));
+        this._currentLoads.push(loader);
+        this._sendFileStart(loader.getItem());
+        loader.load()
+    };
+    p._handleFileError = function(event) {
+        var loader = event.target;
+        this._numItemsLoaded++;
+        this._updateProgress();
+        var event = new createjs.Event("error");
+        event.text = "FILE_LOAD_ERROR";
+        event.item = loader.getItem();
+        this._sendError(event);
+        if(!this.stopOnError) {
+            this._removeLoadItem(loader);
+            this._loadNext()
+        }
+    };
+    p._handleFileComplete = function(event) {
+        var loader = event.target;
+        var item = loader.getItem();
+        this._loadedResults[item.id] = loader.getResult();
+        if(loader instanceof createjs.XHRLoader) {
+            this._loadedRawResults[item.id] = loader.getResult(true)
+        }
+        this._removeLoadItem(loader);
+        if(this.maintainScriptOrder && item.type == createjs.LoadQueue.JAVASCRIPT) {
+            if(loader instanceof createjs.TagLoader) {
+                this._currentlyLoadingScript = false
+            }else {
+                this._loadedScripts[createjs.indexOf(this._scriptOrder, item)] = item;
+                this._checkScriptLoadOrder(loader);
+                return
+            }
+        }
+        this._processFinishedLoad(item, loader)
+    };
+    p._processFinishedLoad = function(item, loader) {
+        this._numItemsLoaded++;
+        this._updateProgress();
+        this._sendFileComplete(item, loader);
+        this._loadNext()
+    };
+    p._checkScriptLoadOrder = function() {
+        var l = this._loadedScripts.length;
+        for(var i = 0;i < l;i++) {
+            var item = this._loadedScripts[i];
+            if(item === null) {
+                break
+            }
+            if(item === true) {
+                continue
+            }
+            this._processFinishedLoad(item);
+            this._loadedScripts[i] = true;
+            i--;
+            l--
+        }
+    };
+    p._removeLoadItem = function(loader) {
+        var l = this._currentLoads.length;
+        for(var i = 0;i < l;i++) {
+            if(this._currentLoads[i] == loader) {
+                this._currentLoads.splice(i, 1);
+                break
+            }
+        }
+    };
+    p._handleProgress = function(event) {
+        var loader = event.target;
+        this._sendFileProgress(loader.getItem(), loader.progress);
+        this._updateProgress()
+    };
+    p._updateProgress = function() {
+        var loaded = this._numItemsLoaded / this._numItems;
+        var remaining = this._numItems - this._numItemsLoaded;
+        if(remaining > 0) {
+            var chunk = 0;
+            for(var i = 0, l = this._currentLoads.length;i < l;i++) {
+                chunk += this._currentLoads[i].progress
+            }
+            loaded += chunk / remaining * (remaining / this._numItems)
+        }
+        this._sendProgress(loaded)
+    };
+    p._disposeItem = function(item) {
+        delete this._loadedResults[item.id];
+        delete this._loadedRawResults[item.id];
+        delete this._loadItemsById[item.id];
+        delete this._loadItemsBySrc[item.src]
+    };
+    p._createTag = function(type) {
+        var tag = null;
+        switch(type) {
+            case createjs.LoadQueue.IMAGE:
+                return document.createElement("img");
+            case createjs.LoadQueue.SOUND:
+                tag = document.createElement("audio");
+                tag.autoplay = false;
+                return tag;
+            case createjs.LoadQueue.JSONP:
+                ;
+            case createjs.LoadQueue.JAVASCRIPT:
+                tag = document.createElement("script");
+                tag.type = "text/javascript";
+                return tag;
+            case createjs.LoadQueue.CSS:
+                if(this.useXHR) {
+                    tag = document.createElement("style")
+                }else {
+                    tag = document.createElement("link")
+                }
+                tag.rel = "stylesheet";
+                tag.type = "text/css";
+                return tag;
+            case createjs.LoadQueue.SVG:
+                if(this.useXHR) {
+                    tag = document.createElement("svg")
+                }else {
+                    tag = document.createElement("object");
+                    tag.type = "image/svg+xml"
+                }
+                return tag
+        }
+        return null
+    };
+    p._getTypeByExtension = function(extension) {
+        if(extension == null) {
+            return createjs.LoadQueue.TEXT
+        }
+        switch(extension.toLowerCase()) {
+            case "jpeg":
+                ;
+            case "jpg":
+                ;
+            case "gif":
+                ;
+            case "png":
+                ;
+            case "webp":
+                ;
+            case "bmp":
+                return createjs.LoadQueue.IMAGE;
+            case "ogg":
+                ;
+            case "mp3":
+                ;
+            case "wav":
+                return createjs.LoadQueue.SOUND;
+            case "json":
+                return createjs.LoadQueue.JSON;
+            case "xml":
+                return createjs.LoadQueue.XML;
+            case "css":
+                return createjs.LoadQueue.CSS;
+            case "js":
+                return createjs.LoadQueue.JAVASCRIPT;
+            case "svg":
+                return createjs.LoadQueue.SVG;
+            default:
+                return createjs.LoadQueue.TEXT
+        }
+    };
+    p._sendFileProgress = function(item, progress) {
+        if(this._isCanceled()) {
+            this._cleanUp();
+            return
+        }
+        if(!this.hasEventListener("fileprogress")) {
+            return
+        }
+        var event = new createjs.Event("fileprogress");
+        event.progress = progress;
+        event.loaded = progress;
+        event.total = 1;
+        event.item = item;
+        this.dispatchEvent(event)
+    };
+    p._sendFileComplete = function(item, loader) {
+        if(this._isCanceled()) {
+            return
+        }
+        var event = new createjs.Event("fileload");
+        event.loader = loader;
+        event.item = item;
+        event.result = this._loadedResults[item.id];
+        event.rawResult = this._loadedRawResults[item.id];
+        if(item.completeHandler) {
+            item.completeHandler(event)
+        }
+        this.hasEventListener("fileload") && this.dispatchEvent(event)
+    };
+    p._sendFileStart = function(item) {
+        var event = new createjs.Event("filestart");
+        event.item = item;
+        this.hasEventListener("filestart") && this.dispatchEvent(event)
+    };
+    p.toString = function() {
+        return"[PreloadJS LoadQueue]"
+    };
+    createjs.LoadQueue = LoadQueue;
+    var BrowserDetect = function() {
+    };
+    BrowserDetect.init = function() {
+        var agent = navigator.userAgent;
+        BrowserDetect.isFirefox = createjs.indexOf(agent, "Firefox") > -1;
+        BrowserDetect.isOpera = window.opera != null;
+        BrowserDetect.isChrome = createjs.indexOf(agent, "Chrome") > -1;
+        BrowserDetect.isIOS = createjs.indexOf(agent, "iPod") > -1 || createjs.indexOf(agent, "iPhone") > -1 || createjs.indexOf(agent, "iPad") > -1
+    };
+    BrowserDetect.init();
+    createjs.LoadQueue.BrowserDetect = BrowserDetect
+})();
+this.createjs = this.createjs || {};
+(function() {
+    var TagLoader = function(item, basePath) {
+        this.init(item, basePath)
+    };
+    var p = TagLoader.prototype = new createjs.AbstractLoader;
+    p._loadTimeout = null;
+    p._tagCompleteProxy = null;
+    p._isAudio = false;
+    p._tag = null;
+    p._jsonResult = null;
+    p.init = function(item, basePath) {
+        this._item = item;
+        this._basePath = basePath;
+        this._tag = item.tag;
+        this._isAudio = window.HTMLAudioElement && item.tag instanceof HTMLAudioElement;
+        this._tagCompleteProxy = createjs.proxy(this._handleLoad, this)
+    };
+    p.getResult = function() {
+        if(this._item.type == createjs.LoadQueue.JSONP) {
+            return this._jsonResult
+        }else {
+            return this._tag
+        }
+    };
+    p.cancel = function() {
+        this.canceled = true;
+        this._clean();
+        var item = this.getItem()
+    };
+    p.load = function() {
+        var item = this._item;
+        var tag = this._tag;
+        clearTimeout(this._loadTimeout);
+        this._loadTimeout = setTimeout(createjs.proxy(this._handleTimeout, this), createjs.LoadQueue.LOAD_TIMEOUT);
+        if(this._isAudio) {
+            tag.src = null;
+            tag.preload = "auto"
+        }
+        tag.onerror = createjs.proxy(this._handleError, this);
+        if(this._isAudio) {
+            tag.onstalled = createjs.proxy(this._handleStalled, this);
+            tag.addEventListener("canplaythrough", this._tagCompleteProxy, false)
+        }else {
+            tag.onload = createjs.proxy(this._handleLoad, this);
+            tag.onreadystatechange = createjs.proxy(this._handleReadyStateChange, this)
+        }
+        var src = this.buildPath(item.src, this._basePath, item.values);
+        switch(item.type) {
+            case createjs.LoadQueue.CSS:
+                tag.href = src;
+                break;
+            case createjs.LoadQueue.SVG:
+                tag.data = src;
+                break;
+            default:
+                tag.src = src
+        }
+        if(item.type == createjs.LoadQueue.JSONP) {
+            if(item.callback == null) {
+                throw new Error("callback is required for loading JSONP requests.");
+            }
+            if(window[item.callback] != null) {
+                throw new Error('JSONP callback "' + item.callback + '" already exists on window. You need to specify a different callback. Or re-name the current one.');
+            }
+            window[item.callback] = createjs.proxy(this._handleJSONPLoad, this)
+        }
+        if(item.type == createjs.LoadQueue.SVG || item.type == createjs.LoadQueue.JSONP || item.type == createjs.LoadQueue.JSON || item.type == createjs.LoadQueue.JAVASCRIPT || item.type == createjs.LoadQueue.CSS) {
+            this._startTagVisibility = tag.style.visibility;
+            tag.style.visibility = "hidden";
+            (document.body || document.getElementsByTagName("body")[0]).appendChild(tag)
+        }
+        if(tag.load != null) {
+            tag.load()
+        }
+    };
+    p._handleJSONPLoad = function(data) {
+        this._jsonResult = data
+    };
+    p._handleTimeout = function() {
+        this._clean();
+        var event = new createjs.Event("error");
+        event.text = "PRELOAD_TIMEOUT";
+        this._sendError(event)
+    };
+    p._handleStalled = function() {
+    };
+    p._handleError = function(event) {
+        this._clean();
+        var newEvent = new createjs.Event("error");
+        this._sendError(newEvent)
+    };
+    p._handleReadyStateChange = function() {
+        clearTimeout(this._loadTimeout);
+        var tag = this.getItem().tag;
+        if(tag.readyState == "loaded" || tag.readyState == "complete") {
+            this._handleLoad()
+        }
+    };
+    p._handleLoad = function(event) {
+        if(this._isCanceled()) {
+            return
+        }
+        var item = this.getItem();
+        var tag = item.tag;
+        if(this.loaded || this.isAudio && tag.readyState !== 4) {
+            return
+        }
+        this.loaded = true;
+        switch(item.type) {
+            case createjs.LoadQueue.SVG:
+                ;
+            case createjs.LoadQueue.JSONP:
+                tag.style.visibility = this._startTagVisibility;
+                (document.body || document.getElementsByTagName("body")[0]).removeChild(tag);
+                break;
+            default:
+        }
+        this._clean();
+        this._sendComplete()
+    };
+    p._clean = function() {
+        clearTimeout(this._loadTimeout);
+        var tag = this.getItem().tag;
+        tag.onload = null;
+        tag.removeEventListener && tag.removeEventListener("canplaythrough", this._tagCompleteProxy, false);
+        tag.onstalled = null;
+        tag.onprogress = null;
+        tag.onerror = null;
+        if(tag.parentNode) {
+            tag.parentNode.removeChild(tag)
+        }
+        var item = this.getItem();
+        if(item.type == createjs.LoadQueue.JSONP) {
+            window[item.callback] = null
+        }
+    };
+    p.toString = function() {
+        return"[PreloadJS TagLoader]"
+    };
+    createjs.TagLoader = TagLoader
+})();
+this.createjs = this.createjs || {};
+(function() {
+    var XHRLoader = function(item, basePath) {
+        this.init(item, basePath)
+    };
+    var p = XHRLoader.prototype = new createjs.AbstractLoader;
+    p._request = null;
+    p._loadTimeout = null;
+    p._xhrLevel = 1;
+    p._response = null;
+    p._rawResponse = null;
+    p.init = function(item, basePath) {
+        this._item = item;
+        this._basePath = basePath;
+        if(!this._createXHR(item)) {
+        }
+    };
+    p.getResult = function(rawResult) {
+        if(rawResult && this._rawResponse) {
+            return this._rawResponse
+        }
+        return this._response
+    };
+    p.cancel = function() {
+        this.canceled = true;
+        this._clean();
+        this._request.abort()
+    };
+    p.load = function() {
+        if(this._request == null) {
+            this._handleError();
+            return
+        }
+        this._request.onloadstart = createjs.proxy(this._handleLoadStart, this);
+        this._request.onprogress = createjs.proxy(this._handleProgress, this);
+        this._request.onabort = createjs.proxy(this._handleAbort, this);
+        this._request.onerror = createjs.proxy(this._handleError, this);
+        this._request.ontimeout = createjs.proxy(this._handleTimeout, this);
+        if(this._xhrLevel == 1) {
+            this._loadTimeout = setTimeout(createjs.proxy(this._handleTimeout, this), createjs.LoadQueue.LOAD_TIMEOUT)
+        }
+        this._request.onload = createjs.proxy(this._handleLoad, this);
+        this._request.onreadystatechange = createjs.proxy(this._handleReadyStateChange, this);
+        try {
+            if(!this._item.values || this._item.method == createjs.LoadQueue.GET) {
+                this._request.send()
+            }else {
+                if(this._item.method == createjs.LoadQueue.POST) {
+                    this._request.send(this._formatQueryString(this._item.values))
+                }
+            }
+        }catch(error) {
+            var event = new createjs.Event("error");
+            event.error = error;
+            this._sendError(event)
+        }
+    };
+    p.getAllResponseHeaders = function() {
+        if(this._request.getAllResponseHeaders instanceof Function) {
+            return this._request.getAllResponseHeaders()
+        }else {
+            return null
+        }
+    };
+    p.getResponseHeader = function(header) {
+        if(this._request.getResponseHeader instanceof Function) {
+            return this._request.getResponseHeader(header)
+        }else {
+            return null
+        }
+    };
+    p._handleProgress = function(event) {
+        if(!event || event.loaded > 0 && event.total == 0) {
+            return
+        }
+        var newEvent = new createjs.Event("progress");
+        newEvent.loaded = event.loaded;
+        newEvent.total = event.total;
+        this._sendProgress(newEvent)
+    };
+    p._handleLoadStart = function(event) {
+        clearTimeout(this._loadTimeout);
+        this._sendLoadStart()
+    };
+    p._handleAbort = function(event) {
+        this._clean();
+        var event = new createjs.Event("error");
+        event.text = "XHR_ABORTED";
+        this._sendError(event)
+    };
+    p._handleError = function(event) {
+        this._clean();
+        var newEvent = new createjs.Event("error");
+        this._sendError(newEvent)
+    };
+    p._handleReadyStateChange = function(event) {
+        if(this._request.readyState == 4) {
+            this._handleLoad()
+        }
+    };
+    p._handleLoad = function(event) {
+        if(this.loaded) {
+            return
+        }
+        this.loaded = true;
+        if(!this._checkError()) {
+            this._handleError();
+            return
+        }
+        this._response = this._getResponse();
+        this._clean();
+        var isComplete = this._generateTag();
+        if(isComplete) {
+            this._sendComplete()
+        }
+    };
+    p._handleTimeout = function(event) {
+        this._clean();
+        var newEvent = new createjs.Event("error");
+        newEvent.text = "PRELOAD_TIMEOUT";
+        this._sendError(event)
+    };
+    p._checkError = function() {
+        var status = parseInt(this._request.status);
+        switch(status) {
+            case 404:
+                return false;
+            break;
+            case 0:
+                return true
+            break;
+        }
+        return true
+    };
+    p._getResponse = function() {
+        if(this._response != null) {
+            return this._response
+        }
+        if(this._request.response != null) {
+            return this._request.response
+        }
+        try {
+            if(this._request.responseText != null) {
+                return this._request.responseText
+            }
+        }catch(e) {
+        }
+        try {
+            if(this._request.responseXML != null) {
+                return this._request.responseXML
+            }
+        }catch(e) {
+        }
+        return null
+    };
+    p._createXHR = function(item) {
+        var target = document.createElement("a");
+        target.href = this.buildPath(item.src, this._basePath);
+        var host = document.createElement("a");
+        host.href = location.href;
+        var crossdomain = target.hostname != "" && (target.port != host.port || target.protocol != host.protocol || target.hostname != host.hostname);
+        var req = null;
+        if(crossdomain && window.XDomainRequest) {
+            req = new XDomainRequest
+        }else {
+            if(window.XMLHttpRequest) {
+                req = new XMLHttpRequest
+            }else {
+                try {
+                    req = new ActiveXObject("Msxml2.XMLHTTP.6.0")
+                }catch(e) {
+                    try {
+                        req = new ActiveXObject("Msxml2.XMLHTTP.3.0")
+                    }catch(e) {
+                        try {
+                            req = new ActiveXObject("Msxml2.XMLHTTP")
+                        }catch(e) {
+                            return false
+                        }
+                    }
+                }
+            }
+        }
+        if(item.type == createjs.LoadQueue.TEXT && req.overrideMimeType) {
+            req.overrideMimeType("text/plain; charset=x-user-defined")
+        }
+        this._xhrLevel = typeof req.responseType === "string" ? 2 : 1;
+        var src = null;
+        if(item.method == createjs.LoadQueue.GET) {
+            src = this.buildPath(item.src, this._basePath, item.values)
+        }else {
+            src = this.buildPath(item.src, this._basePath)
+        }
+        req.open(item.method || createjs.LoadQueue.GET, src, true);
+        if(crossdomain && req instanceof XMLHttpRequest && this._xhrLevel == 1) {
+            req.setRequestHeader("Origin", location.origin)
+        }
+        if(item.values && item.method == createjs.LoadQueue.POST) {
+            req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
+        }
+        if(createjs.LoadQueue.isBinary(item.type)) {
+            req.responseType = "arraybuffer"
+        }
+        this._request = req;
+        return true
+    };
+    p._clean = function() {
+        clearTimeout(this._loadTimeout);
+        var req = this._request;
+        req.onloadstart = null;
+        req.onprogress = null;
+        req.onabort = null;
+        req.onerror = null;
+        req.onload = null;
+        req.ontimeout = null;
+        req.onloadend = null;
+        req.onreadystatechange = null
+    };
+    p._generateTag = function() {
+        var type = this._item.type;
+        var tag = this._item.tag;
+        switch(type) {
+            case createjs.LoadQueue.IMAGE:
+                tag.onload = createjs.proxy(this._handleTagReady, this);
+                tag.src = this.buildPath(this._item.src, this._basePath, this._item.values);
+                this._rawResponse = this._response;
+                this._response = tag;
+                return false;
+            case createjs.LoadQueue.JAVASCRIPT:
+                tag = document.createElement("script");
+                tag.text = this._response;
+                this._rawResponse = this._response;
+                this._response = tag;
+                return true;
+            case createjs.LoadQueue.CSS:
+                var head = document.getElementsByTagName("head")[0];
+                head.appendChild(tag);
+                if(tag.styleSheet) {
+                    tag.styleSheet.cssText = this._response
+                }else {
+                    var textNode = document.createTextNode(this._response);
+                    tag.appendChild(textNode)
+                }
+                this._rawResponse = this._response;
+                this._response = tag;
+                return true;
+            case createjs.LoadQueue.XML:
+                var xml = this._parseXML(this._response, "text/xml");
+                this._response = xml;
+                return true;
+            case createjs.LoadQueue.SVG:
+                var xml = this._parseXML(this._response, "image/svg+xml");
+                this._rawResponse = this._response;
+                if(xml.documentElement != null) {
+                    tag.appendChild(xml.documentElement);
+                    this._response = tag
+                }else {
+                    this._response = xml
+                }
+                return true;
+            case createjs.LoadQueue.JSON:
+                var json = {};
+                try {
+                    json = JSON.parse(this._response)
+                }catch(error) {
+                    json = error
+                }
+                this._rawResponse = this._response;
+                this._response = json;
+                return true
+        }
+        return true
+    };
+    p._parseXML = function(text, type) {
+        var xml = null;
+        if(window.DOMParser) {
+            var parser = new DOMParser;
+            xml = parser.parseFromString(text, type)
+        }else {
+            xml = new ActiveXObject("Microsoft.XMLDOM");
+            xml.async = false;
+            xml.loadXML(text)
+        }
+        return xml
+    };
+    p._handleTagReady = function() {
+        this._sendComplete()
+    };
+    p.toString = function() {
+        return"[PreloadJS XHRLoader]"
+    };
+    createjs.XHRLoader = XHRLoader
+})();
+if(typeof JSON !== "object") {
+    JSON = {}
+}
+(function() {
+    function f(n) {
+        return n < 10 ? "0" + n : n
+    }
+    if(typeof Date.prototype.toJSON !== "function") {
+        Date.prototype.toJSON = function(key) {
+            return isFinite(this.valueOf()) ? this.getUTCFullYear() + "-" + f(this.getUTCMonth() + 1) + "-" + f(this.getUTCDate()) + "T" + f(this.getUTCHours()) + ":" + f(this.getUTCMinutes()) + ":" + f(this.getUTCSeconds()) + "Z" : null
+        };
+        String.prototype.toJSON = Number.prototype.toJSON = Boolean.prototype.toJSON = function(key) {
+            return this.valueOf()
+        }
+    }
+    var cx = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g, escapable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g, gap, indent, meta = {"\u0008":"\\b", "\t":"\\t", "\n":"\\n", "\u000c":"\\f", "\r":"\\r", '"':'\\"', "\\":"\\\\"}, rep;
+    function quote(string) {
+        escapable.lastIndex = 0;
+        return escapable.test(string) ? '"' + string.replace(escapable, function(a) {
+            var c = meta[a];
+            return typeof c === "string" ? c : "\\u" + ("0000" + a.charCodeAt(0).toString(16)).slice(-4)
+        }) + '"' : '"' + string + '"'
+    }
+    function str(key, holder) {
+        var i, k, v, length, mind = gap, partial, value = holder[key];
+        if(value && typeof value === "object" && typeof value.toJSON === "function") {
+            value = value.toJSON(key)
+        }
+        if(typeof rep === "function") {
+            value = rep.call(holder, key, value)
+        }
+        switch(typeof value) {
+            case "string":
+                return quote(value);
+            case "number":
+                return isFinite(value) ? String(value) : "null";
+            case "boolean":
+                ;
+            case "null":
+                return String(value);
+            case "object":
+                if(!value) {
+                    return"null"
+                }
+                gap += indent;
+                partial = [];
+                if(Object.prototype.toString.apply(value) === "[object Array]") {
+                    length = value.length;
+                    for(i = 0;i < length;i += 1) {
+                        partial[i] = str(i, value) || "null"
+                    }
+                    v = partial.length === 0 ? "[]" : gap ? "[\n" + gap + partial.join(",\n" + gap) + "\n" + mind + "]" : "[" + partial.join(",") + "]";
+                    gap = mind;
+                    return v
+                }
+                if(rep && typeof rep === "object") {
+                    length = rep.length;
+                    for(i = 0;i < length;i += 1) {
+                        if(typeof rep[i] === "string") {
+                            k = rep[i];
+                            v = str(k, value);
+                            if(v) {
+                                partial.push(quote(k) + (gap ? ": " : ":") + v)
+                            }
+                        }
+                    }
+                }else {
+                    for(k in value) {
+                        if(Object.prototype.hasOwnProperty.call(value, k)) {
+                            v = str(k, value);
+                            if(v) {
+                                partial.push(quote(k) + (gap ? ": " : ":") + v)
+                            }
+                        }
+                    }
+                }
+                v = partial.length === 0 ? "{}" : gap ? "{\n" + gap + partial.join(",\n" + gap) + "\n" + mind + "}" : "{" + partial.join(",") + "}";
+                gap = mind;
+                return v
+        }
+    }
+    if(typeof JSON.stringify !== "function") {
+        JSON.stringify = function(value, replacer, space) {
+            var i;
+            gap = "";
+            indent = "";
+            if(typeof space === "number") {
+                for(i = 0;i < space;i += 1) {
+                    indent += " "
+                }
+            }else {
+                if(typeof space === "string") {
+                    indent = space
+                }
+            }
+            rep = replacer;
+            if(replacer && typeof replacer !== "function" && (typeof replacer !== "object" || typeof replacer.length !== "number")) {
+                throw new Error("JSON.stringify");
+            }
+            return str("", {"":value})
+        }
+    }
+    if(typeof JSON.parse !== "function") {
+        JSON.parse = function(text, reviver) {
+            var j;
+            function walk(holder, key) {
+                var k, v, value = holder[key];
+                if(value && typeof value === "object") {
+                    for(k in value) {
+                        if(Object.prototype.hasOwnProperty.call(value, k)) {
+                            v = walk(value, k);
+                            if(v !== undefined) {
+                                value[k] = v
+                            }else {
+                                delete value[k]
+                            }
+                        }
+                    }
+                }
+                return reviver.call(holder, key, value)
+            }
+            text = String(text);
+            cx.lastIndex = 0;
+            if(cx.test(text)) {
+                text = text.replace(cx, function(a) {
+                    return"\\u" + ("0000" + a.charCodeAt(0).toString(16)).slice(-4)
+                })
+            }
+            if(/^[\],:{}\s]*$/.test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g, "@").replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, "]").replace(/(?:^|:|,)(?:\s*\[)+/g, ""))) {
+                j = eval("(" + text + ")");
+                return typeof reviver === "function" ? walk({"":j}, "") : j
+            }
+            throw new SyntaxError("JSON.parse");
+        }
+    }
+})();
+
 /*!
 * @license TweenJS
 * Visit http://createjs.com/ for documentation, updates and examples.
@@ -549,6 +2001,7 @@ this.wozllajs.Engine = (function() {
 this.wozllajs.ResourceManager = (function() {
 
     var queue = new createjs.LoadQueue();
+    queue.setUseXHR(false);
 
     return {
 
@@ -673,6 +2126,19 @@ this.wozllajs.ResourceManager = (function() {
 	        }
 	        return obj;
 	    },
+
+        findObjectByPath : function(path) {
+            var i, len;
+            var paths = path.split('.');
+            var obj = this.findObjectById(paths[0]);
+            if(obj) {
+                for(i=1, len=paths.length; i<len; i++) {
+                    obj = obj.getObjectById(paths[i]);
+                    if(!obj) return null;
+                }
+            }
+            return obj;
+        },
 
 	    isActive : function() {
 	    	return this._active;
@@ -820,6 +2286,12 @@ this.wozllajs.ResourceManager = (function() {
 		},
 
 		removeBehaviour : function(behaviour) {
+            if(typeof behaviour === 'string') {
+                behaviour = this.getBehaviour(behaviour);
+                if(!behaviour) {
+                    return;
+                }
+            }
 			delete this._behaviours[behaviour.id];
 			behaviour.setGameObject(null);
 		},
@@ -909,61 +2381,12 @@ this.wozllajs.ResourceManager = (function() {
 		this.GameObject_draw(this.stageContext, visibleRect);
 	};
 
-	wozllajs.Stage = Stage;
-	
-})();this.wozllajs = this.wozllajs || {};
-
-(function() {
-	"use strict";
-
-	var visibleRect = {
-		x : 0,
-		y : 0,
-		width : 0,
-		height : 0
-	};
-
-	function Stage(stageId, canvasIdOrElt, width, height) {
-		this.initialize(stageId, canvasIdOrElt, width, height);
-	}
-
-	var p = Stage.prototype = Object.create(wozllajs.GameObject.prototype);
-
-	p.isStage = true;
-
-	p.stageCanvas = null;
-
-	p.stageContext = null;
-
-	p.width = 0;
-
-	p.height = 0;
-
-	p.autoClear = true;
-
-	p.GameObject_initialize = p.initialize;
-
-	p.initialize = function(stageId, canvasIdOrElt, width, height) {
-		this.GameObject_initialize(stageId);
-		this.stageCanvas = typeof canvasIdOrElt === 'string' ? 
-			document.getElementById(canvasIdOrElt) : canvasIdOrElt;
-		this.stageContext = this.stageCanvas.getContext('2d');
-		this.width = width || 0;
-		this.height = height || 0;
-		this.stageCanvas.width = this.width;
-		this.stageCanvas.height=  this.height;
-	};
-
-	p.GameObject_draw = p.draw;
-
-	p.draw = function() {
-		this.autoClear && this.stageContext.clearRect(0, 0, this.width, this.height);
-		visibleRect.x = -this.transform.x;
-		visibleRect.y = -this.transform.y;
-		visibleRect.width = this.width;
-		visibleRect.height = this.height;
-		this.GameObject_draw(this.stageContext, visibleRect);
-	};
+    p.resize = function(width, height) {
+        this.stageCanvas.width = width;
+        this.stageCanvas.height = height;
+        this.width = width;
+        this.height = height;
+    };
 
 	wozllajs.Stage = Stage;
 	
@@ -1221,16 +2644,16 @@ this.wozllajs.ResourceManager = (function() {
 
 	p.alias = 'renderer.image';
 
-    p.image = null,
+    p.image = null;
 
-    p.src = null,
+    p.src = null;
 
-    p.renderWidth = null,
-    p.renderHeight = null,
+    p.renderWidth = null;
+    p.renderHeight = null;
 
     p.initComponent = function() {
         this.image = this.getResourceById(this.src);
-        if(!this.renderWidth || !this.renderHeight) {
+        if(this.image && (!this.renderWidth || !this.renderHeight)) {
             this.renderWidth = this.image.width;
             this.renderHeight = this.image.height;
         }
@@ -1243,7 +2666,6 @@ this.wozllajs.ResourceManager = (function() {
     };
 
     p._collectResources = function(collection) {
-        console.log('collect');
         if(this.src) {
             collection.push(this.src);
         }
@@ -1295,7 +2717,7 @@ this.wozllajs.ResourceManager = (function() {
         }
     };
 
-    p._getResources = function(res) {
+    p._collectResources = function(res) {
         if(this.src) {
             res.push(this.src);
         }
@@ -1400,4 +2822,64 @@ this.wozllajs.ResourceManager = (function() {
 
     return AnimationSheetRenderer;
 
-});
+});this.wozllajs = this.wozllajs || {};
+
+(function() {
+
+    wozllajs.StageBuilder = (function() {
+
+        return {
+
+            buildStage : function(stageData, stage) {
+                var children = stageData.children;
+                for(var i= 0,len=children.length; i<len; i++) {
+                    stage.addObject(this.buildGameObject(children[i]));
+                }
+                stage.backgroundColor = stageData.backgroundColor;
+                return stage;
+            },
+
+            buildGameObject : function(objData) {
+                var i, len;
+                var gameObject = new wozllajs.GameObject(objData.gid);
+                var components = objData.components;
+                for(i= 0,len=components.length; i<len; i++) {
+                    var component = this.buildComponent(components[i]);
+                    if(component.type === wozllajs.Component.RENDERER) {
+                        gameObject.setRenderer(component);
+                    }
+                    else if(component.type === wozllajs.Component.COLLIDER) {
+                        gameObject.setCollider(component);
+                    }
+                    else if(component.type === wozllajs.Component.BEHAVIOUR) {
+                        gameObject.addBehaviour(component);
+                    }
+                }
+                var children = objData.children;
+                for(i= 0,len=children.length; i<len; i++) {
+                    gameObject.addObject(this.buildGameObject(children[i]));
+                }
+                var trans = objData.transform;
+                gameObject.transform.x = trans.x;
+                gameObject.transform.y = trans.y;
+                gameObject.transform.regX = trans.regX;
+                gameObject.transform.regY = trans.regY;
+                gameObject.transform.skewX = trans.skewX;
+                gameObject.transform.skewY = trans.skewY;
+                gameObject.transform.scaleX = trans.scaleX;
+                gameObject.transform.scaleY = trans.scaleY;
+                gameObject.transform.rotation = trans.rotation;
+                gameObject.transform.alpha = trans.alpha;
+                return gameObject;
+            },
+
+            buildComponent : function(cmpData) {
+                var cid = cmpData.cid;
+                var properties = cmpData.properties;
+                return wozllajs.createComponent(cid, properties);
+            }
+        };
+
+    })();
+
+})();
