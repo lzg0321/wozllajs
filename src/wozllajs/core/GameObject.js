@@ -85,6 +85,19 @@ this.wozllajs = this.wozllajs || {};
 	        return obj;
 	    },
 
+        findObjectByPath : function(path) {
+            var i, len;
+            var paths = path.split('.');
+            var obj = this.findObjectById(paths[0]);
+            if(obj) {
+                for(i=1, len=paths.length; i<len; i++) {
+                    obj = obj.getObjectById(paths[i]);
+                    if(!obj) return null;
+                }
+            }
+            return obj;
+        },
+
 	    isActive : function() {
 	    	return this._active;
 	    },
@@ -231,6 +244,12 @@ this.wozllajs = this.wozllajs || {};
 		},
 
 		removeBehaviour : function(behaviour) {
+            if(typeof behaviour === 'string') {
+                behaviour = this.getBehaviour(behaviour);
+                if(!behaviour) {
+                    return;
+                }
+            }
 			delete this._behaviours[behaviour.id];
 			behaviour.setGameObject(null);
 		},
