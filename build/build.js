@@ -8,7 +8,7 @@ var withCreatejsName = "wozllajs-full-dev-" + version + ".js";
 
 var libs = [
     'libs/easeljs-0.6.1.min.js',
-    'libs/preloadjs-0.3.1.min.js',
+    'libs/preloadjs-NEXT.js',
     'libs/tweenjs-0.4.1.min.js'
 ];
 
@@ -21,7 +21,6 @@ var files = [
     'src/wozllajs/core/ResourceManager.js',
     'src/wozllajs/core/GameObject.js',
     'src/wozllajs/core/Stage.js',
-    'src/wozllajs/core/Stage.js',
     'src/wozllajs/core/Transform.js',
     'src/wozllajs/core/Component.js',
     'src/wozllajs/core/Renderer.js',
@@ -29,7 +28,8 @@ var files = [
     'src/wozllajs/core/Behaviour.js',
     'src/wozllajs/renderer/ImageRenderer.js',
     'src/wozllajs/renderer/TextureRenderer.js',
-    'src/wozllajs/renderer/AnimationSheetRenderer.js'
+    'src/wozllajs/renderer/AnimationSheetRenderer.js',
+    'src/wozllajs/util/StageBuilder.js'
 ];
 
 
