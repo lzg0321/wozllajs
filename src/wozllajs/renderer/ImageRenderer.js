@@ -10,16 +10,16 @@ wozllajs.defineComponent('renderer.ImageRenderer', function() {
 
 	p.alias = 'renderer.image';
 
-    p.image = null,
+    p.image = null;
 
-    p.src = null,
+    p.src = null;
 
-    p.renderWidth = null,
-    p.renderHeight = null,
+    p.renderWidth = null;
+    p.renderHeight = null;
 
     p.initComponent = function() {
         this.image = this.getResourceById(this.src);
-        if(!this.renderWidth || !this.renderHeight) {
+        if(this.image && (!this.renderWidth || !this.renderHeight)) {
             this.renderWidth = this.image.width;
             this.renderHeight = this.image.height;
         }
@@ -32,7 +32,6 @@ wozllajs.defineComponent('renderer.ImageRenderer', function() {
     };
 
     p._collectResources = function(collection) {
-        console.log('collect');
         if(this.src) {
             collection.push(this.src);
         }

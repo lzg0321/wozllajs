@@ -42,7 +42,7 @@ wozllajs.defineComponent('renderer.TextureRenderer', function() {
         }
     };
 
-    p._getResources = function(res) {
+    p._collectResources = function(res) {
         if(this.src) {
             res.push(this.src);
         }
