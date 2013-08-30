@@ -17,8 +17,10 @@ this.wozllajs = this.wozllajs || {};
 
             buildGameObject : function(objData) {
                 var i, len;
-                var gameObject = new wozllajs.GameObject(objData.gid);
+                var gameObject = this.createGameObject(objData);
                 var components = objData.components;
+                gameObject.setActive(objData.active);
+                gameObject.setVisible(objData.visible);
                 for(i= 0,len=components.length; i<len; i++) {
                     var component = this.buildComponent(components[i]);
                     if(component.type === wozllajs.Component.RENDERER) {
@@ -36,16 +38,7 @@ this.wozllajs = this.wozllajs || {};
                     gameObject.addObject(this.buildGameObject(children[i]));
                 }
                 var trans = objData.transform;
-                gameObject.transform.x = trans.x;
-                gameObject.transform.y = trans.y;
-                gameObject.transform.regX = trans.regX;
-                gameObject.transform.regY = trans.regY;
-                gameObject.transform.skewX = trans.skewX;
-                gameObject.transform.skewY = trans.skewY;
-                gameObject.transform.scaleX = trans.scaleX;
-                gameObject.transform.scaleY = trans.scaleY;
-                gameObject.transform.rotation = trans.rotation;
-                gameObject.transform.alpha = trans.alpha;
+                gameObject.transform.applyTransform(trans);
                 return gameObject;
             },
 
@@ -53,6 +46,9 @@ this.wozllajs = this.wozllajs || {};
                 var cid = cmpData.cid;
                 var properties = cmpData.properties;
                 return wozllajs.createComponent(cid, properties);
+            },
+            createGameObject : function(objData) {
+                return new wozllajs.GameObject(objData.gid)
             }
         };
 
