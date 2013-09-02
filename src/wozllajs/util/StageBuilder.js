@@ -21,6 +21,7 @@ this.wozllajs = this.wozllajs || {};
                 var components = objData.components;
                 gameObject.setActive(objData.active);
                 gameObject.setVisible(objData.visible);
+                gameObject.setLayer(objData.layer);
                 for(i= 0,len=components.length; i<len; i++) {
                     var component = this.buildComponent(components[i]);
                     if(component.type === wozllajs.Component.RENDERER) {
