@@ -47,6 +47,7 @@ this.wozllajs.Engine = (function() {
                 }
                 stage.__engineTick = function() {
                     stage.update();
+                    stage.lateUpdate();
                     stage.draw();
                 };
                 listener = stage.__engineTick;

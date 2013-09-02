@@ -15,6 +15,11 @@ this.wozllajs = this.wozllajs || {};
 		throw new Error('a subclass of Behaviour must implements method "update"');
 	};
 
+    /**
+     * @abstract
+     */
+    // p.lateUpdate = function() {}
+
 	wozllajs.Behaviour = Behaviour;
 	
 })();
