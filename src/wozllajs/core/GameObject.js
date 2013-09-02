@@ -27,6 +27,8 @@ this.wozllajs = this.wozllajs || {};
 
 		_visible : true,
 
+        _layer : null,
+
 		_children : null,
 
 		_childrenMap : null,
@@ -45,6 +47,14 @@ this.wozllajs = this.wozllajs || {};
 		getParent : function() {
 			return this._parent;
 		},
+
+        getStage : function() {
+            var o = this;
+            while(o && !o.isStage) {
+                o = o._parent;
+            }
+            return o;
+        },
 
 		getObjectById : function(id) {
         	return this._childrenMap[id];
@@ -114,9 +124,16 @@ this.wozllajs = this.wozllajs || {};
 	        this._visible = !!visible;
 	    },
 
+        getLayer : function() {
+            return this._layer;
+        },
+
+        setLayer : function(layer) {
+            this._layer = layer;
+        },
+
 	    loadResources : function(params) {
 			this._collectResources(this._resources);
-            console.log(this._resources);
 	        wozllajs.ResourceManager.load({
 	            items : this._resources,
 	            onProgress : params.onProgress,
@@ -206,7 +223,7 @@ this.wozllajs = this.wozllajs || {};
 	    	}
 	    	this._renderer && this._renderer.lateUpdate && this._renderer.lateUpdate();
 	    	for(i=0,len=children.length; i<len; i++) {
-	    		children[i].lateUpdate(time);
+	    		children[i].lateUpdate();
 	    	}
 		},
 
