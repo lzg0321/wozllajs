@@ -43,5 +43,5 @@ fs.openSync(fullPath, 'a');
 
 for(var i= 0,len=fullList.length; i<len; i++) {
     fs.appendFileSync(fullPath, fs.readFileSync(fullList[i]));
-    fs.appendFileSync('\n\n');
+    fs.appendFileSync(fullPath, ';\n\n');
 }
