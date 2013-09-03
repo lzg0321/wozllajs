@@ -133,6 +133,8 @@ a.preventDefault&&a.preventDefault();for(var c=a.changedTouches,g=a.type,d=0,e=c
 m,!1);window.addEventListener("MSPointerCancel",m,!1);b.__touch.preventDefault&&(a.style.msTouchAction="none");b.__touch.activeIDs={}};c._IE_disable=function(b){var a=b.__touch.f;window.removeEventListener("MSPointerMove",a,!1);window.removeEventListener("MSPointerUp",a,!1);window.removeEventListener("MSPointerCancel",a,!1);b.canvas&&b.canvas.removeEventListener("MSPointerDown",a,!1)};c._IE_handleEvent=function(b,a){if(b){b.__touch.preventDefault&&a.preventDefault&&a.preventDefault();var c=a.type,
 g=a.pointerId,d=b.__touch.activeIDs;if("MSPointerDown"==c)a.srcElement==b.canvas&&(d[g]=!0,this._handleStart(b,g,a,a.pageX,a.pageY));else if(d[g])if("MSPointerMove"==c)this._handleMove(b,g,a,a.pageX,a.pageY);else if("MSPointerUp"==c||"MSPointerCancel"==c)delete d[g],this._handleEnd(b,g,a)}};c._handleStart=function(b,a,c,g,d){var e=b.__touch;if(e.multitouch||!e.count){var f=e.pointers;f[a]||(f[a]=!0,e.count++,b._handlePointerDown(a,c,g,d))}};c._handleMove=function(b,a,c,g,d){b.__touch.pointers[a]&&
 b._handlePointerMove(a,c,g,d)};c._handleEnd=function(b,a,c){var g=b.__touch,d=g.pointers;d[a]&&(g.count--,b._handlePointerUp(a,c,!0),delete d[a])};createjs.Touch=c})();(function(){var c=this.createjs=this.createjs||{},c=c.EaselJS=c.EaselJS||{};c.version="0.6.1";c.buildDate="Tue, 14 May 2013 21:43:02 GMT"})();
+;
+
 /**!
  * @license PreloadJS
  * Visit http://createjs.com/ for documentation, updates and examples.
@@ -1650,6 +1652,8 @@ if(typeof JSON !== "object") {
     }
 })();
 
+;
+
 /*!
 * @license TweenJS
 * Visit http://createjs.com/ for documentation, updates and examples.
@@ -1689,39 +1693,26 @@ function(a,b){var h=2*Math.PI;return function(c){if(0==c||1==c)return c;var e=b/
 1);c.hasOwnProperty("start")||(c.start=h&&h.hasOwnProperty("end")&&h.path===a?h.end:0);if(c.hasOwnProperty("_segments")&&c._length)return c;h=a.length;if(6<=h&&0==(h-2)%4){c._segments=[];c._length=0;for(d=2;d<h;d+=4){for(var g=a[d-2],j=a[d-1],l=a[d+0],k=a[d+1],p=a[d+2],x=a[d+3],v=g,w=j,s,m,r=0,t=[],u=1;10>=u;u++){m=u/10;var q=1-m;s=q*q*g+2*q*m*l+m*m*p;m=q*q*j+2*q*m*k+m*m*x;r+=t[t.push(Math.sqrt((f=s-v)*f+(f=m-w)*f))-1];v=s;w=m}c._segments.push(r);c._segments.push(t);c._length+=r}}else throw"invalid 'path' data, please see documentation for valid paths";
 f=c.orient;c.orient=!1;b.calc(c,c.end,e);c.orient=f;return c};b.tween=function(a,d,h,c,e,f,g){e=e.guide;if(void 0==e||e===c.guide)return h;e.lastRatio!=f&&(b.calc(e,(e.end-e.start)*(g?e.end:f)+e.start,a.target),e.orient&&(a.target.rotation+=c.rotation||0),e.lastRatio=f);return!e.orient&&"rotation"==d?h:a.target[d]};b.calc=function(a,d,h){void 0==a._segments&&b.validate(a);void 0==h&&(h={x:0,y:0,rotation:0});var c=a._segments,e=a.path,f=a._length*d,g=c.length-2;for(d=0;f>c[d]&&d<g;)f-=c[d],d+=2;for(var c=
 c[d+1],j=0,g=c.length-1;f>c[j]&&j<g;)f-=c[j],j++;f=j/++g+f/(g*c[j]);d=2*d+2;g=1-f;h.x=g*g*e[d-2]+2*g*f*e[d+0]+f*f*e[d+2];h.y=g*g*e[d-1]+2*g*f*e[d+1]+f*f*e[d+3];a.orient&&(h.rotation=57.2957795*Math.atan2((e[d+1]-e[d-1])*g+(e[d+3]-e[d+1])*f,(e[d+0]-e[d-2])*g+(e[d+2]-e[d+0])*f));return h};createjs.MotionGuidePlugin=b})();(function(){var b=this.createjs=this.createjs||{},b=b.TweenJS=b.TweenJS||{};b.version="0.4.0";b.buildDate="Tue, 12 Feb 2013 21:08:16 GMT"})();
+;
+
 this.wozllajs = this.wozllajs || {};
 
-(function() {
 
-    // Array
-    if(!Array.prototype.remove) {
-        Array.prototype.remove = function(obj) {
-            var idx = this.indexOf(obj);
-            if(idx !== -1) {
-                this.splice(idx, 1);
-            }
-        };
-    }
-
-    if(!Array.prototype.indexOf) {
-        Array.prototype.indexOf = function(obj) {
-            var i, len;
-            for(i=0, len=this.length; i<len; i++) {
-                if(this[i] === obj) {
-                    return i;
-                }
-            }
-            return -1;
-        };
-    }
-
-})();
 
 (function() {
 
     var toString = Object.prototype.toString;
 
-    var componentMap = {}; 
+    var componentMap = {};
+
+    wozllajs.isTouchSupport = 'ontouchstart' in window;
+
+    wozllajs.proxy = function (method, scope) {
+        var aArgs = Array.prototype.slice.call(arguments, 2);
+        return function () {
+            return method.apply(scope, Array.prototype.slice.call(arguments, 0).concat(aArgs));
+        };
+    };
 
     wozllajs.isArray = function(testObj) {
         return wozllajs.is(testObj, 'Array');
@@ -1729,6 +1720,24 @@ this.wozllajs = this.wozllajs || {};
 
     wozllajs.is = function(testObj, type) {
         return toString.call(testObj).toLowerCase() === type.toLowerCase();
+    };
+
+    wozllajs.indexOf = function(obj, arr) {
+        var i, len;
+        for(i=0, len=arr.length; i<len; i++) {
+            if(arr[i] === obj) {
+                return i;
+            }
+        }
+        return -1;
+    };
+
+    wozllajs.arrayRemove = function(obj, arr) {
+        var idx = wozllajs.indexOf(obj, arr);
+        if(idx !== -1) {
+            arr.splice(idx, 1);
+        }
+        return idx;
     };
 
     wozllajs.printComponent = function() {
@@ -1767,7 +1776,9 @@ this.wozllajs = this.wozllajs || {};
         }
     };
     
-})();this.wozllajs = this.wozllajs || {};
+})();;
+
+this.wozllajs = this.wozllajs || {};
 
 (function() {
 
@@ -1819,7 +1830,9 @@ this.wozllajs = this.wozllajs || {};
 
     wozllajs.Array2D = Array2D;
 
-})();this.wozllajs = this.wozllajs || {};
+})();;
+
+this.wozllajs = this.wozllajs || {};
 
 (function() {
 
@@ -1846,13 +1859,16 @@ this.wozllajs = this.wozllajs || {};
         clear : function() {
             this.listenerMap.clear();
         },
+        sort : function(func) {
+            this.listenerMap.sort(func);
+        },
         fireEvent : function(type, params, async) {
-            var i, len, listener;
+            var i, len, listener, ret;
             var listeners = this.getListenersByType(type);
             if(!listeners || listeners.length === 0) {
                 return;
             }
-            // 复制一份，这样在下的循环中即使有remove操作也不会导致一个遍历错误
+            // 复制一份，这样在下面的循环中即使有remove操作也不会导致一个遍历错误
             listeners = [].concat(listeners);
             if(async) {
                 for(i=0, len=listeners.length; i<len; i++) {
@@ -1866,7 +1882,9 @@ this.wozllajs = this.wozllajs || {};
             } else {
                 for(i=0, len=listeners.length; i<len; i++) {
                     listener = listeners[i];
-                    listener.apply(listener, [params]);
+                   if(false === listener.apply(listener, [params])) {
+                       return;
+                   }
                 }
             }
         }
@@ -1874,7 +1892,9 @@ this.wozllajs = this.wozllajs || {};
 
     wozllajs.EventDispatcher = EventDispatcher;
 
-})();this.wozllajs = this.wozllajs || {};
+})();;
+
+this.wozllajs = this.wozllajs || {};
 
 this.wozllajs.Time = (function() {
 
@@ -1898,7 +1918,279 @@ this.wozllajs.Time = (function() {
         }
     };
 
-})();this.wozllajs = this.wozllajs || {};
+})();;
+
+this.wozllajs = this.wozllajs || {};
+
+this.wozllajs.Touch = (function() {
+
+    var topCanvas;
+    var touchEnabled = true;
+
+    var mouseTouchMap = {
+        'mousedown' : 'touchstart',
+        'mouseup' : 'touchend',
+        'mousemove' : 'touchmove'
+    };
+
+    var activeGestures = {
+        'touchstart' : true,
+        'touchend' : true,
+        'touchmove' : false,
+        'click' : true,
+        'dblclick' : true
+    };
+
+    var listenerHolder = new wozllajs.EventDispatcher();
+    var objectTouchListenerMap = {};
+    var touchedGameObject;
+    var touchedListener;
+
+    function getCanvasOffset() {
+        var obj = topCanvas;
+        var offset = { x : obj.offsetLeft, y : obj.offsetTop };
+        while ( obj = obj.offsetParent ) {
+            offset.x += obj.offsetLeft;
+            offset.y += obj.offsetTop;
+        }
+        return offset;
+    }
+
+    function dispatchEvent(e) {
+        var type = e.type;
+        if(!touchEnabled || !activeGestures[type]) return;
+        switch (type) {
+            case 'touchstart' : onTouchStart(e); break;
+            case 'touchmove' : onTouchMove(e); break;
+            case 'touchend' : onTouchEnd(e); break;
+            case 'click' : onClick(e); break;
+            case 'dblclick' : onDblClick(e); break;
+        }
+    }
+
+    function onTouchStart(e) {
+        var i, len, listeners, listener;
+        var gameObject, handler;
+        var type = e.type;
+        var x = e.x;
+        var y = e.y;
+        touchedGameObject = null;
+        touchedListener = null;
+        listeners = listenerHolder.getListenersByType(type);
+        if(listeners) {
+            for(i=0,len=listeners.length; i<len; i++) {
+                listener = listeners[i];
+                gameObject = listener.gameObject;
+                handler = listener.handler;
+                if(touchedGameObject && touchedGameObject === gameObject) {
+                    handler && handler(e);
+                }
+                else if(gameObject.testHit(x, y)) {
+                    touchedGameObject = gameObject;
+                    touchedListener = listener;
+                    handler && handler(e);
+                }
+            }
+        }
+    }
+
+    function onTouchMove(e) {
+        var i, len, listeners, listener;
+        var gameObject, handler;
+        var type = e.type;
+        listeners = listenerHolder.getListenersByType(type);
+        if(listeners) {
+            for(i=0,len=listeners.length; i<len; i++) {
+                listener = listeners[i];
+                gameObject = listener.gameObject;
+                handler = listener.handler;
+                if(touchedGameObject && touchedGameObject === gameObject) {
+                    handler && handler(e);
+                }
+            }
+        }
+    }
+
+    function onTouchEnd(e) {
+        var i, len, listeners, listener;
+        var gameObject, handler;
+        var type = e.type;
+        listeners = listenerHolder.getListenersByType(type);
+        if(listeners) {
+            for(i=0,len=listeners.length; i<len; i++) {
+                listener = listeners[i];
+                gameObject = listener.gameObject;
+                handler = listener.handler;
+                if(touchedGameObject && touchedGameObject === gameObject) {
+                    handler && handler(e);
+                }
+            }
+        }
+    }
+
+    function onClick(e) {
+        var i, len, listeners, listener;
+        var gameObject, handler;
+        var type = e.type;
+        var x = e.x;
+        var y = e.y;
+        listeners = listenerHolder.getListenersByType(type);
+        if(listeners) {
+            for(i=0,len=listeners.length; i<len; i++) {
+                listener = listeners[i];
+                gameObject = listener.gameObject;
+                handler = listener.handler;
+                if(touchedGameObject && touchedGameObject === gameObject && gameObject.testHit(x, y)) {
+                    handler && handler(e);
+                }
+            }
+        }
+    }
+
+    function onEvent(e) {
+        var touchEvent, canvasOffset, x, y;
+        var type = e.type;
+        canvasOffset = getCanvasOffset();
+        if (!e.touches) {
+            x = e.pageX - canvasOffset.x;
+            y = e.pageY - canvasOffset.y;
+        }
+        else if(e.changedTouches) {
+            var t = e.changedTouches[0];
+            x = t.pageX - canvasOffset.x;
+            y = t.pageY - canvasOffset.y;
+        }
+        if(type === 'mousedown') {
+            type = 'touchstart';
+        }
+        else if(type === 'mouseup') {
+            type = 'touchend';
+        }
+        else if(type === 'mousemove') {
+            type = 'touchmove';
+        }
+        touchEvent = new wozllajs.TouchEvent(x, y, type, e);
+        dispatchEvent(touchEvent);
+    }
+
+
+    return {
+
+        init : function(canvas) {
+            topCanvas = canvas;
+            if(wozllajs.isTouchSupport) {
+                canvas.addEventListener("touchstart", onEvent, false);
+                canvas.addEventListener("touchend", onEvent, false);
+                canvas.addEventListener("touchmove", onEvent, false);
+            } else {
+                canvas.addEventListener("mousedown", onEvent, false);
+                canvas.addEventListener("mouseup", onEvent, false);
+                canvas.addEventListener("mousemove", onEvent, false);
+            }
+            canvas.addEventListener("click", onEvent, false);
+        },
+
+        dispatchEvent : function(stageTouchEvent) {
+            dispatchEvent(stageTouchEvent);
+        },
+
+        disable : function() {
+            touchEnabled = false;
+        },
+
+        enable : function() {
+            touchEnabled = true;
+        },
+
+        isTouchEvent : function(type) {
+            return activeGestures[type] !== undefined;
+        },
+
+        on : function(type, gameObject, listener) {
+            var getLayerZ = wozllajs.LayerManager.getLayerZ;
+            type = mouseTouchMap[type] || type;
+            listenerHolder.addEventListener(type, {
+                gameObject : gameObject,
+                handler : listener
+            });
+            listenerHolder.sort(type, function(a, b) {
+                return getLayerZ(b.gameObject.getLayer(true)) - getLayerZ(a.gameObject.getLayer(true));
+            });
+        },
+
+        off : function(type, gameObject, listener) {
+            var i, l, len;
+            var listeners = listenerHolder.get(type);
+            type = mouseTouchMap[type] || type;
+            if(listeners) {
+                for(i=0,len=listeners.length; i<len; i++) {
+                    l = listeners[i];
+                    if(l.gameObject === gameObject && l.listener === listener) {
+                        listenerHolder.remove(type, l);
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+})();;
+
+this.wozllajs = this.wozllajs || {};
+
+(function() {
+
+    var TouchEvent = function(x, y, type, nativeEvent) {
+        this.x = x;
+        this.y = y;
+        this.nativeEvent = nativeEvent;
+        this.type = type;
+    };
+
+    wozllajs.TouchEvent = TouchEvent;
+
+})();;
+
+this.wozllajs = this.wozllajs || {};
+
+this.wozllajs.EventAdmin = (function() {
+
+    var eventDispatcher = new wozllajs.EventDispatcher();
+
+    return {
+
+        on : function(type, gameObject, listener) {
+            var proxy = listener['_wozllajs_proxy_' + type] = wozllajs.proxy(listener, gameObject);
+
+            if(wozllajs.Touch.isTouchEvent(type)) {
+                wozllajs.Touch.on(type, gameObject, listener);
+                return;
+            }
+
+            eventDispatcher.addEventListener(type, proxy);
+        },
+
+        off : function(type, gameObject, listener) {
+            var proxy = listener['_wozllajs_proxy_' + type];
+            listener['_wozllajs_proxy_' + type] = false;
+            if(proxy) {
+                if(wozllajs.Touch.isTouchEvent(type)) {
+                    wozllajs.Touch.off(type, gameObject, listener);
+                    return;
+                }
+                eventDispatcher.removeEventListener(type, proxy);
+            }
+        },
+
+        notify : function(type, params) {
+            eventDispatcher.fireEvent(type, params);
+        }
+
+    };
+
+})();;
+
+this.wozllajs = this.wozllajs || {};
 
 this.wozllajs.Engine = (function() {
 
@@ -1947,6 +2239,7 @@ this.wozllajs.Engine = (function() {
                 }
                 stage.__engineTick = function() {
                     stage.update();
+                    stage.lateUpdate();
                     stage.draw();
                 };
                 listener = stage.__engineTick;
@@ -1996,7 +2289,9 @@ this.wozllajs.Engine = (function() {
         }
     }
 
-})();this.wozllajs = this.wozllajs || {};
+})();;
+
+this.wozllajs = this.wozllajs || {};
 
 this.wozllajs.ResourceManager = (function() {
 
@@ -2040,10 +2335,50 @@ this.wozllajs.ResourceManager = (function() {
         }
     }
 
-})();this.wozllajs = this.wozllajs || {};
+})();;
+
+this.wozllajs = this.wozllajs || {};
+
+this.wozllajs.LayerManager = (function() {
+
+    var layerObjects = new wozllajs.Array2D(); // TODO 固定array2D
+    var layers = null;
+
+    return {
+
+        init : function(theLayers) {
+            layers = theLayers;
+        },
+
+        appendTo : function(layerId, gameObject) {
+            layerObjects.push(layerId, gameObject);
+        },
+
+        removeFrom : function(layerId, gameObject) {
+            layerObjects.remove(layerId, gameObject);
+        },
+
+        getLayerZ : function(layerId) {
+            return layers[layerId];
+        },
+
+        getLayerObjects : function(layerId) {
+            return [].concat(layerObjects.get(layerId));
+        }
+    }
+
+})();;
+
+this.wozllajs = this.wozllajs || {};
 
 (function() {
+
 	"use strict";
+
+    var testHitCanvas = document.createElement('canvas');
+    var testHitContext = testHitCanvas.getContext('2d');
+    testHitCanvas.width = 1;
+    testHitCanvas.height = 1;
 
 	var GameObject = function(id) {
 		this.initialize(id);
@@ -2069,6 +2404,12 @@ this.wozllajs.ResourceManager = (function() {
 
 		_visible : true,
 
+        _layer : null,
+
+        _mouseEnable : true,
+
+        _hitTestDelegate : null,
+
 		_children : null,
 
 		_childrenMap : null,
@@ -2088,6 +2429,14 @@ this.wozllajs.ResourceManager = (function() {
 			return this._parent;
 		},
 
+        getStage : function() {
+            var o = this;
+            while(o && !o.isStage) {
+                o = o._parent;
+            }
+            return o;
+        },
+
 		getObjectById : function(id) {
         	return this._childrenMap[id];
     	},
@@ -2101,9 +2450,8 @@ this.wozllajs.ResourceManager = (function() {
 	    removeObject : function(idOrObj) {
 	        var children = this._children;
 	        var obj = typeof idOrObj === 'string' ? this._childrenMap[idOrObj] : idOrObj;
-	        var idx = this._children.remove(obj);
+	        var idx = wozllajs.arrayRemove(obj, children);
 	        if(idx !== -1) {
-	            children.splice(idx, 1);
 	            delete this._childrenMap[obj.id];
 	        }
 	        return idx;
@@ -2156,9 +2504,45 @@ this.wozllajs.ResourceManager = (function() {
 	        this._visible = !!visible;
 	    },
 
+        getLayer : function(fromParent) {
+            if(!fromParent) {
+                return this._layer;
+            }
+            var o = this;
+            while(o && !o._layer) {
+                o = o._parent;
+            }
+            return o && o._layer;
+        },
+
+        setLayer : function(layer) {
+            this._layer = layer;
+        },
+
+        isMouseEnable : function() {
+            return this._mouseEnable;
+        },
+
+        setMouseEnable : function(enable) {
+            this._mouseEnable = enable;
+        },
+
+        testHit : function(x, y) {
+            var hit = false;
+            if(this._hitTestDelegate) {
+                hit = this._hitTestDelegate.testHit(x, y);
+            } else {
+                testHitContext.setTransform(1, 0, 0, 1, -x, -y);
+                this.draw(testHitContext, this.getStage().getVisibleRect());
+                hit = testHitContext.getImageData(0, 0, 1, 1).data[3] > 1;
+                testHitContext.setTransform(1, 0, 0, 1, 0, 0);
+                testHitContext.clearRect(0, 0, 2, 2);
+            }
+            return hit;
+        },
+
 	    loadResources : function(params) {
 			this._collectResources(this._resources);
-            console.log(this._resources);
 	        wozllajs.ResourceManager.load({
 	            items : this._resources,
 	            onProgress : params.onProgress,
@@ -2172,14 +2556,14 @@ this.wozllajs.ResourceManager = (function() {
 	        for(i=0, len=res.length; i<len; i++) {
 	            resource = res[i];
 	            if(wozllajs.is(resource, 'Image')) {
-	                if(whiteList && whiteList.indexOf(resource.src) === -1) {
+	                if(whiteList && wozllajs.indexOf(resource.src, whiteList) === -1) {
 	                    wozllajs.ResourceManager.disposeImage(resource);
 	                }
 	            }
 	        }
 		},
 
-	    initComponent : function() {
+	    init : function() {
 	    	var i, len;
 			var behaviourId, behaviour;
 			var children = this._children;
@@ -2192,12 +2576,15 @@ this.wozllajs.ResourceManager = (function() {
 	    	}
 
 	    	for(i=0,len=children.length; i<len; i++) {
-	    		children[i].initComponent();
+	    		children[i].init();
 	    	}
+            if(this._layer) {
+                wozllajs.LayerManager.appendTo(this._layer, this);
+            }
 	    	this._componentInited = true;
 		},
 
-		destroyComponent : function() {
+		destroy : function() {
 			var i, len;
 			var behaviourId, behaviour;
 			var children = this._children;
@@ -2210,8 +2597,9 @@ this.wozllajs.ResourceManager = (function() {
 	    	this._renderer && this._renderer.destroyComponent();
 
 	    	for(i=0,len=children.length; i<len; i++) {
-	    		children[i].destroyComponent();
+	    		children[i].destroy();
 	    	}
+            wozllajs.LayerManager.removeFrom(this._layer, this);
 		},
 
 		update : function() {
@@ -2248,7 +2636,7 @@ this.wozllajs.ResourceManager = (function() {
 	    	}
 	    	this._renderer && this._renderer.lateUpdate && this._renderer.lateUpdate();
 	    	for(i=0,len=children.length; i<len; i++) {
-	    		children[i].lateUpdate(time);
+	    		children[i].lateUpdate();
 	    	}
 		},
 
@@ -2260,6 +2648,7 @@ this.wozllajs.ResourceManager = (function() {
 			context.save();
         	this.transform.updateContext(context);
 			this._draw(context, visibleRect);
+
 			context.restore();
 		},
 
@@ -2280,6 +2669,14 @@ this.wozllajs.ResourceManager = (function() {
 			return this._collider;
 		},
 
+        setHitTestDelegate : function(delegate) {
+            this._hitTestDelegate = delegate;
+        },
+
+        getHitTestDelegate : function() {
+            return this._hitTestDelegate;
+        },
+
 		addBehaviour : function(behaviour) {
 			this._behaviours[behaviour.id] = behaviour;
 			behaviour.setGameObject(this);
@@ -2299,6 +2696,18 @@ this.wozllajs.ResourceManager = (function() {
 		getBehaviour : function(id) {
 			return this._behaviours[id];
 		},
+
+        on : function(type, listener) {
+            wozllajs.EventAdmin.on(type, this, listener);
+        },
+
+        off : function(type, listener) {
+            wozllajs.EventAdmin.off(type, this, listener);
+        },
+
+        notify : function(type, params) {
+            wozllajs.EventAdmin.notify(type, params);
+        },
 
 		_draw : function(context, visibleRect) {
 			var i, len;
@@ -2327,7 +2736,9 @@ this.wozllajs.ResourceManager = (function() {
 
 	wozllajs.GameObject = GameObject;
 
-})();this.wozllajs = this.wozllajs || {};
+})();;
+
+this.wozllajs = this.wozllajs || {};
 
 (function() {
 	"use strict";
@@ -2388,9 +2799,19 @@ this.wozllajs.ResourceManager = (function() {
         this.height = height;
     };
 
+    p.getVisibleRect = function() {
+        visibleRect.x = -this.transform.x;
+        visibleRect.y = -this.transform.y;
+        visibleRect.width = this.width;
+        visibleRect.height = this.height;
+        return visibleRect;
+    };
+
 	wozllajs.Stage = Stage;
 	
-})();this.wozllajs = this.wozllajs || {};
+})();;
+
+this.wozllajs = this.wozllajs || {};
 
 (function() {
 	"use strict";
@@ -2536,7 +2957,9 @@ this.wozllajs.ResourceManager = (function() {
 
     wozllajs.Transform = Transform;
 
-})();this.wozllajs = this.wozllajs || {};
+})();;
+
+this.wozllajs = this.wozllajs || {};
 
 (function() {
 	"use strict";
@@ -2582,13 +3005,27 @@ this.wozllajs.ResourceManager = (function() {
 	        return wozllajs.ResourceManager.getResource(id);
 	    },
 
+        on : function(type, listener) {
+            this.gameObject.on(type, listener);
+        },
+
+        off : function(type, listener) {
+            this.gameObject.off(type, listener);
+        },
+
+        notify : function(type, params) {
+            this.gameObject.notify(type, params);
+        },
+
 	    _collectResources : function(collection) {}
 	};
 
 	wozllajs.Component = Component;
 
 
-})();this.wozllajs = this.wozllajs || {};
+})();;
+
+this.wozllajs = this.wozllajs || {};
 
 (function() {
 	"use strict";
@@ -2607,7 +3044,9 @@ this.wozllajs.ResourceManager = (function() {
 
 	wozllajs.Renderer = Renderer;
 	
-})();this.wozllajs = this.wozllajs || {};
+})();;
+
+this.wozllajs = this.wozllajs || {};
 
 (function() {
 	"use strict";
@@ -2626,7 +3065,9 @@ this.wozllajs.ResourceManager = (function() {
 
 	wozllajs.Collider = Collider;
 	
-})();this.wozllajs = this.wozllajs || {};
+})();;
+
+this.wozllajs = this.wozllajs || {};
 
 (function() {
 	"use strict";
@@ -2643,9 +3084,16 @@ this.wozllajs.ResourceManager = (function() {
 		throw new Error('a subclass of Behaviour must implements method "update"');
 	};
 
+    /**
+     * @abstract
+     */
+    // p.lateUpdate = function() {}
+
 	wozllajs.Behaviour = Behaviour;
 	
-})();wozllajs.defineComponent('renderer.ImageRenderer', function() {
+})();;
+
+wozllajs.defineComponent('renderer.ImageRenderer', function() {
 
 	var ImageRenderer = function(params) {
 		this.initialize(params);
@@ -2686,7 +3134,9 @@ this.wozllajs.ResourceManager = (function() {
 
     return ImageRenderer;
 
-});wozllajs.defineComponent('renderer.TextureRenderer', function() {
+});;
+
+wozllajs.defineComponent('renderer.TextureRenderer', function() {
 
 	var TextureRenderer = function(params) {
 		this.initialize(params);
@@ -2738,7 +3188,9 @@ this.wozllajs.ResourceManager = (function() {
 
     return TextureRenderer;
 
-});wozllajs.defineComponent('renderer.AnimationSheetRenderer', function() {
+});;
+
+wozllajs.defineComponent('renderer.AnimationSheetRenderer', function() {
 
     var Time = wozllajs.Time;
 
@@ -2835,7 +3287,9 @@ this.wozllajs.ResourceManager = (function() {
 
     return AnimationSheetRenderer;
 
-});this.wozllajs = this.wozllajs || {};
+});;
+
+this.wozllajs = this.wozllajs || {};
 
 (function() {
 
@@ -2858,6 +3312,7 @@ this.wozllajs.ResourceManager = (function() {
                 var components = objData.components;
                 gameObject.setActive(objData.active);
                 gameObject.setVisible(objData.visible);
+                gameObject.setLayer(objData.layer);
                 for(i= 0,len=components.length; i<len; i++) {
                     var component = this.buildComponent(components[i]);
                     if(component.type === wozllajs.Component.RENDERER) {
@@ -2875,16 +3330,7 @@ this.wozllajs.ResourceManager = (function() {
                     gameObject.addObject(this.buildGameObject(children[i]));
                 }
                 var trans = objData.transform;
-                gameObject.transform.x = trans.x;
-                gameObject.transform.y = trans.y;
-                gameObject.transform.regX = trans.regX;
-                gameObject.transform.regY = trans.regY;
-                gameObject.transform.skewX = trans.skewX;
-                gameObject.transform.skewY = trans.skewY;
-                gameObject.transform.scaleX = trans.scaleX;
-                gameObject.transform.scaleY = trans.scaleY;
-                gameObject.transform.rotation = trans.rotation;
-                gameObject.transform.alpha = trans.alpha;
+                gameObject.transform.applyTransform(trans);
                 return gameObject;
             },
 
@@ -2900,4 +3346,5 @@ this.wozllajs.ResourceManager = (function() {
 
     })();
 
-})();
+})();;
+
