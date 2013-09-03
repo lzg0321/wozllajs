@@ -25,13 +25,16 @@ this.wozllajs = this.wozllajs || {};
         clear : function() {
             this.listenerMap.clear();
         },
+        sort : function(func) {
+            this.listenerMap.sort(func);
+        },
         fireEvent : function(type, params, async) {
-            var i, len, listener;
+            var i, len, listener, ret;
             var listeners = this.getListenersByType(type);
             if(!listeners || listeners.length === 0) {
                 return;
             }
-            // 复制一份，这样在下的循环中即使有remove操作也不会导致一个遍历错误
+            // 复制一份，这样在下面的循环中即使有remove操作也不会导致一个遍历错误
             listeners = [].concat(listeners);
             if(async) {
                 for(i=0, len=listeners.length; i<len; i++) {
@@ -45,7 +48,9 @@ this.wozllajs = this.wozllajs || {};
             } else {
                 for(i=0, len=listeners.length; i<len; i++) {
                     listener = listeners[i];
-                    listener.apply(listener, [params]);
+                   if(false === listener.apply(listener, [params])) {
+                       return;
+                   }
                 }
             }
         }
