@@ -59,6 +59,14 @@ this.wozllajs = this.wozllajs || {};
         this.height = height;
     };
 
+    p.getVisibleRect = function() {
+        visibleRect.x = -this.transform.x;
+        visibleRect.y = -this.transform.y;
+        visibleRect.width = this.width;
+        visibleRect.height = this.height;
+        return visibleRect;
+    };
+
 	wozllajs.Stage = Stage;
 	
 })();
