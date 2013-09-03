@@ -44,6 +44,18 @@ this.wozllajs = this.wozllajs || {};
 	        return wozllajs.ResourceManager.getResource(id);
 	    },
 
+        on : function(type, listener) {
+            this.gameObject.on(type, listener);
+        },
+
+        off : function(type, listener) {
+            this.gameObject.off(type, listener);
+        },
+
+        notify : function(type, params) {
+            this.gameObject.notify(type, params);
+        },
+
 	    _collectResources : function(collection) {}
 	};
 

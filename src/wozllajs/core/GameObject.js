@@ -1,7 +1,13 @@
 this.wozllajs = this.wozllajs || {};
 
 (function() {
+
 	"use strict";
+
+    var testHitCanvas = document.createElement('canvas');
+    var testHitContext = testHitCanvas.getContext('2d');
+    testHitCanvas.width = 1;
+    testHitCanvas.height = 1;
 
 	var GameObject = function(id) {
 		this.initialize(id);
@@ -28,6 +34,10 @@ this.wozllajs = this.wozllajs || {};
 		_visible : true,
 
         _layer : null,
+
+        _mouseEnable : true,
+
+        _hitTestDelegate : null,
 
 		_children : null,
 
@@ -69,9 +79,8 @@ this.wozllajs = this.wozllajs || {};
 	    removeObject : function(idOrObj) {
 	        var children = this._children;
 	        var obj = typeof idOrObj === 'string' ? this._childrenMap[idOrObj] : idOrObj;
-	        var idx = this._children.remove(obj);
+	        var idx = wozllajs.arrayRemove(obj, children);
 	        if(idx !== -1) {
-	            children.splice(idx, 1);
 	            delete this._childrenMap[obj.id];
 	        }
 	        return idx;
@@ -124,12 +133,41 @@ this.wozllajs = this.wozllajs || {};
 	        this._visible = !!visible;
 	    },
 
-        getLayer : function() {
-            return this._layer;
+        getLayer : function(fromParent) {
+            if(!fromParent) {
+                return this._layer;
+            }
+            var o = this;
+            while(o && !o._layer) {
+                o = o._parent;
+            }
+            return o && o._layer;
         },
 
         setLayer : function(layer) {
             this._layer = layer;
+        },
+
+        isMouseEnable : function() {
+            return this._mouseEnable;
+        },
+
+        setMouseEnable : function(enable) {
+            this._mouseEnable = enable;
+        },
+
+        testHit : function(x, y) {
+            var hit = false;
+            if(this._hitTestDelegate) {
+                hit = this._hitTestDelegate.testHit(x, y);
+            } else {
+                testHitContext.setTransform(1, 0, 0, 1, -x, -y);
+                this.draw(testHitContext, this.getStage().getVisibleRect());
+                hit = testHitContext.getImageData(0, 0, 1, 1).data[3] > 1;
+                testHitContext.setTransform(1, 0, 0, 1, 0, 0);
+                testHitContext.clearRect(0, 0, 2, 2);
+            }
+            return hit;
         },
 
 	    loadResources : function(params) {
@@ -147,14 +185,14 @@ this.wozllajs = this.wozllajs || {};
 	        for(i=0, len=res.length; i<len; i++) {
 	            resource = res[i];
 	            if(wozllajs.is(resource, 'Image')) {
-	                if(whiteList && whiteList.indexOf(resource.src) === -1) {
+	                if(whiteList && wozllajs.indexOf(resource.src, whiteList) === -1) {
 	                    wozllajs.ResourceManager.disposeImage(resource);
 	                }
 	            }
 	        }
 		},
 
-	    initComponent : function() {
+	    init : function() {
 	    	var i, len;
 			var behaviourId, behaviour;
 			var children = this._children;
@@ -167,12 +205,15 @@ this.wozllajs = this.wozllajs || {};
 	    	}
 
 	    	for(i=0,len=children.length; i<len; i++) {
-	    		children[i].initComponent();
+	    		children[i].init();
 	    	}
+            if(this._layer) {
+                wozllajs.LayerManager.appendTo(this._layer, this);
+            }
 	    	this._componentInited = true;
 		},
 
-		destroyComponent : function() {
+		destroy : function() {
 			var i, len;
 			var behaviourId, behaviour;
 			var children = this._children;
@@ -185,8 +226,9 @@ this.wozllajs = this.wozllajs || {};
 	    	this._renderer && this._renderer.destroyComponent();
 
 	    	for(i=0,len=children.length; i<len; i++) {
-	    		children[i].destroyComponent();
+	    		children[i].destroy();
 	    	}
+            wozllajs.LayerManager.removeFrom(this._layer, this);
 		},
 
 		update : function() {
@@ -235,6 +277,7 @@ this.wozllajs = this.wozllajs || {};
 			context.save();
         	this.transform.updateContext(context);
 			this._draw(context, visibleRect);
+
 			context.restore();
 		},
 
@@ -255,6 +298,14 @@ this.wozllajs = this.wozllajs || {};
 			return this._collider;
 		},
 
+        setHitTestDelegate : function(delegate) {
+            this._hitTestDelegate = delegate;
+        },
+
+        getHitTestDelegate : function() {
+            return this._hitTestDelegate;
+        },
+
 		addBehaviour : function(behaviour) {
 			this._behaviours[behaviour.id] = behaviour;
 			behaviour.setGameObject(this);
@@ -274,6 +325,18 @@ this.wozllajs = this.wozllajs || {};
 		getBehaviour : function(id) {
 			return this._behaviours[id];
 		},
+
+        on : function(type, listener) {
+            wozllajs.EventAdmin.on(type, this, listener);
+        },
+
+        off : function(type, listener) {
+            wozllajs.EventAdmin.off(type, this, listener);
+        },
+
+        notify : function(type, params) {
+            wozllajs.EventAdmin.notify(type, params);
+        },
 
 		_draw : function(context, visibleRect) {
 			var i, len;
