@@ -1,36 +1,21 @@
 this.wozllajs = this.wozllajs || {};
 
-(function() {
 
-    // Array
-    if(!Array.prototype.remove) {
-        Array.prototype.remove = function(obj) {
-            var idx = this.indexOf(obj);
-            if(idx !== -1) {
-                this.splice(idx, 1);
-            }
-        };
-    }
-
-    if(!Array.prototype.indexOf) {
-        Array.prototype.indexOf = function(obj) {
-            var i, len;
-            for(i=0, len=this.length; i<len; i++) {
-                if(this[i] === obj) {
-                    return i;
-                }
-            }
-            return -1;
-        };
-    }
-
-})();
 
 (function() {
 
     var toString = Object.prototype.toString;
 
-    var componentMap = {}; 
+    var componentMap = {};
+
+    wozllajs.isTouchSupport = 'ontouchstart' in window;
+
+    wozllajs.proxy = function (method, scope) {
+        var aArgs = Array.prototype.slice.call(arguments, 2);
+        return function () {
+            return method.apply(scope, Array.prototype.slice.call(arguments, 0).concat(aArgs));
+        };
+    };
 
     wozllajs.isArray = function(testObj) {
         return wozllajs.is(testObj, 'Array');
@@ -38,6 +23,24 @@ this.wozllajs = this.wozllajs || {};
 
     wozllajs.is = function(testObj, type) {
         return toString.call(testObj).toLowerCase() === type.toLowerCase();
+    };
+
+    wozllajs.indexOf = function(obj, arr) {
+        var i, len;
+        for(i=0, len=arr.length; i<len; i++) {
+            if(arr[i] === obj) {
+                return i;
+            }
+        }
+        return -1;
+    };
+
+    wozllajs.arrayRemove = function(obj, arr) {
+        var idx = wozllajs.indexOf(obj, arr);
+        if(idx !== -1) {
+            arr.splice(idx, 1);
+        }
+        return idx;
     };
 
     wozllajs.printComponent = function() {
