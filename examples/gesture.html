@@ -28,9 +28,11 @@
     <canvas id="main"></canvas>
 </div>
 <script>
-    var canvas = document.getElementById('main');
-    var stage = new wozllajs.Stage('sampleStageId', canvas, 960, 640);
-    var gameObject = new wozllajs.GameObject('test');
+    var canvas, stage, gameObject;
+    canvas = document.getElementById('main');
+    wozllajs.Touch.init(canvas);
+    stage = new wozllajs.Stage('sampleStageId', canvas, 960, 640);
+    gameObject = new wozllajs.GameObject('test');
     gameObject.setLayer('layer1');
     gameObject.transform.x = 150;
     gameObject.transform.y = 150;
@@ -41,7 +43,6 @@
 
     stage.loadResources({
         onComplete : function() {
-            stage.initTouchEvents();
             stage.init();
         }
     });
