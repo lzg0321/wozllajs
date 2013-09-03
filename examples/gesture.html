@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>getting start | wozllajs</title>
+    <title>test hit | wozllajs</title>
     <script src="../libs/easeljs-0.6.1.min.js"></script>
     <script src="../libs/preloadjs-0.3.1.min.js"></script>
     <script src="../src/wozllajs/wozllajs.js"></script>
     <script src="../src/wozllajs/core/Array2D.js"></script>
     <script src="../src/wozllajs/core/EventDispatcher.js"></script>
+    <script src="../src/wozllajs/core/EventAdmin.js"></script>
     <script src="../src/wozllajs/core/Time.js"></script>
+    <script src="../src/wozllajs/core/Touch.js"></script>
+    <script src="../src/wozllajs/core/StageTouchEvent.js"></script>
     <script src="../src/wozllajs/core/Engine.js"></script>
     <script src="../src/wozllajs/core/ResourceManager.js"></script>
+    <script src="../src/wozllajs/core/LayerManager.js"></script>
     <script src="../src/wozllajs/core/GameObject.js"></script>
     <script src="../src/wozllajs/core/Stage.js"></script>
     <script src="../src/wozllajs/core/Transform.js"></script>
@@ -17,10 +21,7 @@
     <script src="../src/wozllajs/core/Renderer.js"></script>
     <script src="../src/wozllajs/core/Collider.js"></script>
     <script src="../src/wozllajs/core/Behaviour.js"></script>
-    <script src="../src/wozllajs/renderer/AnimationSheetRenderer.js"></script>
-    <script src="data/attack_data.js"></script>
-    <script src="data/buff_data.js"></script>
-    <script src="data/XiaoGe.js"></script>
+    <script src="../src/wozllajs/renderer/ImageRenderer.js"></script>
 </head>
 <body>
 <div id="root" style="width: 960px; margin: 0 auto; border: 1px solid #555; height: 640px;">
@@ -30,19 +31,34 @@
     var canvas = document.getElementById('main');
     var stage = new wozllajs.Stage('sampleStageId', canvas, 960, 640);
     var gameObject = new wozllajs.GameObject('test');
+    gameObject.setLayer('layer1');
     gameObject.transform.x = 150;
     gameObject.transform.y = 150;
-    gameObject.setRenderer(wozllajs.createComponent('renderer.animationSheet', attack_data));
+    gameObject.setRenderer(wozllajs.createComponent('renderer.image', {
+        src : 'images/logo.png'
+    }));
     stage.addObject(gameObject);
 
     stage.loadResources({
         onComplete : function() {
+            stage.initTouchEvents();
             stage.init();
         }
     });
 
     wozllajs.Engine.addListener(stage);
     wozllajs.Engine.start();
+
+    wozllajs.LayerManager.init({
+        'layer1' : 0
+    });
+
+    gameObject.on('click', function(e) {
+        console.log('click');
+    });
+    gameObject.on('touchstart', function(e) {
+        console.log('touchstart');
+    });
 
 </script>
 </body>

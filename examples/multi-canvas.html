@@ -24,8 +24,8 @@
 </head>
 <body>
 <div id="root" style="position: relative; width: 960px; margin: 0 auto; border: 1px solid #555; height: 640px;">
-    <canvas id="main" style="position: absolute; z-index: 0; top: 0; left: 0;"></canvas>
-    <canvas id="other" style="position: absolute; z-index: 1; top: 0; left: 0;"></canvas>
+    <canvas id="main" screencanvas='true' style="position: absolute; z-index: 0; top: 0; left: 0;"></canvas>
+    <canvas id="other" screencanvas='true' style="position: absolute; z-index: 1; top: 0; left: 0;"></canvas>
 </div>
 <script>
     var stage = new wozllajs.Stage('sampleStageId', 'main', 960, 640);
@@ -39,7 +39,7 @@
 
     stage.loadResources({
         onComplete : function() {
-            stage.initComponent();
+            stage.init();
         }
     });
 
@@ -51,7 +51,7 @@
 
     stage2.loadResources({
         onComplete : function() {
-            stage2.initComponent();
+            stage2.init();
         }
     });
 
