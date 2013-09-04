@@ -30,6 +30,12 @@ this.wozllajs = this.wozllajs || {};
                     else if(component.type === wozllajs.Component.COLLIDER) {
                         gameObject.setCollider(component);
                     }
+                    else if(component.type === wozllajs.Component.HIT_TEST) {
+                        gameObject.setHitTestDelegate(component);
+                    }
+                    else if(component.type === wozllajs.Component.LAYOUT) {
+                        gameObject.setLayout(component);
+                    }
                     else if(component.type === wozllajs.Component.BEHAVIOUR) {
                         gameObject.addBehaviour(component);
                     }
@@ -48,6 +54,7 @@ this.wozllajs = this.wozllajs || {};
                 var properties = cmpData.properties;
                 return wozllajs.createComponent(cid, properties);
             },
+
             createGameObject : function(objData) {
                 return new wozllajs.GameObject(objData.gid)
             }
