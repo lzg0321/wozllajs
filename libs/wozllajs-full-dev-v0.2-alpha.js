@@ -2407,6 +2407,8 @@ this.wozllajs = this.wozllajs || {};
 
 		_collider : null,
 
+        _layout : null,
+
 		_behaviours : null,
 
 		_parent : null,
@@ -2598,7 +2600,7 @@ this.wozllajs = this.wozllajs || {};
 	    	var i, len;
 			var behaviourId, behaviour;
 			var children = this._children;
-
+            this._layout && this._layout.initComponent();
 	    	this._renderer && this._renderer.initComponent();
 	    	this._collider && this._collider.initComponent();
 	    	for(behaviourId in this._behaviours) {
@@ -2626,7 +2628,7 @@ this.wozllajs = this.wozllajs || {};
 	    	}
 	    	this._collider && this._collider.destroyComponent();
 	    	this._renderer && this._renderer.destroyComponent();
-
+            this._layout && this._layout.destroyComponent();
 	    	for(i=0,len=children.length; i<len; i++) {
 	    		children[i].destroy();
 	    	}
@@ -2730,6 +2732,14 @@ this.wozllajs = this.wozllajs || {};
 		getCollider : function() {
 			return this._collider;
 		},
+
+        setLayout : function(layout) {
+            this._layout = layout;
+        },
+
+        getLayout : function() {
+            return this._layout;
+        },
 
         setHitTestDelegate : function(delegate) {
             this._hitTestDelegate = delegate;
@@ -3034,6 +3044,8 @@ this.wozllajs = this.wozllajs || {};
 
 	Component.RENDERER = 'renderer';
 	Component.COLLIDER = 'collider';
+    Component.LAYOUT = 'layout';
+    Component.HIT_TEST = 'hitTest';
 	Component.BEHAVIOUR = 'behaviour';
 
 	Component.prototype = {
@@ -3129,6 +3141,54 @@ this.wozllajs = this.wozllajs || {};
 
 	wozllajs.Collider = Collider;
 	
+})();;
+
+this.wozllajs = this.wozllajs || {};
+
+(function() {
+    "use strict";
+
+    function Layout(params) {
+        this.initialize(params);
+    }
+
+    var p = Layout.prototype = Object.create(wozllajs.Component.prototype);
+
+    p.type = wozllajs.Component.LAYOUT;
+
+    p.initComponent = function() {
+        this.doLayout();
+    };
+
+    p.doLayout = function() {};
+
+    wozllajs.Layout = Layout;
+
+})();;
+
+this.wozllajs = this.wozllajs || {};
+
+(function() {
+
+    "use strict";
+
+    function HitTestDelegate(params) {
+        this.initialize(params);
+    }
+
+    var p = HitTestDelegate.prototype = Object.create(wozllajs.Component.prototype);
+
+    p.type = wozllajs.Component.HIT_TEST;
+
+    p.testHit = function(x, y) {
+        return false;
+    };
+
+    p.draw = function(context) {
+    };
+
+    wozllajs.HitTestDelegate = HitTestDelegate;
+
 })();;
 
 this.wozllajs = this.wozllajs || {};
@@ -3353,6 +3413,151 @@ wozllajs.defineComponent('renderer.AnimationSheetRenderer', function() {
 
 });;
 
+wozllajs.defineComponent('renderer.JSONAnimationSheetRenderer', function() {
+
+    var Time = wozllajs.Time;
+
+    var JSONAnimationSheetRenderer = function(params) {
+        this.initialize(params);
+    };
+
+    var p = JSONAnimationSheetRenderer.prototype = Object.create(wozllajs.renderer.AnimationSheetRenderer.prototype);
+
+    p.id = 'renderer.JSONAnimationSheetRenderer';
+
+    p.alias = 'renderer.jsonAnimationSheet';
+
+    p.ans = null;
+
+    p.frameTime = null;
+
+    p.initComponent = function() {
+        if(this.src) {
+            this.image = this.getResourceById(this.src);
+        }
+        if(this.ans) {
+            var ansData = this.getResourceById(this.ans);
+            if(ansData) {
+                this._applyData(ansData);
+            }
+        }
+    };
+
+    p._applyData = function(ansData) {
+        this.frames = ansData.frames;
+        this.animations = ansData.animations;
+        this.frameTime = this.frameTime || ansData.frameTime;
+        this.defaultAnimation = this.defaultAnimation || ansData.defaultAnimation;
+    };
+
+    p._collectResources = function(collection) {
+        if(this.ans) {
+            console.log(this.ans);
+            collection.push({
+                id : this.ans,
+                src : this.ans,
+                type : 'json'
+            });
+            if(!this.src) {
+                this.src = this.ans + '.png';
+            }
+        }
+        if(this.src) {
+            collection.push(this.src);
+        }
+    };
+
+    return JSONAnimationSheetRenderer;
+
+});;
+
+wozllajs.defineComponent('renderer.JSONTextureRenderer', function() {
+
+    var JSONTextureRenderer = function(params) {
+        this.initialize(params);
+    };
+
+    var p = JSONTextureRenderer.prototype = Object.create(wozllajs.renderer.TextureRenderer.prototype);
+
+    p.id = 'renderer.JSONTextureRenderer';
+
+    p.alias = 'renderer.jsonTexture';
+
+    p.texture = null;
+
+    p.initComponent = function() {
+        if(this.src) {
+            this.image = this.getResourceById(this.src);
+        }
+        if(this.texture) {
+            var ttData = this.getResourceById(this.texture);
+            if(ttData) {
+                this._applyData(ttData);
+            }
+        }
+    };
+
+    p._applyData = function(ttData) {
+        this.frames = ttData.frames;
+        this.currentFrame = this.frames[this.index];
+    };
+
+    p._collectResources = function(res) {
+        if(this.texture) {
+            res.push({
+                id : this.texture,
+                src  : this.texture,
+                type : 'json'
+            });
+            if(!this.src) {
+                this.src = this.texture + '.png';
+            }
+        }
+        if(this.src) {
+            res.push(this.src);
+        }
+    };
+
+    return JSONTextureRenderer;
+
+});;
+
+wozllajs.defineComponent('renderer.TextureButton', function() {
+
+    var TextureButton = function(params) {
+        this.initialize(params);
+    };
+
+    var p = TextureButton.prototype = Object.create(wozllajs.renderer.JSONTextureRenderer.prototype);
+
+    p.id = 'renderer.TextureButton';
+
+    p.normalIndex = null;
+
+    p.pressIndex = null;
+
+    p.handler = null;
+
+    p.JSONTextureRenderer_initComponent = p.initComponent;
+
+    p.initComponent = function() {
+        var _this = this;
+        this.JSONTextureRenderer_initComponent();
+        this.on('touchstart', function(e) {
+            console.log('touchstart');
+        });
+        this.on('touchend', function(e) {
+            console.log('touchend');
+        });
+        this.on('click', function(e) {
+            console.log('click');
+        });
+    };
+
+    return TextureButton;
+
+});;
+
 this.wozllajs = this.wozllajs || {};
 
 (function() {
@@ -3385,6 +3590,12 @@ this.wozllajs = this.wozllajs || {};
                     else if(component.type === wozllajs.Component.COLLIDER) {
                         gameObject.setCollider(component);
                     }
+                    else if(component.type === wozllajs.Component.HIT_TEST) {
+                        gameObject.setHitTestDelegate(component);
+                    }
+                    else if(component.type === wozllajs.Component.LAYOUT) {
+                        gameObject.setLayout(component);
+                    }
                     else if(component.type === wozllajs.Component.BEHAVIOUR) {
                         gameObject.addBehaviour(component);
                     }
@@ -3403,6 +3614,7 @@ this.wozllajs = this.wozllajs || {};
                 var properties = cmpData.properties;
                 return wozllajs.createComponent(cid, properties);
             },
+
             createGameObject : function(objData) {
                 return new wozllajs.GameObject(objData.gid)
             }

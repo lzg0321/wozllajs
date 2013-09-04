@@ -29,10 +29,15 @@ var files = [
     'src/wozllajs/core/Component.js',
     'src/wozllajs/core/Renderer.js',
     'src/wozllajs/core/Collider.js',
+    'src/wozllajs/core/Layout.js',
+    'src/wozllajs/core/HitTestDelegate.js',
     'src/wozllajs/core/Behaviour.js',
     'src/wozllajs/renderer/ImageRenderer.js',
     'src/wozllajs/renderer/TextureRenderer.js',
     'src/wozllajs/renderer/AnimationSheetRenderer.js',
+    'src/wozllajs/renderer/JSONAnimationSheetRenderer.js',
+    'src/wozllajs/renderer/JSONTextureRenderer.js',
+    'src/wozllajs/renderer/TextureButton.js',
     'src/wozllajs/util/StageBuilder.js'
 ];
 
