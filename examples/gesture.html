@@ -31,6 +31,9 @@
     var canvas, stage, gameObject;
     canvas = document.getElementById('main');
     wozllajs.Touch.init(canvas);
+    wozllajs.LayerManager.init({
+        'layer1' : 0
+    });
     stage = new wozllajs.Stage('sampleStageId', canvas, 960, 640);
     gameObject = new wozllajs.GameObject('test');
     gameObject.setLayer('layer1');
@@ -50,9 +53,7 @@
     wozllajs.Engine.addListener(stage);
     wozllajs.Engine.start();
 
-    wozllajs.LayerManager.init({
-        'layer1' : 0
-    });
+
 
     gameObject.on('click', function(e) {
         console.log('click');
