@@ -43,6 +43,13 @@ this.wozllajs = this.wozllajs || {};
         return idx;
     };
 
+    wozllajs.createCanvas = function(width, height) {
+        var c = document.createElement('canvas');
+        c.width = width;
+        c.height = height;
+        return c;
+    };
+
     wozllajs.printComponent = function() {
         console.log('ComponentMap: ', componentMap);
     };

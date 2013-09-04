@@ -273,16 +273,46 @@ this.wozllajs = this.wozllajs || {};
 		},
 
 		draw : function(context, visibleRect) {
+            var cacheContext;
 			if(!this._componentInited || !this._active || !this._visible) {
 				return;
 			}
 
 			context.save();
         	this.transform.updateContext(context);
-			this._draw(context, visibleRect);
+            if(this._cacheCanvas) {
+                if(!this._cached) {
+                    cacheContext = this._cacheContext;
+                    cacheContext.translate(-this._cacheOffsetX, -this._cacheOffsetY);
+                    this._draw(cacheContext, visibleRect);
+                    cacheContext.translate(this._cacheOffsetX, this._cacheOffsetY);
+                    this._cached = true;
+                }
+                context.drawImage(this._cacheCanvas, 0, 0);
+            } else {
+			    this._draw(context, visibleRect);
+            }
 
 			context.restore();
 		},
+
+        cache : function(x, y, width, height) {
+            if(this._cacheCanvas) {
+                this.uncache();
+            }
+            this._cacheOffsetX = x;
+            this._cacheOffsetY = y;
+            this._cacheCanvas = wozllajs.createCanvas(width, height);
+            this._cacheContext = this._cacheCanvas.getContext('2d');
+            this._cached = false;
+        },
+
+        uncache : function() {
+            if(this._cacheCanvas) {
+                this._cacheCanvas.dispose && this._cacheCanvas.dispose();
+            }
+            this.cached = false;
+        },
 
 		setRenderer : function(renderer) {
 			this._renderer = renderer;
@@ -344,6 +374,7 @@ this.wozllajs = this.wozllajs || {};
 		_draw : function(context, visibleRect) {
 			var i, len;
 			var children = this._children;
+
 			this._renderer && this._renderer.draw(context, visibleRect);
 			for(i=0,len=children.length; i<len; i++) {
 	    		children[i].draw(context, visibleRect);
