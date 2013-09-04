@@ -48,7 +48,7 @@ this.wozllajs.Touch = (function() {
 
     function onTouchStart(e) {
         var i, len, listeners, listener;
-        var gameObject, handler;
+        var gameObject, handler, localPos;
         var type = e.type;
         var x = e.x;
         var y = e.y;
@@ -63,10 +63,13 @@ this.wozllajs.Touch = (function() {
                 if(touchedGameObject && touchedGameObject === gameObject) {
                     handler && handler(e);
                 }
-                else if(gameObject.testHit(x, y)) {
-                    touchedGameObject = gameObject;
-                    touchedListener = listener;
-                    handler && handler(e);
+                else {
+                    localPos = gameObject.transform.globalToLocal(x, y);
+                    if(gameObject.testHit(localPos.x, localPos.y)) {
+                        touchedGameObject = gameObject;
+                        touchedListener = listener;
+                        handler && handler(e);
+                    }
                 }
             }
         }
@@ -108,7 +111,7 @@ this.wozllajs.Touch = (function() {
 
     function onClick(e) {
         var i, len, listeners, listener;
-        var gameObject, handler;
+        var gameObject, handler, localPos;
         var type = e.type;
         var x = e.x;
         var y = e.y;
@@ -118,8 +121,11 @@ this.wozllajs.Touch = (function() {
                 listener = listeners[i];
                 gameObject = listener.gameObject;
                 handler = listener.handler;
-                if(touchedGameObject && touchedGameObject === gameObject && gameObject.testHit(x, y)) {
-                    handler && handler(e);
+                if(touchedGameObject && touchedGameObject === gameObject) {
+                    localPos = gameObject.transform.globalToLocal(x, y);
+                    if(gameObject.testHit(localPos.x, localPos.y)) {
+                        handler && handler(e);
+                    }
                 }
             }
         }

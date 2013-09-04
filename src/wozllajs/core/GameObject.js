@@ -74,6 +74,7 @@ this.wozllajs = this.wozllajs || {};
 	        this._childrenMap[obj.id] = obj;
 	        this._children.push(obj);
 	        obj._parent = this;
+            obj.transform.parent = this.transform;
 	    },
 
 	    removeObject : function(idOrObj) {
@@ -82,6 +83,8 @@ this.wozllajs = this.wozllajs || {};
 	        var idx = wozllajs.arrayRemove(obj, children);
 	        if(idx !== -1) {
 	            delete this._childrenMap[obj.id];
+                obj._parent = null;
+                obj.transform.parent = null;
 	        }
 	        return idx;
 	    },
@@ -162,7 +165,7 @@ this.wozllajs = this.wozllajs || {};
                 hit = this._hitTestDelegate.testHit(x, y);
             } else {
                 testHitContext.setTransform(1, 0, 0, 1, -x, -y);
-                this.draw(testHitContext, this.getStage().getVisibleRect());
+                this._draw(testHitContext, this.getStage().getVisibleRect());
                 hit = testHitContext.getImageData(0, 0, 1, 1).data[3] > 1;
                 testHitContext.setTransform(1, 0, 0, 1, 0, 0);
                 testHitContext.clearRect(0, 0, 2, 2);

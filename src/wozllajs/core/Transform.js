@@ -98,6 +98,7 @@ this.wozllajs = this.wozllajs || {};
          */
         getConcatenatedMatrix : function() {
             var o = this;
+            matrix.identity();
             while (o != null) {
                 matrix.prependTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY)
                     .prependProperties(o.alpha);
