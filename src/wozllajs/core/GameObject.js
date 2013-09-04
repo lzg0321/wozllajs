@@ -23,6 +23,8 @@ this.wozllajs = this.wozllajs || {};
 
 		_collider : null,
 
+        _layout : null,
+
 		_behaviours : null,
 
 		_parent : null,
@@ -214,7 +216,7 @@ this.wozllajs = this.wozllajs || {};
 	    	var i, len;
 			var behaviourId, behaviour;
 			var children = this._children;
-
+            this._layout && this._layout.initComponent();
 	    	this._renderer && this._renderer.initComponent();
 	    	this._collider && this._collider.initComponent();
 	    	for(behaviourId in this._behaviours) {
@@ -242,7 +244,7 @@ this.wozllajs = this.wozllajs || {};
 	    	}
 	    	this._collider && this._collider.destroyComponent();
 	    	this._renderer && this._renderer.destroyComponent();
-
+            this._layout && this._layout.destroyComponent();
 	    	for(i=0,len=children.length; i<len; i++) {
 	    		children[i].destroy();
 	    	}
@@ -346,6 +348,14 @@ this.wozllajs = this.wozllajs || {};
 		getCollider : function() {
 			return this._collider;
 		},
+
+        setLayout : function(layout) {
+            this._layout = layout;
+        },
+
+        getLayout : function() {
+            return this._layout;
+        },
 
         setHitTestDelegate : function(delegate) {
             this._hitTestDelegate = delegate;
