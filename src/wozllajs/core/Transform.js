@@ -113,7 +113,7 @@ this.wozllajs = this.wozllajs || {};
          */
         getMatrix : function() {
             var o = this;
-            return matrix
+            return matrix.identity()
                 .appendTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY)
                 .appendProperties(o.alpha);
         },
