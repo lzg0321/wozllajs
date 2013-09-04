@@ -45,6 +45,16 @@ this.wozllajs = this.wozllajs || {};
 
 		_resources : null,
 
+        _cacheCanvas : null,
+
+        _cacheContext : null,
+
+        _cached : false,
+
+        _cacheOffsetX : 0,
+
+        _cacheOffsetY : 0,
+
 		initialize : function(id) {
 			this.id = id;
 			this.transform = new wozllajs.Transform();
@@ -163,7 +173,11 @@ this.wozllajs = this.wozllajs || {};
             var hit = false;
             if(this._hitTestDelegate) {
                 hit = this._hitTestDelegate.testHit(x, y);
-            } else {
+            }
+            else if(this._cacheCanvas && this._cached) {
+                hit = this._cacheContext.getImageData(-this._cacheOffsetX+x, -this._cacheOffsetY+y, 1, 1).data[3] > 1;
+            }
+            else {
                 testHitContext.setTransform(1, 0, 0, 1, -x, -y);
                 this._draw(testHitContext, this.getStage().getVisibleRect());
                 hit = testHitContext.getImageData(0, 0, 1, 1).data[3] > 1;
@@ -193,6 +207,7 @@ this.wozllajs = this.wozllajs || {};
 	                }
 	            }
 	        }
+            this.uncache();
 		},
 
 	    init : function() {
@@ -288,7 +303,7 @@ this.wozllajs = this.wozllajs || {};
                     cacheContext.translate(this._cacheOffsetX, this._cacheOffsetY);
                     this._cached = true;
                 }
-                context.drawImage(this._cacheCanvas, 0, 0);
+                context.drawImage(this._cacheCanvas, this._cacheOffsetX, this._cacheOffsetY);
             } else {
 			    this._draw(context, visibleRect);
             }
@@ -310,8 +325,9 @@ this.wozllajs = this.wozllajs || {};
         uncache : function() {
             if(this._cacheCanvas) {
                 this._cacheCanvas.dispose && this._cacheCanvas.dispose();
+                this._cacheCanvas = null;
             }
-            this.cached = false;
+            this._cached = false;
         },
 
 		setRenderer : function(renderer) {
