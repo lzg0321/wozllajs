@@ -1740,6 +1740,13 @@ this.wozllajs = this.wozllajs || {};
         return idx;
     };
 
+    wozllajs.createCanvas = function(width, height) {
+        var c = document.createElement('canvas');
+        c.width = width;
+        c.height = height;
+        return c;
+    };
+
     wozllajs.printComponent = function() {
         console.log('ComponentMap: ', componentMap);
     };
@@ -1970,7 +1977,7 @@ this.wozllajs.Touch = (function() {
 
     function onTouchStart(e) {
         var i, len, listeners, listener;
-        var gameObject, handler;
+        var gameObject, handler, localPos;
         var type = e.type;
         var x = e.x;
         var y = e.y;
@@ -1985,10 +1992,13 @@ this.wozllajs.Touch = (function() {
                 if(touchedGameObject && touchedGameObject === gameObject) {
                     handler && handler(e);
                 }
-                else if(gameObject.testHit(x, y)) {
-                    touchedGameObject = gameObject;
-                    touchedListener = listener;
-                    handler && handler(e);
+                else {
+                    localPos = gameObject.transform.globalToLocal(x, y);
+                    if(gameObject.testHit(localPos.x, localPos.y)) {
+                        touchedGameObject = gameObject;
+                        touchedListener = listener;
+                        handler && handler(e);
+                    }
                 }
             }
         }
@@ -2030,7 +2040,7 @@ this.wozllajs.Touch = (function() {
 
     function onClick(e) {
         var i, len, listeners, listener;
-        var gameObject, handler;
+        var gameObject, handler, localPos;
         var type = e.type;
         var x = e.x;
         var y = e.y;
@@ -2040,8 +2050,11 @@ this.wozllajs.Touch = (function() {
                 listener = listeners[i];
                 gameObject = listener.gameObject;
                 handler = listener.handler;
-                if(touchedGameObject && touchedGameObject === gameObject && gameObject.testHit(x, y)) {
-                    handler && handler(e);
+                if(touchedGameObject && touchedGameObject === gameObject) {
+                    localPos = gameObject.transform.globalToLocal(x, y);
+                    if(gameObject.testHit(localPos.x, localPos.y)) {
+                        handler && handler(e);
+                    }
                 }
             }
         }
@@ -2416,6 +2429,16 @@ this.wozllajs = this.wozllajs || {};
 
 		_resources : null,
 
+        _cacheCanvas : null,
+
+        _cacheContext : null,
+
+        _cached : false,
+
+        _cacheOffsetX : 0,
+
+        _cacheOffsetY : 0,
+
 		initialize : function(id) {
 			this.id = id;
 			this.transform = new wozllajs.Transform();
@@ -2445,6 +2468,7 @@ this.wozllajs = this.wozllajs || {};
 	        this._childrenMap[obj.id] = obj;
 	        this._children.push(obj);
 	        obj._parent = this;
+            obj.transform.parent = this.transform;
 	    },
 
 	    removeObject : function(idOrObj) {
@@ -2453,6 +2477,8 @@ this.wozllajs = this.wozllajs || {};
 	        var idx = wozllajs.arrayRemove(obj, children);
 	        if(idx !== -1) {
 	            delete this._childrenMap[obj.id];
+                obj._parent = null;
+                obj.transform.parent = null;
 	        }
 	        return idx;
 	    },
@@ -2531,9 +2557,13 @@ this.wozllajs = this.wozllajs || {};
             var hit = false;
             if(this._hitTestDelegate) {
                 hit = this._hitTestDelegate.testHit(x, y);
-            } else {
+            }
+            else if(this._cacheCanvas && this._cached) {
+                hit = this._cacheContext.getImageData(-this._cacheOffsetX+x, -this._cacheOffsetY+y, 1, 1).data[3] > 1;
+            }
+            else {
                 testHitContext.setTransform(1, 0, 0, 1, -x, -y);
-                this.draw(testHitContext, this.getStage().getVisibleRect());
+                this._draw(testHitContext, this.getStage().getVisibleRect());
                 hit = testHitContext.getImageData(0, 0, 1, 1).data[3] > 1;
                 testHitContext.setTransform(1, 0, 0, 1, 0, 0);
                 testHitContext.clearRect(0, 0, 2, 2);
@@ -2561,6 +2591,7 @@ this.wozllajs = this.wozllajs || {};
 	                }
 	            }
 	        }
+            this.uncache();
 		},
 
 	    init : function() {
@@ -2641,16 +2672,47 @@ this.wozllajs = this.wozllajs || {};
 		},
 
 		draw : function(context, visibleRect) {
+            var cacheContext;
 			if(!this._componentInited || !this._active || !this._visible) {
 				return;
 			}
 
 			context.save();
         	this.transform.updateContext(context);
-			this._draw(context, visibleRect);
+            if(this._cacheCanvas) {
+                if(!this._cached) {
+                    cacheContext = this._cacheContext;
+                    cacheContext.translate(-this._cacheOffsetX, -this._cacheOffsetY);
+                    this._draw(cacheContext, visibleRect);
+                    cacheContext.translate(this._cacheOffsetX, this._cacheOffsetY);
+                    this._cached = true;
+                }
+                context.drawImage(this._cacheCanvas, this._cacheOffsetX, this._cacheOffsetY);
+            } else {
+			    this._draw(context, visibleRect);
+            }
 
 			context.restore();
 		},
+
+        cache : function(x, y, width, height) {
+            if(this._cacheCanvas) {
+                this.uncache();
+            }
+            this._cacheOffsetX = x;
+            this._cacheOffsetY = y;
+            this._cacheCanvas = wozllajs.createCanvas(width, height);
+            this._cacheContext = this._cacheCanvas.getContext('2d');
+            this._cached = false;
+        },
+
+        uncache : function() {
+            if(this._cacheCanvas) {
+                this._cacheCanvas.dispose && this._cacheCanvas.dispose();
+                this._cacheCanvas = null;
+            }
+            this._cached = false;
+        },
 
 		setRenderer : function(renderer) {
 			this._renderer = renderer;
@@ -2712,6 +2774,7 @@ this.wozllajs = this.wozllajs || {};
 		_draw : function(context, visibleRect) {
 			var i, len;
 			var children = this._children;
+
 			this._renderer && this._renderer.draw(context, visibleRect);
 			for(i=0,len=children.length; i<len; i++) {
 	    		children[i].draw(context, visibleRect);
@@ -2911,6 +2974,7 @@ this.wozllajs = this.wozllajs || {};
          */
         getConcatenatedMatrix : function() {
             var o = this;
+            matrix.identity();
             while (o != null) {
                 matrix.prependTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY)
                     .prependProperties(o.alpha);
@@ -2925,7 +2989,7 @@ this.wozllajs = this.wozllajs || {};
          */
         getMatrix : function() {
             var o = this;
-            return matrix
+            return matrix.identity()
                 .appendTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY)
                 .appendProperties(o.alpha);
         },
