@@ -1,26 +1,20 @@
-wozllajs.defineComponent('renderer.TextureRenderer', function() {
+wozllajs.defineComponent('renderer.TextureRenderer', {
 
-	var TextureRenderer = function(params) {
-		this.initialize(params);
-	};
+	extend : 'Renderer',
 
-	var p = TextureRenderer.prototype = Object.create(wozllajs.Renderer.prototype);
+	alias : 'renderer.texture',
 
-	p.id = 'renderer.TextureRenderer';
+    image : null,
 
-	p.alias = 'renderer.texture';
+    currentFrame : null,
 
-    p.image = null;
+    src : null,
 
-    p.currentFrame = null;
+    frames : null,
 
-    p.src = null;
+    index : null,
 
-    p.frames = null;
-
-    p.index = null;
-
-    p.initComponent = function() {
+    initComponent : function() {
         if(this.src) {
             this.image = this.getResourceById(this.src);
         }
@@ -30,9 +24,9 @@ wozllajs.defineComponent('renderer.TextureRenderer', function() {
         if(this.frames) {
             this.currentFrame = this.frames[this.index];
         }
-    };
+    },
 
-    p.draw = function(context) {
+    draw : function(context) {
         var w, h;
         var f = this.currentFrame;
         if(this.image && f) {
@@ -40,14 +34,12 @@ wozllajs.defineComponent('renderer.TextureRenderer', function() {
             h = f.h || f.height;
             context.drawImage(this.image, f.x, f.y, w, h, 0, 0, w, h);
         }
-    };
+    },
 
-    p._collectResources = function(res) {
+    _collectResources : function(res) {
         if(this.src) {
             res.push(this.src);
         }
-    };
-
-    return TextureRenderer;
+    }
 
 });

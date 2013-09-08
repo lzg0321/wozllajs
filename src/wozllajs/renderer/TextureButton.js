@@ -1,35 +1,32 @@
-wozllajs.defineComponent('renderer.TextureButton', function() {
+wozllajs.defineComponent('renderer.TextureButton', {
 
-    var TextureButton = function(params) {
-        this.initialize(params);
-    };
+    extend : 'renderer.JSONTextureRenderer',
 
-    var p = TextureButton.prototype = Object.create(wozllajs.renderer.JSONTextureRenderer.prototype);
+    alias : 'renderer.textureButton',
 
-    p.id = 'renderer.TextureButton';
+    normalIndex : null,
 
-    p.normalIndex = null;
+    pressIndex : null,
 
-    p.pressIndex = null;
+    handler : null,
 
-    p.handler = null;
-
-    p.JSONTextureRenderer_initComponent = p.initComponent;
-
-    p.initComponent = function() {
-        var _this = this;
-        this.JSONTextureRenderer_initComponent();
-        this.on('touchstart', function(e) {
-            console.log('touchstart');
-        });
-        this.on('touchend', function(e) {
-            console.log('touchend');
-        });
-        this.on('click', function(e) {
-            console.log('click');
-        });
-    };
-
-    return TextureButton;
+    initComponent : function() {
+        var me = this;
+        me.JSONTextureRenderer_initComponent();
+        if(me.frames) {
+            me.currentFrame = me.frames[me.normalIndex];
+            me.on('touchstart', function(e) {
+                console.log('touchstart');
+                me.currentFrame = me.frames[me.pressIndex];
+            });
+            me.on('touchend', function(e) {
+                console.log('touchend');
+                me.currentFrame = me.frames[me.normalIndex];
+            });
+            me.on('click', function(e) {
+                console.log('click');
+            });
+        }
+    }
 
 });

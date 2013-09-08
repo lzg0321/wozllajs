@@ -1,22 +1,14 @@
-wozllajs.defineComponent('renderer.JSONAnimationSheetRenderer', function() {
+wozllajs.defineComponent('renderer.JSONAnimationSheetRenderer', {
 
-    var Time = wozllajs.Time;
+    extend : 'renderer.AnimationSheetRenderer',
 
-    var JSONAnimationSheetRenderer = function(params) {
-        this.initialize(params);
-    };
+    alias : 'renderer.jsonAnimationSheet',
 
-    var p = JSONAnimationSheetRenderer.prototype = Object.create(wozllajs.renderer.AnimationSheetRenderer.prototype);
+    ans : null,
 
-    p.id = 'renderer.JSONAnimationSheetRenderer';
+    frameTime : null,
 
-    p.alias = 'renderer.jsonAnimationSheet';
-
-    p.ans = null;
-
-    p.frameTime = null;
-
-    p.initComponent = function() {
+    initComponent : function() {
         if(this.src) {
             this.image = this.getResourceById(this.src);
         }
@@ -26,18 +18,17 @@ wozllajs.defineComponent('renderer.JSONAnimationSheetRenderer', function() {
                 this._applyData(ansData);
             }
         }
-    };
+    },
 
-    p._applyData = function(ansData) {
+    _applyData : function(ansData) {
         this.frames = ansData.frames;
         this.animations = ansData.animations;
         this.frameTime = this.frameTime || ansData.frameTime;
         this.defaultAnimation = this.defaultAnimation || ansData.defaultAnimation;
-    };
+    },
 
-    p._collectResources = function(collection) {
+    _collectResources : function(collection) {
         if(this.ans) {
-            console.log(this.ans);
             collection.push({
                 id : this.ans,
                 src : this.ans,
@@ -50,8 +41,6 @@ wozllajs.defineComponent('renderer.JSONAnimationSheetRenderer', function() {
         if(this.src) {
             collection.push(this.src);
         }
-    };
-
-    return JSONAnimationSheetRenderer;
+    }
 
 });

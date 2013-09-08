@@ -1,42 +1,37 @@
-wozllajs.defineComponent('renderer.AnimationSheetRenderer', function() {
+wozllajs.defineComponent('renderer.AnimationSheetRenderer', {
 
-    var Time = wozllajs.Time;
+    extend : 'Renderer',
 
-	var AnimationSheetRenderer = function(params) {
-		this.initialize(params);
-	};
+    alias : 'renderer.animationSheet',
 
-	var p = AnimationSheetRenderer.prototype = Object.create(wozllajs.Renderer.prototype);
+    image : null,
 
-    p.alias = 'renderer.animationSheet';
+    _playingFrameSequence : null,
 
-    p.image = null;
+    _currentIndex : 0,
 
-    p._playingFrameSequence = null;
+    _currentFrame : null,
 
-    p._currentIndex = 0;
+    _currentFrameStartTime : null,
 
-    p._currentFrame = null;
+    src : null,
 
-    p._currentFrameStartTime = null;
+    frameTime : 33,
 
-    p.src = null;
+    frames : null,
 
-    p.frameTime = 33;
+    animations : null,
 
-    p.frames = null;
+    defaultAnimation : null,
 
-    p.animations = null;
-
-    p.defaultAnimation = null;
-
-    p.initComponent = function() {
+    initComponent : function() {
         if(this.src) {
             this.image = this.getResourceById(this.src);
         }
-    };
+    },
 
-    p.update = function() {
+    update : function() {
+        var Time = wozllajs.Time;
         if(!this.frames) {
             return;
         }
@@ -58,9 +53,9 @@ wozllajs.defineComponent('renderer.AnimationSheetRenderer', function() {
             }
             this._currentFrame = this.frames[this._playingFrameSequence[this._currentIndex]];
         }
-    };
+    },
 
-    p.draw = function(context) {
+    draw : function(context) {
         var frame = this._currentFrame, w, h, ox, oy;
         if(this.image && frame) {
             w = frame.width || frame.w;
@@ -69,9 +64,9 @@ wozllajs.defineComponent('renderer.AnimationSheetRenderer', function() {
             oy = frame.offsetY || frame.oy || 0;
             context.drawImage(this.image, frame.x, frame.y, w, h, ox, oy, w, h);
         }
-    };
+    },
 
-    p.play = function(animations, defaultAnimation) {
+    play : function(animations, defaultAnimation) {
         var sequence = [];
         var i, len;
         if(!wozllajs.isArray(animations)) {
@@ -85,14 +80,12 @@ wozllajs.defineComponent('renderer.AnimationSheetRenderer', function() {
         if(defaultAnimation) {
             this.defaultAnimation = defaultAnimation;
         }
-    };
+    },
 
-    p._collectResources = function(collection) {
+    _collectResources : function(collection) {
         if(this.src) {
             collection.push(this.src);
         }
-    };
-
-    return AnimationSheetRenderer;
+    }
 
 });

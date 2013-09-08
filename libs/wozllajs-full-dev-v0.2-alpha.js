@@ -1763,8 +1763,13 @@ this.wozllajs = this.wozllajs || {};
         var NSList = namespace.split(".");
         var step = wozllajs;
         var k = null;
+        var superConstructor;
         var cmpConstructor;
         var cmpProto;
+        var extend;
+        var baseCmp;
+        var superName;
+        var name = namespace.indexOf('.') !== -1 ? namespace.substr(namespace.lastIndexOf('.')+1) : namespace;
         while (k = NSList.shift()) {
             if (NSList.length) {
                 if (step[k] === undefined) {
@@ -1775,15 +1780,74 @@ this.wozllajs = this.wozllajs || {};
                 if(step[k]) {
                     console.log('The namespace "' + namespace + '" has been regsitered, override it.');
                 }
-                cmpConstructor = step[k] = maker();
-                cmpProto = cmpConstructor.prototype;
-                componentMap[namespace] = cmpConstructor;
-                componentMap[cmpProto.alias] = cmpConstructor;
+                if(typeof maker === 'function') {
+                    cmpConstructor = maker();
+                } else if(typeof maker === 'object') {
+                    baseCmp = {
+                        'Renderer' : wozllajs.Renderer,
+                        'Collider' : wozllajs.Collider,
+                        'Layout'   : wozllajs.Layout,
+                        'Behaviour' : wozllajs.Behaviour,
+                        'HitTestDelegate' : wozllajs.HitTestDelegate
+                    };
+                    extend = maker.extend;
+                    delete maker.extend;
+                    superName = extend.indexOf('.') !== -1 ? extend.substr(extend.lastIndexOf('.')+1) : extend;
+                    superConstructor = baseCmp[extend] || componentMap[extend];
+                    cmpConstructor = wozllajs.Component.decorate(name, maker, superName, superConstructor);
+                }
+                if(cmpConstructor) {
+                    cmpProto = cmpConstructor.prototype;
+                    cmpProto.id = namespace;
+                    componentMap[namespace] = cmpConstructor;
+                    componentMap[cmpProto.alias] = cmpConstructor;
+                    step[k] = cmpConstructor;
+                } else {
+                    throw new Error('Error in defineComponent: ' + namespace);
+                }
             }
         }
     };
     
 })();;
+
+this.wozllajs = this.wozllajs || {};
+
+this.wozllajs.geom = {
+    vectorLength : function(v) {
+        return Math.sqrt(v.x * v.x + v.y * v.y);
+    },
+    vectorNomalize : function(v) {
+        var len = Math.sqrt(v.x * v.x + v.y * v.y);
+        if (len <= Number.MIN_VALUE) {
+            return 0.0;
+        }
+        var invL = 1.0 / len;
+        v.x *= invL;
+        v.y *= invL;
+        return len;
+    },
+    rectIntersection : function(a, b) {
+        return a.x < b.x + b.width &&
+            b.x < a.x + a.width &&
+            a.y < b.y + b.height &&
+            b.y < a.y + a.height;
+    },
+    rectIntersection2 : function(ax, ay, aw, ah, bx, by, bw, bh) {
+        return ax < bx + bw &&
+            bx < ax + aw &&
+            ay < by + bh &&
+            by < ay + ah;
+    },
+    pointInRect : function(p, r) {
+        return r.x <= p.x && r.x + r.width >= p.x &&
+            r.y <= p.y && r.y + r.height >= p.y;
+    },
+    pointInRect2 : function(x, y, rx, ry, rw, rh) {
+        return rx <= x && rx + rw >= x &&
+            ry <= y && ry + rh >= y;
+    }
+};;
 
 this.wozllajs = this.wozllajs || {};
 
@@ -2311,6 +2375,13 @@ this.wozllajs.ResourceManager = (function() {
     var queue = new createjs.LoadQueue();
     queue.setUseXHR(false);
 
+    var handlerQueue = [];
+
+    function loadNext() {
+        var handler = handlerQueue.shift();
+        handler && handler()
+    }
+
     return {
 
         getResource : function(id) {
@@ -2322,25 +2393,30 @@ this.wozllajs.ResourceManager = (function() {
         },
 
         load : function(params) {
-            if(params.items.length === 0) {
-                setTimeout(params.onProgress, 0);
-                setTimeout(params.onComplete, 1);
-                return;
-            }
-            var total = params.items.length;
-            var loaded = 0;
-            queue.addEventListener('fileload', function() {
-                params.onProgress && params.onProgress({
-                    total : total,
-                    loaded : ++loaded,
-                    progress : loaded/total
+            var loadHandler = function() {
+                if(params.items.length === 0) {
+                    setTimeout(params.onProgress, 0);
+                    setTimeout(params.onComplete, 1);
+                    return;
+                }
+                var total = params.items.length;
+                var loaded = 0;
+                queue.addEventListener('fileload', function() {
+                    params.onProgress && params.onProgress({
+                        total : total,
+                        loaded : ++loaded,
+                        progress : loaded/total
+                    });
                 });
-            });
-            queue.addEventListener('complete', function() {
-                queue.removeAllEventListeners();
-                params.onComplete && params.onComplete();
-            });
-            queue.loadManifest(params.items);
+                queue.addEventListener('complete', function() {
+                    queue.removeAllEventListeners();
+                    params.onComplete && params.onComplete();
+                    loadNext();
+                });
+                queue.loadManifest(params.items);
+            };
+            handlerQueue.push(loadHandler);
+            loadNext();
         },
 
         disposeImage : function(image) {
@@ -2635,6 +2711,10 @@ this.wozllajs = this.wozllajs || {};
             wozllajs.LayerManager.removeFrom(this._layer, this);
 		},
 
+        layout : function() {
+            this._layout && this._layout.doLayout();
+        },
+
 		update : function() {
 			var i, len;
 			var behaviourId, behaviour;
@@ -2643,7 +2723,6 @@ this.wozllajs = this.wozllajs || {};
 			if(!this._componentInited || !this._active) {
 				return;
 			}
-
 			for(behaviourId in this._behaviours) {
 	    		behaviour = this._behaviours[behaviourId];
 	    		behaviour && behaviour.update && behaviour.update();
@@ -2727,6 +2806,7 @@ this.wozllajs = this.wozllajs || {};
 
 		setCollider : function(collider) {
 			this._collider = collider;
+            this._collider.setGameObject(this);
 		},
 
 		getCollider : function() {
@@ -2735,6 +2815,7 @@ this.wozllajs = this.wozllajs || {};
 
         setLayout : function(layout) {
             this._layout = layout;
+            this._layout.setGameObject(this);
         },
 
         getLayout : function() {
@@ -2743,6 +2824,7 @@ this.wozllajs = this.wozllajs || {};
 
         setHitTestDelegate : function(delegate) {
             this._hitTestDelegate = delegate;
+            this._hitTestDelegate.setGameObject(this);
         },
 
         getHitTestDelegate : function() {
@@ -2751,6 +2833,7 @@ this.wozllajs = this.wozllajs || {};
 
 		addBehaviour : function(behaviour) {
 			this._behaviours[behaviour.id] = behaviour;
+            this._behaviours[behaviour.alias] = behaviour;
 			behaviour.setGameObject(this);
 		},
 
@@ -2851,8 +2934,14 @@ this.wozllajs = this.wozllajs || {};
 		this.width = width || 0;
 		this.height = height || 0;
 		this.stageCanvas.width = this.width;
-		this.stageCanvas.height=  this.height;
+		this.stageCanvas.height = this.height;
 	};
+
+    p.tick = function() {
+        this.update();
+        this.lateUpdate();
+        this.draw();
+    };
 
 	p.GameObject_draw = p.draw;
 
@@ -3048,6 +3137,21 @@ this.wozllajs = this.wozllajs || {};
     Component.HIT_TEST = 'hitTest';
 	Component.BEHAVIOUR = 'behaviour';
 
+    Component.decorate = function(name, proto, superName, superConstructor) {
+        superConstructor = superConstructor || Component;
+        function DecorateComponent(params) {
+            this.initialize(params);
+        }
+        var p = DecorateComponent.prototype = Object.create(superConstructor.prototype);
+        for(var k in proto) {
+            if(p[k] && (typeof proto[k] === 'function')) {
+                p[superName + "_" + k] = p[k];
+            }
+            p[k] = proto[k];
+        }
+        return DecorateComponent;
+    };
+
 	Component.prototype = {
 
 	    id : null,
@@ -3055,6 +3159,8 @@ this.wozllajs = this.wozllajs || {};
 	    alias : null,
 
 	    type : null,
+
+        silent : false,
 
 	    gameObject : null,
 
@@ -3217,72 +3323,75 @@ this.wozllajs = this.wozllajs || {};
 	
 })();;
 
-wozllajs.defineComponent('renderer.ImageRenderer', function() {
+wozllajs.defineComponent('renderer.ImageRenderer', {
 
-	var ImageRenderer = function(params) {
-		this.initialize(params);
-	};
+    extend : 'Renderer',
 
-	var p = ImageRenderer.prototype = Object.create(wozllajs.Renderer.prototype);
+	alias : 'renderer.image',
 
-	p.id = 'renderer.ImageRenderer';
+    image : null,
 
-	p.alias = 'renderer.image';
+    src : null,
 
-    p.image = null;
+    sourceX : null,
+    sourceY : null,
+    sourceW : null,
+    sourceH : null,
+    renderWidth : null,
+    renderHeight : null,
 
-    p.src = null;
-
-    p.renderWidth = null;
-    p.renderHeight = null;
-
-    p.initComponent = function() {
+    initComponent : function() {
+        var stage = this.gameObject.getStage();
         this.image = this.getResourceById(this.src);
-        if(this.image && (!this.renderWidth || !this.renderHeight)) {
-            this.renderWidth = this.image.width;
-            this.renderHeight = this.image.height;
-        }
-    };
-
-    p.draw = function(context, visibleRect) {
         if(this.image) {
-            context.drawImage(this.image, 0, 0, this.renderWidth, this.renderHeight);
+            if(!this.renderWidth || !this.renderHeight) {
+                this.renderWidth = this.image.width;
+                this.renderHeight = this.image.height;
+            }
+            if(undefined === this.sourceX || undefined === this.sourceY || !this.sourceW || !this.sourceH) {
+                this.sourceX = 0;
+                this.sourceY = 0;
+                this.sourceW = this.image.width;
+                this.sourceH = this.image.height;
+            }
+            this.renderWidth = wozllajs.SizeParser.parse(this.renderWidth, stage);
+            this.renderHeight = wozllajs.SizeParser.parse(this.renderHeight, stage);
         }
-    };
+    },
 
-    p._collectResources = function(collection) {
+    draw : function(context, visibleRect) {
+        if(this.image) {
+            context.drawImage(this.image,
+                this.sourceX, this.sourceY, this.sourceW, this.sourceH,
+                0, 0, this.renderWidth, this.renderHeight);
+        }
+    },
+
+    _collectResources : function(collection) {
         if(this.src) {
             collection.push(this.src);
         }
-    };
-
-    return ImageRenderer;
+    }
 
 });;
 
-wozllajs.defineComponent('renderer.TextureRenderer', function() {
+wozllajs.defineComponent('renderer.TextureRenderer', {
 
-	var TextureRenderer = function(params) {
-		this.initialize(params);
-	};
+	extend : 'Renderer',
 
-	var p = TextureRenderer.prototype = Object.create(wozllajs.Renderer.prototype);
+	alias : 'renderer.texture',
 
-	p.id = 'renderer.TextureRenderer';
+    image : null,
 
-	p.alias = 'renderer.texture';
+    currentFrame : null,
 
-    p.image = null;
+    src : null,
 
-    p.currentFrame = null;
+    frames : null,
 
-    p.src = null;
+    index : null,
 
-    p.frames = null;
-
-    p.index = null;
-
-    p.initComponent = function() {
+    initComponent : function() {
         if(this.src) {
             this.image = this.getResourceById(this.src);
         }
@@ -3292,9 +3401,9 @@ wozllajs.defineComponent('renderer.TextureRenderer', function() {
         if(this.frames) {
             this.currentFrame = this.frames[this.index];
         }
-    };
+    },
 
-    p.draw = function(context) {
+    draw : function(context) {
         var w, h;
         var f = this.currentFrame;
         if(this.image && f) {
@@ -3302,57 +3411,50 @@ wozllajs.defineComponent('renderer.TextureRenderer', function() {
             h = f.h || f.height;
             context.drawImage(this.image, f.x, f.y, w, h, 0, 0, w, h);
         }
-    };
+    },
 
-    p._collectResources = function(res) {
+    _collectResources : function(res) {
         if(this.src) {
             res.push(this.src);
         }
-    };
-
-    return TextureRenderer;
+    }
 
 });;
 
-wozllajs.defineComponent('renderer.AnimationSheetRenderer', function() {
+wozllajs.defineComponent('renderer.AnimationSheetRenderer', {
 
-    var Time = wozllajs.Time;
+    extend : 'Renderer',
 
-	var AnimationSheetRenderer = function(params) {
-		this.initialize(params);
-	};
+    alias : 'renderer.animationSheet',
 
-	var p = AnimationSheetRenderer.prototype = Object.create(wozllajs.Renderer.prototype);
+    image : null,
 
-    p.alias = 'renderer.animationSheet';
+    _playingFrameSequence : null,
 
-    p.image = null;
+    _currentIndex : 0,
 
-    p._playingFrameSequence = null;
+    _currentFrame : null,
 
-    p._currentIndex = 0;
+    _currentFrameStartTime : null,
 
-    p._currentFrame = null;
+    src : null,
 
-    p._currentFrameStartTime = null;
+    frameTime : 33,
 
-    p.src = null;
+    frames : null,
 
-    p.frameTime = 33;
+    animations : null,
 
-    p.frames = null;
+    defaultAnimation : null,
 
-    p.animations = null;
-
-    p.defaultAnimation = null;
-
-    p.initComponent = function() {
+    initComponent : function() {
         if(this.src) {
             this.image = this.getResourceById(this.src);
         }
-    };
+    },
 
-    p.update = function() {
+    update : function() {
+        var Time = wozllajs.Time;
         if(!this.frames) {
             return;
         }
@@ -3374,9 +3476,9 @@ wozllajs.defineComponent('renderer.AnimationSheetRenderer', function() {
             }
             this._currentFrame = this.frames[this._playingFrameSequence[this._currentIndex]];
         }
-    };
+    },
 
-    p.draw = function(context) {
+    draw : function(context) {
         var frame = this._currentFrame, w, h, ox, oy;
         if(this.image && frame) {
             w = frame.width || frame.w;
@@ -3385,9 +3487,9 @@ wozllajs.defineComponent('renderer.AnimationSheetRenderer', function() {
             oy = frame.offsetY || frame.oy || 0;
             context.drawImage(this.image, frame.x, frame.y, w, h, ox, oy, w, h);
         }
-    };
+    },
 
-    p.play = function(animations, defaultAnimation) {
+    play : function(animations, defaultAnimation) {
         var sequence = [];
         var i, len;
         if(!wozllajs.isArray(animations)) {
@@ -3401,37 +3503,27 @@ wozllajs.defineComponent('renderer.AnimationSheetRenderer', function() {
         if(defaultAnimation) {
             this.defaultAnimation = defaultAnimation;
         }
-    };
+    },
 
-    p._collectResources = function(collection) {
+    _collectResources : function(collection) {
         if(this.src) {
             collection.push(this.src);
         }
-    };
-
-    return AnimationSheetRenderer;
+    }
 
 });;
 
-wozllajs.defineComponent('renderer.JSONAnimationSheetRenderer', function() {
+wozllajs.defineComponent('renderer.JSONAnimationSheetRenderer', {
 
-    var Time = wozllajs.Time;
+    extend : 'renderer.AnimationSheetRenderer',
 
-    var JSONAnimationSheetRenderer = function(params) {
-        this.initialize(params);
-    };
+    alias : 'renderer.jsonAnimationSheet',
 
-    var p = JSONAnimationSheetRenderer.prototype = Object.create(wozllajs.renderer.AnimationSheetRenderer.prototype);
+    ans : null,
 
-    p.id = 'renderer.JSONAnimationSheetRenderer';
+    frameTime : null,
 
-    p.alias = 'renderer.jsonAnimationSheet';
-
-    p.ans = null;
-
-    p.frameTime = null;
-
-    p.initComponent = function() {
+    initComponent : function() {
         if(this.src) {
             this.image = this.getResourceById(this.src);
         }
@@ -3441,18 +3533,17 @@ wozllajs.defineComponent('renderer.JSONAnimationSheetRenderer', function() {
                 this._applyData(ansData);
             }
         }
-    };
+    },
 
-    p._applyData = function(ansData) {
+    _applyData : function(ansData) {
         this.frames = ansData.frames;
         this.animations = ansData.animations;
         this.frameTime = this.frameTime || ansData.frameTime;
         this.defaultAnimation = this.defaultAnimation || ansData.defaultAnimation;
-    };
+    },
 
-    p._collectResources = function(collection) {
+    _collectResources : function(collection) {
         if(this.ans) {
-            console.log(this.ans);
             collection.push({
                 id : this.ans,
                 src : this.ans,
@@ -3465,27 +3556,19 @@ wozllajs.defineComponent('renderer.JSONAnimationSheetRenderer', function() {
         if(this.src) {
             collection.push(this.src);
         }
-    };
-
-    return JSONAnimationSheetRenderer;
+    }
 
 });;
 
-wozllajs.defineComponent('renderer.JSONTextureRenderer', function() {
+wozllajs.defineComponent('renderer.JSONTextureRenderer', {
 
-    var JSONTextureRenderer = function(params) {
-        this.initialize(params);
-    };
+    extend : 'renderer.TextureRenderer',
 
-    var p = JSONTextureRenderer.prototype = Object.create(wozllajs.renderer.TextureRenderer.prototype);
+    alias : 'renderer.jsonTexture',
 
-    p.id = 'renderer.JSONTextureRenderer';
+    texture : null,
 
-    p.alias = 'renderer.jsonTexture';
-
-    p.texture = null;
-
-    p.initComponent = function() {
+    initComponent : function() {
         if(this.src) {
             this.image = this.getResourceById(this.src);
         }
@@ -3495,14 +3578,14 @@ wozllajs.defineComponent('renderer.JSONTextureRenderer', function() {
                 this._applyData(ttData);
             }
         }
-    };
+    },
 
-    p._applyData = function(ttData) {
+    _applyData : function(ttData) {
         this.frames = ttData.frames;
         this.currentFrame = this.frames[this.index];
-    };
+    },
 
-    p._collectResources = function(res) {
+    _collectResources : function(res) {
         if(this.texture) {
             res.push({
                 id : this.texture,
@@ -3516,45 +3599,60 @@ wozllajs.defineComponent('renderer.JSONTextureRenderer', function() {
         if(this.src) {
             res.push(this.src);
         }
-    };
-
-    return JSONTextureRenderer;
+    }
 
 });;
 
-wozllajs.defineComponent('renderer.TextureButton', function() {
+wozllajs.defineComponent('behaviour.ConstantLoopRotation', {
 
-    var TextureButton = function(params) {
-        this.initialize(params);
-    };
+    extend : 'Behaviour',
 
-    var p = TextureButton.prototype = Object.create(wozllajs.renderer.JSONTextureRenderer.prototype);
+    silent : true,
 
-    p.id = 'renderer.TextureButton';
+    alias : 'behaviour.ConstantLoopRotation',
 
-    p.normalIndex = null;
+    speed : 1,
 
-    p.pressIndex = null;
+    update : function() {
+        var trans = this.gameObject.transform;
+        trans.rotation += (this.speed * wozllajs.Time.delta || 0);
+        if(trans.rotation > 99999999) {
+            trans.rotation = 0;
+        }
+    }
 
-    p.handler = null;
+});;
 
-    p.JSONTextureRenderer_initComponent = p.initComponent;
+wozllajs.defineComponent('renderer.TextureButton', {
 
-    p.initComponent = function() {
-        var _this = this;
-        this.JSONTextureRenderer_initComponent();
-        this.on('touchstart', function(e) {
-            console.log('touchstart');
-        });
-        this.on('touchend', function(e) {
-            console.log('touchend');
-        });
-        this.on('click', function(e) {
-            console.log('click');
-        });
-    };
+    extend : 'renderer.JSONTextureRenderer',
 
-    return TextureButton;
+    alias : 'renderer.textureButton',
+
+    normalIndex : null,
+
+    pressIndex : null,
+
+    handler : null,
+
+    initComponent : function() {
+        var me = this;
+        me.JSONTextureRenderer_initComponent();
+        if(me.frames) {
+            me.currentFrame = me.frames[me.normalIndex];
+            me.on('touchstart', function(e) {
+                console.log('touchstart');
+                me.currentFrame = me.frames[me.pressIndex];
+            });
+            me.on('touchend', function(e) {
+                console.log('touchend');
+                me.currentFrame = me.frames[me.normalIndex];
+            });
+            me.on('click', function(e) {
+                console.log('click');
+            });
+        }
+    }
 
 });;
 
@@ -3621,6 +3719,30 @@ this.wozllajs = this.wozllajs || {};
         };
 
     })();
+
+})();;
+
+this.wozllajs = this.wozllajs || {};
+
+this.wozllajs.SizeParser = (function() {
+
+    return {
+        parse : function(size, stage) {
+            var result;
+            if(parseInt(size) == size) {
+                return parseInt(size);
+            }
+            if(typeof size === 'string') {
+                result = /^(\d+(\.\d+)?)%$/.exec(size);
+                if(!result) {
+                    return null;
+                }
+                return parseInt(stage.width * parseFloat(result[1]) / 100);
+            } else {
+                return size;
+            }
+        }
+    }
 
 })();;
 

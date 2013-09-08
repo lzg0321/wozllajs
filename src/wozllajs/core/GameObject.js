@@ -251,6 +251,10 @@ this.wozllajs = this.wozllajs || {};
             wozllajs.LayerManager.removeFrom(this._layer, this);
 		},
 
+        layout : function() {
+            this._layout && this._layout.doLayout();
+        },
+
 		update : function() {
 			var i, len;
 			var behaviourId, behaviour;
@@ -259,7 +263,6 @@ this.wozllajs = this.wozllajs || {};
 			if(!this._componentInited || !this._active) {
 				return;
 			}
-
 			for(behaviourId in this._behaviours) {
 	    		behaviour = this._behaviours[behaviourId];
 	    		behaviour && behaviour.update && behaviour.update();
@@ -343,6 +346,7 @@ this.wozllajs = this.wozllajs || {};
 
 		setCollider : function(collider) {
 			this._collider = collider;
+            this._collider.setGameObject(this);
 		},
 
 		getCollider : function() {
@@ -351,6 +355,7 @@ this.wozllajs = this.wozllajs || {};
 
         setLayout : function(layout) {
             this._layout = layout;
+            this._layout.setGameObject(this);
         },
 
         getLayout : function() {
@@ -359,6 +364,7 @@ this.wozllajs = this.wozllajs || {};
 
         setHitTestDelegate : function(delegate) {
             this._hitTestDelegate = delegate;
+            this._hitTestDelegate.setGameObject(this);
         },
 
         getHitTestDelegate : function() {
@@ -367,6 +373,7 @@ this.wozllajs = this.wozllajs || {};
 
 		addBehaviour : function(behaviour) {
 			this._behaviours[behaviour.id] = behaviour;
+            this._behaviours[behaviour.alias] = behaviour;
 			behaviour.setGameObject(this);
 		},
 

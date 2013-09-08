@@ -14,6 +14,7 @@ var libs = [
 
 var files = [
     'src/wozllajs/wozllajs.js',
+    'src/wozllajs/geom/geom.js',
     'src/wozllajs/core/Array2D.js',
     'src/wozllajs/core/EventDispatcher.js',
     'src/wozllajs/core/Time.js',
@@ -37,8 +38,10 @@ var files = [
     'src/wozllajs/renderer/AnimationSheetRenderer.js',
     'src/wozllajs/renderer/JSONAnimationSheetRenderer.js',
     'src/wozllajs/renderer/JSONTextureRenderer.js',
+    'src/wozllajs/behaviour/ConstantLoopRotation.js',
     'src/wozllajs/renderer/TextureButton.js',
-    'src/wozllajs/util/StageBuilder.js'
+    'src/wozllajs/util/StageBuilder.js',
+    'src/wozllajs/util/SizeParser.js'
 ];
 
 

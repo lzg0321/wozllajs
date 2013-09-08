@@ -1,42 +1,51 @@
-wozllajs.defineComponent('renderer.ImageRenderer', function() {
+wozllajs.defineComponent('renderer.ImageRenderer', {
 
-	var ImageRenderer = function(params) {
-		this.initialize(params);
-	};
+    extend : 'Renderer',
 
-	var p = ImageRenderer.prototype = Object.create(wozllajs.Renderer.prototype);
+	alias : 'renderer.image',
 
-	p.id = 'renderer.ImageRenderer';
+    image : null,
 
-	p.alias = 'renderer.image';
+    src : null,
 
-    p.image = null;
+    sourceX : null,
+    sourceY : null,
+    sourceW : null,
+    sourceH : null,
+    renderWidth : null,
+    renderHeight : null,
 
-    p.src = null;
-
-    p.renderWidth = null;
-    p.renderHeight = null;
-
-    p.initComponent = function() {
+    initComponent : function() {
+        var stage = this.gameObject.getStage();
         this.image = this.getResourceById(this.src);
-        if(this.image && (!this.renderWidth || !this.renderHeight)) {
-            this.renderWidth = this.image.width;
-            this.renderHeight = this.image.height;
-        }
-    };
-
-    p.draw = function(context, visibleRect) {
         if(this.image) {
-            context.drawImage(this.image, 0, 0, this.renderWidth, this.renderHeight);
+            if(!this.renderWidth || !this.renderHeight) {
+                this.renderWidth = this.image.width;
+                this.renderHeight = this.image.height;
+            }
+            if(undefined === this.sourceX || undefined === this.sourceY || !this.sourceW || !this.sourceH) {
+                this.sourceX = 0;
+                this.sourceY = 0;
+                this.sourceW = this.image.width;
+                this.sourceH = this.image.height;
+            }
+            this.renderWidth = wozllajs.SizeParser.parse(this.renderWidth, stage);
+            this.renderHeight = wozllajs.SizeParser.parse(this.renderHeight, stage);
         }
-    };
+    },
 
-    p._collectResources = function(collection) {
+    draw : function(context, visibleRect) {
+        if(this.image) {
+            context.drawImage(this.image,
+                this.sourceX, this.sourceY, this.sourceW, this.sourceH,
+                0, 0, this.renderWidth, this.renderHeight);
+        }
+    },
+
+    _collectResources : function(collection) {
         if(this.src) {
             collection.push(this.src);
         }
-    };
-
-    return ImageRenderer;
+    }
 
 });

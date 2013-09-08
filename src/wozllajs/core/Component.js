@@ -13,6 +13,21 @@ this.wozllajs = this.wozllajs || {};
     Component.HIT_TEST = 'hitTest';
 	Component.BEHAVIOUR = 'behaviour';
 
+    Component.decorate = function(name, proto, superName, superConstructor) {
+        superConstructor = superConstructor || Component;
+        function DecorateComponent(params) {
+            this.initialize(params);
+        }
+        var p = DecorateComponent.prototype = Object.create(superConstructor.prototype);
+        for(var k in proto) {
+            if(p[k] && (typeof proto[k] === 'function')) {
+                p[superName + "_" + k] = p[k];
+            }
+            p[k] = proto[k];
+        }
+        return DecorateComponent;
+    };
+
 	Component.prototype = {
 
 	    id : null,
@@ -20,6 +35,8 @@ this.wozllajs = this.wozllajs || {};
 	    alias : null,
 
 	    type : null,
+
+        silent : false,
 
 	    gameObject : null,
 

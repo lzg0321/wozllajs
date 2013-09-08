@@ -66,8 +66,13 @@ this.wozllajs = this.wozllajs || {};
         var NSList = namespace.split(".");
         var step = wozllajs;
         var k = null;
+        var superConstructor;
         var cmpConstructor;
         var cmpProto;
+        var extend;
+        var baseCmp;
+        var superName;
+        var name = namespace.indexOf('.') !== -1 ? namespace.substr(namespace.lastIndexOf('.')+1) : namespace;
         while (k = NSList.shift()) {
             if (NSList.length) {
                 if (step[k] === undefined) {
@@ -78,10 +83,31 @@ this.wozllajs = this.wozllajs || {};
                 if(step[k]) {
                     console.log('The namespace "' + namespace + '" has been regsitered, override it.');
                 }
-                cmpConstructor = step[k] = maker();
-                cmpProto = cmpConstructor.prototype;
-                componentMap[namespace] = cmpConstructor;
-                componentMap[cmpProto.alias] = cmpConstructor;
+                if(typeof maker === 'function') {
+                    cmpConstructor = maker();
+                } else if(typeof maker === 'object') {
+                    baseCmp = {
+                        'Renderer' : wozllajs.Renderer,
+                        'Collider' : wozllajs.Collider,
+                        'Layout'   : wozllajs.Layout,
+                        'Behaviour' : wozllajs.Behaviour,
+                        'HitTestDelegate' : wozllajs.HitTestDelegate
+                    };
+                    extend = maker.extend;
+                    delete maker.extend;
+                    superName = extend.indexOf('.') !== -1 ? extend.substr(extend.lastIndexOf('.')+1) : extend;
+                    superConstructor = baseCmp[extend] || componentMap[extend];
+                    cmpConstructor = wozllajs.Component.decorate(name, maker, superName, superConstructor);
+                }
+                if(cmpConstructor) {
+                    cmpProto = cmpConstructor.prototype;
+                    cmpProto.id = namespace;
+                    componentMap[namespace] = cmpConstructor;
+                    componentMap[cmpProto.alias] = cmpConstructor;
+                    step[k] = cmpConstructor;
+                } else {
+                    throw new Error('Error in defineComponent: ' + namespace);
+                }
             }
         }
     };

@@ -1,18 +1,12 @@
-wozllajs.defineComponent('renderer.JSONTextureRenderer', function() {
+wozllajs.defineComponent('renderer.JSONTextureRenderer', {
 
-    var JSONTextureRenderer = function(params) {
-        this.initialize(params);
-    };
+    extend : 'renderer.TextureRenderer',
 
-    var p = JSONTextureRenderer.prototype = Object.create(wozllajs.renderer.TextureRenderer.prototype);
+    alias : 'renderer.jsonTexture',
 
-    p.id = 'renderer.JSONTextureRenderer';
+    texture : null,
 
-    p.alias = 'renderer.jsonTexture';
-
-    p.texture = null;
-
-    p.initComponent = function() {
+    initComponent : function() {
         if(this.src) {
             this.image = this.getResourceById(this.src);
         }
@@ -22,14 +16,14 @@ wozllajs.defineComponent('renderer.JSONTextureRenderer', function() {
                 this._applyData(ttData);
             }
         }
-    };
+    },
 
-    p._applyData = function(ttData) {
+    _applyData : function(ttData) {
         this.frames = ttData.frames;
         this.currentFrame = this.frames[this.index];
-    };
+    },
 
-    p._collectResources = function(res) {
+    _collectResources : function(res) {
         if(this.texture) {
             res.push({
                 id : this.texture,
@@ -43,8 +37,6 @@ wozllajs.defineComponent('renderer.JSONTextureRenderer', function() {
         if(this.src) {
             res.push(this.src);
         }
-    };
-
-    return JSONTextureRenderer;
+    }
 
 });
