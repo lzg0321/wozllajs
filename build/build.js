@@ -41,6 +41,8 @@ var files = [
     'src/wozllajs/behaviour/ConstantLoopRotation.js',
     'src/wozllajs/renderer/TextureButton.js',
     'src/wozllajs/util/StageBuilder.js',
+    'src/wozllajs/util/NinePatch.js',
+    'src/wozllajs/util/RepeatImage.js',
     'src/wozllajs/util/SizeParser.js'
 ];
 

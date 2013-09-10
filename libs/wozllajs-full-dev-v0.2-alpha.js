@@ -1747,6 +1747,20 @@ this.wozllajs = this.wozllajs || {};
         return c;
     };
 
+    wozllajs.namespace = function(ns, root) {
+        var NSList = ns.split(".");
+        var step = root || wozllajs;
+        var k = null;
+        while (k = NSList.shift()) {
+            if (step[k] === undefined) {
+                console.log("[Warn] can't found namespace '" + ns + "'");
+                return null;
+            }
+            step = step[k];
+        }
+        return step;
+    };
+
     wozllajs.printComponent = function() {
         console.log('ComponentMap: ', componentMap);
     };
@@ -1930,8 +1944,8 @@ this.wozllajs = this.wozllajs || {};
         clear : function() {
             this.listenerMap.clear();
         },
-        sort : function(func) {
-            this.listenerMap.sort(func);
+        sort : function(type, func) {
+            this.listenerMap.sort(type, func);
         },
         fireEvent : function(type, params, async) {
             var i, len, listener, ret;
@@ -2051,6 +2065,7 @@ this.wozllajs.Touch = (function() {
         if(listeners) {
             for(i=0,len=listeners.length; i<len; i++) {
                 listener = listeners[i];
+                console.log(listener.layerZ, touchedGameObject);
                 gameObject = listener.gameObject;
                 handler = listener.handler;
                 if(touchedGameObject && touchedGameObject === gameObject) {
@@ -2188,10 +2203,11 @@ this.wozllajs.Touch = (function() {
             type = mouseTouchMap[type] || type;
             listenerHolder.addEventListener(type, {
                 gameObject : gameObject,
-                handler : listener
+                handler : listener,
+                layerZ : getLayerZ(gameObject.getEventLayer())
             });
             listenerHolder.sort(type, function(a, b) {
-                return getLayerZ(b.gameObject.getLayer(true)) - getLayerZ(a.gameObject.getLayer(true));
+                return b.layerZ - a.layerZ;
             });
         },
 
@@ -2208,6 +2224,10 @@ this.wozllajs.Touch = (function() {
                     }
                 }
             }
+        },
+
+        getListenerHolder : function() {
+            return listenerHolder;
         }
     }
 
@@ -2236,23 +2256,23 @@ this.wozllajs.EventAdmin = (function() {
 
     return {
 
-        on : function(type, gameObject, listener) {
-            var proxy = listener['_wozllajs_proxy_' + type] = wozllajs.proxy(listener, gameObject);
+        on : function(type, scope, listener) {
+            var proxy = listener['_wozllajs_proxy_' + type] = wozllajs.proxy(listener, scope);
 
             if(wozllajs.Touch.isTouchEvent(type)) {
-                wozllajs.Touch.on(type, gameObject, listener);
+                wozllajs.Touch.on(type, scope, listener);
                 return;
             }
 
             eventDispatcher.addEventListener(type, proxy);
         },
 
-        off : function(type, gameObject, listener) {
+        off : function(type, scope, listener) {
             var proxy = listener['_wozllajs_proxy_' + type];
             listener['_wozllajs_proxy_' + type] = false;
             if(proxy) {
                 if(wozllajs.Touch.isTouchEvent(type)) {
-                    wozllajs.Touch.off(type, gameObject, listener);
+                    wozllajs.Touch.off(type, scope, listener);
                     return;
                 }
                 eventDispatcher.removeEventListener(type, proxy);
@@ -2487,6 +2507,8 @@ this.wozllajs = this.wozllajs || {};
 
 		_behaviours : null,
 
+        _aliasMap : null,
+
 		_parent : null,
 
 		_componentInited : false,
@@ -2521,6 +2543,7 @@ this.wozllajs = this.wozllajs || {};
 			this.id = id;
 			this.transform = new wozllajs.Transform();
 			this._behaviours = {};
+            this._aliasMap = {};
 			this._children = [];
 			this._childrenMap = {};
 			this._resources = [];
@@ -2529,6 +2552,17 @@ this.wozllajs = this.wozllajs || {};
 		getParent : function() {
 			return this._parent;
 		},
+
+        getPath : function(seperator) {
+            var o = this;
+            var path = [];
+            var deep = 0;
+            while(o) {
+                path.unshift(o.id);
+                o = o._parent;
+            }
+            return path.join(seperator || '.');
+        },
 
         getStage : function() {
             var o = this;
@@ -2592,6 +2626,10 @@ this.wozllajs = this.wozllajs || {};
             return obj;
         },
 
+        getChildren : function() {
+            return this._children;
+        },
+
 	    isActive : function() {
 	    	return this._active;
 	    },
@@ -2619,8 +2657,35 @@ this.wozllajs = this.wozllajs || {};
             return o && o._layer;
         },
 
+        getEventLayer : function() {
+            var layer;
+            var layerZ;
+            var layers;
+            var i, len;
+            var o = this;
+            var getLayerZ = wozllajs.LayerManager.getLayerZ;
+            while(o) {
+                if(o._layer) {
+                    layers = o._layer.split(',');
+                    for(i=0,len=layers.length; i<len; i++) {
+                        layer = layers[i];
+                        layerZ = getLayerZ(layer);
+                        if(parseInt(layerZ) === layerZ) {
+                            return layer;
+                        }
+                    }
+                }
+                o = o._parent;
+            }
+            return -9999999;
+        },
+
         setLayer : function(layer) {
             this._layer = layer;
+        },
+
+        isInLayer : function(layer) {
+            return this._layer && this._layer.indexOf(layer) !== -1;
         },
 
         isMouseEnable : function() {
@@ -2673,7 +2738,7 @@ this.wozllajs = this.wozllajs || {};
 		},
 
 	    init : function() {
-	    	var i, len;
+	    	var i, len, layers;
 			var behaviourId, behaviour;
 			var children = this._children;
             this._layout && this._layout.initComponent();
@@ -2688,7 +2753,12 @@ this.wozllajs = this.wozllajs || {};
 	    		children[i].init();
 	    	}
             if(this._layer) {
-                wozllajs.LayerManager.appendTo(this._layer, this);
+                layers = this._layer.split(',');
+                for(i=0,len=layers.length; i<len; i++) {
+                    if(layers[i]) {
+                        wozllajs.LayerManager.appendTo(layers[i], this);
+                    }
+                }
             }
 	    	this._componentInited = true;
 		},
@@ -2712,7 +2782,12 @@ this.wozllajs = this.wozllajs || {};
 		},
 
         layout : function() {
+            var i, len;
+            var children = this._children;
             this._layout && this._layout.doLayout();
+            for(i=0,len=children.length; i<len; i++) {
+                children[i].layout();
+            }
         },
 
 		update : function() {
@@ -2833,7 +2908,7 @@ this.wozllajs = this.wozllajs || {};
 
 		addBehaviour : function(behaviour) {
 			this._behaviours[behaviour.id] = behaviour;
-            this._behaviours[behaviour.alias] = behaviour;
+            this._aliasMap[behaviour.alias] = behaviour;
 			behaviour.setGameObject(this);
 		},
 
@@ -2845,11 +2920,12 @@ this.wozllajs = this.wozllajs || {};
                 }
             }
 			delete this._behaviours[behaviour.id];
+            delete this._aliasMap[behaviour.alias]
 			behaviour.setGameObject(null);
 		},
 
 		getBehaviour : function(id) {
-			return this._behaviours[id];
+			return this._behaviours[id] || this._aliasMap[id];
 		},
 
         on : function(type, listener) {
@@ -3633,7 +3709,7 @@ wozllajs.defineComponent('renderer.TextureButton', {
 
     pressIndex : null,
 
-    handler : null,
+    name : 'Undefined',
 
     initComponent : function() {
         var me = this;
@@ -3641,15 +3717,13 @@ wozllajs.defineComponent('renderer.TextureButton', {
         if(me.frames) {
             me.currentFrame = me.frames[me.normalIndex];
             me.on('touchstart', function(e) {
-                console.log('touchstart');
                 me.currentFrame = me.frames[me.pressIndex];
             });
             me.on('touchend', function(e) {
-                console.log('touchend');
                 me.currentFrame = me.frames[me.normalIndex];
             });
             me.on('click', function(e) {
-                console.log('click');
+                wozllajs.EventAdmin.notify(me.name + '.click');
             });
         }
     }
@@ -3720,6 +3794,148 @@ this.wozllajs = this.wozllajs || {};
 
     })();
 
+})();;
+
+this.wozllajs = this.wozllajs || {};
+
+(function() {
+
+    function NinePatch(x, y, width, height, borders, originImage, region) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.borders = borders;
+        this.originImage = originImage;
+        this.region = region || {
+            x: 0,
+            y: 0,
+            w: originImage.width,
+            h: originImage.height
+        };
+        this.image = null;
+    }
+
+    NinePatch.prototype = {
+        init : function() {
+            var r = this.region;
+            var b = this.borders;
+            var oimg = this.originImage;
+            var ow = r.w;
+            var oh = r.h;
+            var canvas = wozllajs.createCanvas(this.width, this.height);
+            var ctx = canvas.getContext('2d');
+            canvas.width = this.width;
+            canvas.height = this.height;
+
+            // top left
+            ctx.drawImage(oimg, r.x, r.y, b.left, b.top,
+                0, 0, b.left, b.top);
+
+            // top
+            ctx.drawImage(oimg, r.x + b.left, r.y + 0, ow- b.left- b.right, b.top,
+                b.left, 0, this.width- b.left- b.right, b.top);
+
+            // top right
+            ctx.drawImage(oimg, r.x + ow- b.right, r.y + 0, b.right, b.top,
+                this.width- b.right, 0, b.right, b.top);
+
+            // left
+            ctx.drawImage(oimg, r.x + 0, r.y + b.top, b.left, oh - b.top - b.bottom,
+                0, b.top, b.left, this.height - b.top - b.bottom);
+
+            // left bottom
+            ctx.drawImage(oimg, r.x + 0, r.y + oh - b.bottom, b.left, b.bottom,
+                0, this.height-b.bottom, b.left, b.bottom);
+
+            // bottom
+            ctx.drawImage(oimg, r.x + b.left, r.y + oh-b.bottom, ow- b.left- b.right, b.bottom,
+                b.left, this.height- b.bottom, this.width- b.left- b.right, b.bottom);
+
+            // right bottom
+            ctx.drawImage(oimg, r.x + ow- b.right, r.y + oh - b.bottom, b.right, b.bottom,
+                this.width- b.right, this.height-b.bottom, b.right, b.bottom);
+
+            // right
+            ctx.drawImage(oimg, r.x + ow- b.right, r.y + b.top, b.right, oh- b.top -b.bottom,
+                this.width- b.right, b.top, b.right, this.height- b.top-b.bottom);
+
+            // center
+            ctx.drawImage(oimg, r.x + b.left, r.y + b.top, ow- b.left-b.right, oh- b.top -b.bottom,
+                b.left, b.top, this.width- b.left- b.right, this.height- b.top-b.bottom);
+
+            this.image = canvas;
+
+        },
+        dispose : function() {
+            if(this.image && this.image.dispose) {
+                this.image.dispose();
+            }
+        },
+        draw : function(context) {
+            context.drawImage(this.image, this.x, this.y);
+        }
+    };
+
+    wozllajs.NinePatch = NinePatch;
+})();;
+
+this.wozllajs = this.wozllajs || {};
+
+(function() {
+    function RepeatImage(x, y, width, height, repeat, originImage) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.repeat = repeat;
+        this.originImage = originImage;
+        this.image = null;
+    }
+
+    RepeatImage.prototype = {
+
+        init : function(type) {
+            var canvas = wozllajs.createCanvas(this.width, this.height);
+            var ctx = canvas.getContext('2d');
+            var i;
+            canvas.width = this.width;
+            canvas.height = this.height;
+
+            if(this.repeat === RepeatImage.REPEAT_X) {
+                if(type === RepeatImage.SCALE) {
+                    ctx.drawImage(this.originImage, 0, 0,
+                        this.originImage.width, this.originImage.height,
+                        0, 0, this.width, this.height);
+                } else if(type === RepeatImage.TILE) {
+                    for(i=0; i<this.width; i+=this.originImage.width) {
+                        ctx.drawImage(this.originImage, i, 0);
+                    }
+                }
+            } else if(this.repeat === RepeatImage.REPEAT_Y) {
+                // TODO repeat y
+            }
+
+            this.image = canvas;
+        },
+        dispose : function() {
+            if(this.image.dispose) {
+                this.image.dispose();
+            }
+        },
+        draw : function(context) {
+            context.drawImage(this.image, this.x, this.y);
+        }
+
+    };
+
+    RepeatImage.REPEAT_X = 1;
+    RepeatImage.REPEAT_Y = 2;
+
+    RepeatImage.SCALE = 3;
+    RepeatImage.TILE = 4;
+
+    wozllajs.RepeatImage = RepeatImage;
 })();;
 
 this.wozllajs = this.wozllajs || {};
