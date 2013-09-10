@@ -27,6 +27,8 @@ this.wozllajs = this.wozllajs || {};
 
 		_behaviours : null,
 
+        _aliasMap : null,
+
 		_parent : null,
 
 		_componentInited : false,
@@ -61,6 +63,7 @@ this.wozllajs = this.wozllajs || {};
 			this.id = id;
 			this.transform = new wozllajs.Transform();
 			this._behaviours = {};
+            this._aliasMap = {};
 			this._children = [];
 			this._childrenMap = {};
 			this._resources = [];
@@ -69,6 +72,17 @@ this.wozllajs = this.wozllajs || {};
 		getParent : function() {
 			return this._parent;
 		},
+
+        getPath : function(seperator) {
+            var o = this;
+            var path = [];
+            var deep = 0;
+            while(o) {
+                path.unshift(o.id);
+                o = o._parent;
+            }
+            return path.join(seperator || '.');
+        },
 
         getStage : function() {
             var o = this;
@@ -132,6 +146,10 @@ this.wozllajs = this.wozllajs || {};
             return obj;
         },
 
+        getChildren : function() {
+            return this._children;
+        },
+
 	    isActive : function() {
 	    	return this._active;
 	    },
@@ -159,8 +177,35 @@ this.wozllajs = this.wozllajs || {};
             return o && o._layer;
         },
 
+        getEventLayer : function() {
+            var layer;
+            var layerZ;
+            var layers;
+            var i, len;
+            var o = this;
+            var getLayerZ = wozllajs.LayerManager.getLayerZ;
+            while(o) {
+                if(o._layer) {
+                    layers = o._layer.split(',');
+                    for(i=0,len=layers.length; i<len; i++) {
+                        layer = layers[i];
+                        layerZ = getLayerZ(layer);
+                        if(parseInt(layerZ) === layerZ) {
+                            return layer;
+                        }
+                    }
+                }
+                o = o._parent;
+            }
+            return -9999999;
+        },
+
         setLayer : function(layer) {
             this._layer = layer;
+        },
+
+        isInLayer : function(layer) {
+            return this._layer && this._layer.indexOf(layer) !== -1;
         },
 
         isMouseEnable : function() {
@@ -213,7 +258,7 @@ this.wozllajs = this.wozllajs || {};
 		},
 
 	    init : function() {
-	    	var i, len;
+	    	var i, len, layers;
 			var behaviourId, behaviour;
 			var children = this._children;
             this._layout && this._layout.initComponent();
@@ -228,7 +273,12 @@ this.wozllajs = this.wozllajs || {};
 	    		children[i].init();
 	    	}
             if(this._layer) {
-                wozllajs.LayerManager.appendTo(this._layer, this);
+                layers = this._layer.split(',');
+                for(i=0,len=layers.length; i<len; i++) {
+                    if(layers[i]) {
+                        wozllajs.LayerManager.appendTo(layers[i], this);
+                    }
+                }
             }
 	    	this._componentInited = true;
 		},
@@ -252,7 +302,12 @@ this.wozllajs = this.wozllajs || {};
 		},
 
         layout : function() {
+            var i, len;
+            var children = this._children;
             this._layout && this._layout.doLayout();
+            for(i=0,len=children.length; i<len; i++) {
+                children[i].layout();
+            }
         },
 
 		update : function() {
@@ -373,7 +428,7 @@ this.wozllajs = this.wozllajs || {};
 
 		addBehaviour : function(behaviour) {
 			this._behaviours[behaviour.id] = behaviour;
-            this._behaviours[behaviour.alias] = behaviour;
+            this._aliasMap[behaviour.alias] = behaviour;
 			behaviour.setGameObject(this);
 		},
 
@@ -385,11 +440,12 @@ this.wozllajs = this.wozllajs || {};
                 }
             }
 			delete this._behaviours[behaviour.id];
+            delete this._aliasMap[behaviour.alias]
 			behaviour.setGameObject(null);
 		},
 
 		getBehaviour : function(id) {
-			return this._behaviours[id];
+			return this._behaviours[id] || this._aliasMap[id];
 		},
 
         on : function(type, listener) {
