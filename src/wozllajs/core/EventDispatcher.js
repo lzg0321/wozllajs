@@ -25,8 +25,8 @@ this.wozllajs = this.wozllajs || {};
         clear : function() {
             this.listenerMap.clear();
         },
-        sort : function(func) {
-            this.listenerMap.sort(func);
+        sort : function(type, func) {
+            this.listenerMap.sort(type, func);
         },
         fireEvent : function(type, params, async) {
             var i, len, listener, ret;
