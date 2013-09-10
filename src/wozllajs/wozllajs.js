@@ -50,6 +50,20 @@ this.wozllajs = this.wozllajs || {};
         return c;
     };
 
+    wozllajs.namespace = function(ns, root) {
+        var NSList = ns.split(".");
+        var step = root || wozllajs;
+        var k = null;
+        while (k = NSList.shift()) {
+            if (step[k] === undefined) {
+                console.log("[Warn] can't found namespace '" + ns + "'");
+                return null;
+            }
+            step = step[k];
+        }
+        return step;
+    };
+
     wozllajs.printComponent = function() {
         console.log('ComponentMap: ', componentMap);
     };
