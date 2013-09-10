@@ -30,6 +30,8 @@ this.wozllajs = this.wozllajs || {};
 
 	Component.prototype = {
 
+        UID : null,
+
 	    id : null,
 
 	    alias : null,
@@ -47,6 +49,7 @@ this.wozllajs = this.wozllajs || {};
 	    			this[p] = params[p];
 	    		}
 	    	}
+            this.UID = wozllajs.UniqueKeyGen ++;
 	    },
 
 	    checkParams : function(params) {},
@@ -63,12 +66,12 @@ this.wozllajs = this.wozllajs || {};
 	        return wozllajs.ResourceManager.getResource(id);
 	    },
 
-        on : function(type, listener) {
-            this.gameObject.on(type, listener);
+        on : function(type, listener, scope) {
+            this.gameObject.on(type, listener, scope);
         },
 
-        off : function(type, listener) {
-            this.gameObject.off(type, listener);
+        off : function(type, listener, scope) {
+            this.gameObject.off(type, listener, scope);
         },
 
         notify : function(type, params) {

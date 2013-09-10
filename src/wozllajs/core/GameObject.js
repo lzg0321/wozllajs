@@ -15,7 +15,11 @@ this.wozllajs = this.wozllajs || {};
 
 	GameObject.prototype = {
 
+        UID : null,
+
 		id : null,
+
+        isGameObject : true,
 
 		transform : null,
 
@@ -60,6 +64,7 @@ this.wozllajs = this.wozllajs || {};
         _cacheOffsetY : 0,
 
 		initialize : function(id) {
+            this.UID = wozllajs.UniqueKeyGen ++;
 			this.id = id;
 			this.transform = new wozllajs.Transform();
 			this._behaviours = {};
@@ -448,16 +453,21 @@ this.wozllajs = this.wozllajs || {};
 			return this._behaviours[id] || this._aliasMap[id];
 		},
 
-        on : function(type, listener) {
-            wozllajs.EventAdmin.on(type, this, listener);
+        on : function(type, listener, scope) {
+            var proxy = listener[this._getSimpleProxyKey(scope, type)] = wozllajs.proxy(listener, scope);
+            wozllajs.EventAdmin.on(type, this, proxy, scope);
         },
 
-        off : function(type, listener) {
-            wozllajs.EventAdmin.off(type, this, listener);
+        off : function(type, listener, scope) {
+            wozllajs.EventAdmin.off(type, this, listener[this._getSimpleProxyKey(scope, type)]);
         },
 
         notify : function(type, params) {
             wozllajs.EventAdmin.notify(type, params);
+        },
+
+        _getSimpleProxyKey : function(scope, type) {
+            return '_sp_' + scope.UID + '.' + type;
         },
 
 		_draw : function(context, visibleRect) {
