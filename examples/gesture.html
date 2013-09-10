@@ -22,6 +22,7 @@
     <script src="../src/wozllajs/core/Collider.js"></script>
     <script src="../src/wozllajs/core/Behaviour.js"></script>
     <script src="../src/wozllajs/renderer/ImageRenderer.js"></script>
+    <script src="../src/wozllajs/util/SizeParser.js"></script>
 </head>
 <body>
 <div id="root" style="width: 960px; margin: 0 auto; border: 1px solid #555; height: 640px;">
@@ -53,14 +54,12 @@
     wozllajs.Engine.addListener(stage);
     wozllajs.Engine.start();
 
+    function onClick(e) {
+        console.log('click once');
+        gameObject.off('click', onClick);
+    }
 
-
-    gameObject.on('click', function(e) {
-        console.log('click');
-    });
-    gameObject.on('touchstart', function(e) {
-        console.log('touchstart');
-    });
+    gameObject.on('click', onClick);
 
 </script>
 </body>

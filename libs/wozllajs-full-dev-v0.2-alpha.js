@@ -1705,12 +1705,16 @@ this.wozllajs = this.wozllajs || {};
 
     var componentMap = {};
 
+    wozllajs.UniqueKeyGen = 0;
+
+    wozllajs.debug = false;
+
     wozllajs.isTouchSupport = 'ontouchstart' in window;
 
     wozllajs.proxy = function (method, scope) {
         var aArgs = Array.prototype.slice.call(arguments, 2);
         return function () {
-            return method.apply(scope, Array.prototype.slice.call(arguments, 0).concat(aArgs));
+            return method.apply(scope || method, Array.prototype.slice.call(arguments, 0).concat(aArgs));
         };
     };
 
@@ -1753,7 +1757,9 @@ this.wozllajs = this.wozllajs || {};
         var k = null;
         while (k = NSList.shift()) {
             if (step[k] === undefined) {
-                console.log("[Warn] can't found namespace '" + ns + "'");
+                if(wozllajs.debug) {
+                    console.log("[Warn] can't found namespace '" + ns + "'");
+                }
                 return null;
             }
             step = step[k];
@@ -1878,9 +1884,9 @@ this.wozllajs = this.wozllajs || {};
         },
         get : function(key) {
             if(key === undefined) {
-                return data;
+                return this.data;
             }
-            return this.data[key];
+            return this.data[key] || [];
         },
         sort : function(key, sorter) {
             this.data[key].sort(sorter);
@@ -2026,10 +2032,10 @@ this.wozllajs.Touch = (function() {
         'dblclick' : true
     };
 
+    function emptyTouchStart() {}
     var listenerHolder = new wozllajs.EventDispatcher();
     var objectTouchListenerMap = {};
     var touchedGameObject;
-    var touchedListener;
 
     function getCanvasOffset() {
         var obj = topCanvas;
@@ -2039,6 +2045,10 @@ this.wozllajs.Touch = (function() {
             offset.y += obj.offsetTop;
         }
         return offset;
+    }
+
+    function getListenerTouchStartKey() {
+        return '_listener_touchstart';
     }
 
     function dispatchEvent(e) {
@@ -2060,23 +2070,22 @@ this.wozllajs.Touch = (function() {
         var x = e.x;
         var y = e.y;
         touchedGameObject = null;
-        touchedListener = null;
         listeners = listenerHolder.getListenersByType(type);
         if(listeners) {
             for(i=0,len=listeners.length; i<len; i++) {
                 listener = listeners[i];
-                console.log(listener.layerZ, touchedGameObject);
                 gameObject = listener.gameObject;
                 handler = listener.handler;
-                if(touchedGameObject && touchedGameObject === gameObject) {
-                    handler && handler(e);
-                }
-                else {
+                if(!touchedGameObject) {
                     localPos = gameObject.transform.globalToLocal(x, y);
                     if(gameObject.testHit(localPos.x, localPos.y)) {
                         touchedGameObject = gameObject;
-                        touchedListener = listener;
                         handler && handler(e);
+                    }
+                }
+                else if(touchedGameObject === gameObject) {
+                    if(handler && handler !== emptyTouchStart) {
+                        handler(e);
                     }
                 }
             }
@@ -2123,7 +2132,7 @@ this.wozllajs.Touch = (function() {
         var type = e.type;
         var x = e.x;
         var y = e.y;
-        listeners = listenerHolder.getListenersByType(type);
+        listeners = [].concat(listenerHolder.getListenersByType(type));
         if(listeners) {
             for(i=0,len=listeners.length; i<len; i++) {
                 listener = listeners[i];
@@ -2140,17 +2149,23 @@ this.wozllajs.Touch = (function() {
     }
 
     function onEvent(e) {
-        var touchEvent, canvasOffset, x, y;
+        var touchEvent, canvasOffset, x, y, t;
         var type = e.type;
         canvasOffset = getCanvasOffset();
         if (!e.touches) {
             x = e.pageX - canvasOffset.x;
             y = e.pageY - canvasOffset.y;
         }
+        // touch event
         else if(e.changedTouches) {
-            var t = e.changedTouches[0];
-            x = t.pageX - canvasOffset.x;
-            y = t.pageY - canvasOffset.y;
+            t = e.changedTouches[0];
+            if(e.type === 'click') {
+                x = e.pageX - canvasOffset.x;
+                y = e.pageY - canvasOffset.y;
+            } else {
+                x = t.pageX - canvasOffset.x;
+                y = t.pageY - canvasOffset.y;
+            }
         }
         if(type === 'mousedown') {
             type = 'touchstart';
@@ -2164,6 +2179,7 @@ this.wozllajs.Touch = (function() {
         touchEvent = new wozllajs.TouchEvent(x, y, type, e);
         dispatchEvent(touchEvent);
     }
+
 
 
     return {
@@ -2199,12 +2215,24 @@ this.wozllajs.Touch = (function() {
         },
 
         on : function(type, gameObject, listener) {
-            var getLayerZ = wozllajs.LayerManager.getLayerZ;
+            var autoTouchstartList, autoTouchstart;
+            var layerZ = wozllajs.LayerManager.getLayerZ(gameObject.getEventLayer());
             type = mouseTouchMap[type] || type;
+            if(type !== 'touchstart') {
+                autoTouchstartList = listener[getListenerTouchStartKey()]
+                    = listener[getListenerTouchStartKey()] || [];
+                autoTouchstart = {
+                    gameObject : gameObject,
+                    handler : emptyTouchStart,
+                    layerZ : layerZ
+                };
+                autoTouchstartList.push(autoTouchstart);
+                listenerHolder.addEventListener('touchstart', autoTouchstart);
+            }
             listenerHolder.addEventListener(type, {
                 gameObject : gameObject,
                 handler : listener,
-                layerZ : getLayerZ(gameObject.getEventLayer())
+                layerZ : layerZ
             });
             listenerHolder.sort(type, function(a, b) {
                 return b.layerZ - a.layerZ;
@@ -2212,14 +2240,21 @@ this.wozllajs.Touch = (function() {
         },
 
         off : function(type, gameObject, listener) {
-            var i, l, len;
-            var listeners = listenerHolder.get(type);
+            var i, l, len, j, len2, autoTouchstartList;
+            var listeners = listenerHolder.getListenersByType(type);
             type = mouseTouchMap[type] || type;
             if(listeners) {
                 for(i=0,len=listeners.length; i<len; i++) {
                     l = listeners[i];
-                    if(l.gameObject === gameObject && l.listener === listener) {
-                        listenerHolder.remove(type, l);
+                    if(l.gameObject === gameObject && l.handler === listener) {
+                        listenerHolder.removeEventListener(type, l);
+                        autoTouchstartList = listener[getListenerTouchStartKey()];
+                        if(autoTouchstartList) {
+                            for(j=0,len2=autoTouchstartList.length; j<len2; j++) {
+                                listenerHolder.removeEventListener('touchstart', autoTouchstartList[j].handler);
+                            }
+                            delete listener[getListenerTouchStartKey()];
+                        }
                         return;
                     }
                 }
@@ -2254,29 +2289,42 @@ this.wozllajs.EventAdmin = (function() {
 
     var eventDispatcher = new wozllajs.EventDispatcher();
 
+    function getProxyKey(type) {
+        return '_wozllajs_proxy_' + type;
+    }
+
     return {
 
-        on : function(type, scope, listener) {
-            var proxy = listener['_wozllajs_proxy_' + type] = wozllajs.proxy(listener, scope);
-
+        on : function(type, gameObject, listener, scope) {
+            var proxyKey = getProxyKey(type);
+            var proxy = wozllajs.proxy(listener, scope);
+            listener[proxyKey] = listener[proxyKey] || [];
+            listener[proxyKey].push(proxy);
             if(wozllajs.Touch.isTouchEvent(type)) {
-                wozllajs.Touch.on(type, scope, listener);
-                return;
+                wozllajs.Touch.on(type, gameObject, proxy);
+            } else {
+                eventDispatcher.addEventListener(type, proxy);
             }
-
-            eventDispatcher.addEventListener(type, proxy);
         },
 
-        off : function(type, scope, listener) {
-            var proxy = listener['_wozllajs_proxy_' + type];
-            listener['_wozllajs_proxy_' + type] = false;
-            if(proxy) {
-                if(wozllajs.Touch.isTouchEvent(type)) {
-                    wozllajs.Touch.off(type, scope, listener);
-                    return;
+        off : function(type, gameObject, listener) {
+            var proxy, i, len;
+            var proxyKey = getProxyKey(type);
+            var proxies = listener[proxyKey];
+            var isTouch = wozllajs.Touch.isTouchEvent(type);
+            if(proxies) {
+                for(i=0,len=proxies.length; i<len; i++) {
+                    proxy = proxies[i];
+                    if(proxy) {
+                        if(isTouch) {
+                            wozllajs.Touch.off(type, gameObject, proxy);
+                        } else {
+                            eventDispatcher.removeEventListener(type, proxy);
+                        }
+                    }
                 }
-                eventDispatcher.removeEventListener(type, proxy);
             }
+            delete listener[proxyKey];
         },
 
         notify : function(type, params) {
@@ -2451,12 +2499,23 @@ this.wozllajs = this.wozllajs || {};
 this.wozllajs.LayerManager = (function() {
 
     var layerObjects = new wozllajs.Array2D(); // TODO 固定array2D
-    var layers = null;
+    var layers = {};
+    var layerList = [];
 
     return {
 
         init : function(theLayers) {
+            var name;
             layers = theLayers;
+            for(name in theLayers) {
+                layerList.push({
+                    name : name,
+                    z : theLayers[name]
+                });
+            }
+            layerList.sort(function(a, b) {
+                return b.z - a.z;
+            });
         },
 
         appendTo : function(layerId, gameObject) {
@@ -2472,7 +2531,11 @@ this.wozllajs.LayerManager = (function() {
         },
 
         getLayerObjects : function(layerId) {
-            return [].concat(layerObjects.get(layerId));
+            return layerObjects.get(layerId);
+        },
+
+        getSortedLayerList : function() {
+            return layerList;
         }
     }
 
@@ -2495,7 +2558,11 @@ this.wozllajs = this.wozllajs || {};
 
 	GameObject.prototype = {
 
+        UID : null,
+
 		id : null,
+
+        isGameObject : true,
 
 		transform : null,
 
@@ -2540,6 +2607,7 @@ this.wozllajs = this.wozllajs || {};
         _cacheOffsetY : 0,
 
 		initialize : function(id) {
+            this.UID = wozllajs.UniqueKeyGen ++;
 			this.id = id;
 			this.transform = new wozllajs.Transform();
 			this._behaviours = {};
@@ -2928,16 +2996,21 @@ this.wozllajs = this.wozllajs || {};
 			return this._behaviours[id] || this._aliasMap[id];
 		},
 
-        on : function(type, listener) {
-            wozllajs.EventAdmin.on(type, this, listener);
+        on : function(type, listener, scope) {
+            var proxy = listener[this._getSimpleProxyKey(scope, type)] = wozllajs.proxy(listener, scope);
+            wozllajs.EventAdmin.on(type, this, proxy, scope);
         },
 
-        off : function(type, listener) {
-            wozllajs.EventAdmin.off(type, this, listener);
+        off : function(type, listener, scope) {
+            wozllajs.EventAdmin.off(type, this, listener[this._getSimpleProxyKey(scope, type)]);
         },
 
         notify : function(type, params) {
             wozllajs.EventAdmin.notify(type, params);
+        },
+
+        _getSimpleProxyKey : function(scope, type) {
+            return '_sp_' + scope.UID + '.' + type;
         },
 
 		_draw : function(context, visibleRect) {
@@ -3230,6 +3303,8 @@ this.wozllajs = this.wozllajs || {};
 
 	Component.prototype = {
 
+        UID : null,
+
 	    id : null,
 
 	    alias : null,
@@ -3247,6 +3322,7 @@ this.wozllajs = this.wozllajs || {};
 	    			this[p] = params[p];
 	    		}
 	    	}
+            this.UID = wozllajs.UniqueKeyGen ++;
 	    },
 
 	    checkParams : function(params) {},
@@ -3263,12 +3339,12 @@ this.wozllajs = this.wozllajs || {};
 	        return wozllajs.ResourceManager.getResource(id);
 	    },
 
-        on : function(type, listener) {
-            this.gameObject.on(type, listener);
+        on : function(type, listener, scope) {
+            this.gameObject.on(type, listener, scope);
         },
 
-        off : function(type, listener) {
-            this.gameObject.off(type, listener);
+        off : function(type, listener, scope) {
+            this.gameObject.off(type, listener, scope);
         },
 
         notify : function(type, params) {
@@ -3386,9 +3462,10 @@ this.wozllajs = this.wozllajs || {};
 
 	p.type = wozllajs.Component.BEHAVIOUR;
 
-	p.update = function(camera) {
-		throw new Error('a subclass of Behaviour must implements method "update"');
-	};
+    /**
+     * @abstract
+     */
+	// p.update = function(camera) {};
 
     /**
      * @abstract
@@ -3712,20 +3789,30 @@ wozllajs.defineComponent('renderer.TextureButton', {
     name : 'Undefined',
 
     initComponent : function() {
-        var me = this;
-        me.JSONTextureRenderer_initComponent();
-        if(me.frames) {
-            me.currentFrame = me.frames[me.normalIndex];
-            me.on('touchstart', function(e) {
-                me.currentFrame = me.frames[me.pressIndex];
-            });
-            me.on('touchend', function(e) {
-                me.currentFrame = me.frames[me.normalIndex];
-            });
-            me.on('click', function(e) {
-                wozllajs.EventAdmin.notify(me.name + '.click');
-            });
+        this.JSONTextureRenderer_initComponent();
+        if(this.frames) {
+            this.currentFrame = this.frames[this.normalIndex];
+            this.on('touchstart', this.onTouchStart, this);
+            this.on('touchend', this.onTouchEnd, this);
+            this.on('click', this.onClick, this);
         }
+    },
+
+    onTouchStart : function() {
+        this.currentFrame = this.frames[this.pressIndex];
+    },
+
+    onTouchEnd : function() {
+        this.currentFrame = this.frames[this.normalIndex];
+    },
+    onClick : function() {
+        wozllajs.EventAdmin.notify(this.name + '.click');
+    },
+
+    destroyComponent : function() {
+        this.off('touchstart', this.onTouchStart, this);
+        this.off('touchend', this.onTouchEnd, this);
+        this.off('click', this.onClick, this);
     }
 
 });;
