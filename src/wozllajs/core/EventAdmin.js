@@ -6,23 +6,23 @@ this.wozllajs.EventAdmin = (function() {
 
     return {
 
-        on : function(type, gameObject, listener) {
-            var proxy = listener['_wozllajs_proxy_' + type] = wozllajs.proxy(listener, gameObject);
+        on : function(type, scope, listener) {
+            var proxy = listener['_wozllajs_proxy_' + type] = wozllajs.proxy(listener, scope);
 
             if(wozllajs.Touch.isTouchEvent(type)) {
-                wozllajs.Touch.on(type, gameObject, listener);
+                wozllajs.Touch.on(type, scope, listener);
                 return;
             }
 
             eventDispatcher.addEventListener(type, proxy);
         },
 
-        off : function(type, gameObject, listener) {
+        off : function(type, scope, listener) {
             var proxy = listener['_wozllajs_proxy_' + type];
             listener['_wozllajs_proxy_' + type] = false;
             if(proxy) {
                 if(wozllajs.Touch.isTouchEvent(type)) {
-                    wozllajs.Touch.off(type, gameObject, listener);
+                    wozllajs.Touch.off(type, scope, listener);
                     return;
                 }
                 eventDispatcher.removeEventListener(type, proxy);
