@@ -8,25 +8,33 @@ wozllajs.defineComponent('renderer.TextureButton', {
 
     pressIndex : null,
 
-    handler : null,
+    name : 'Undefined',
 
     initComponent : function() {
-        var me = this;
-        me.JSONTextureRenderer_initComponent();
-        if(me.frames) {
-            me.currentFrame = me.frames[me.normalIndex];
-            me.on('touchstart', function(e) {
-                console.log('touchstart');
-                me.currentFrame = me.frames[me.pressIndex];
-            });
-            me.on('touchend', function(e) {
-                console.log('touchend');
-                me.currentFrame = me.frames[me.normalIndex];
-            });
-            me.on('click', function(e) {
-                console.log('click');
-            });
+        this.JSONTextureRenderer_initComponent();
+        if(this.frames) {
+            this.currentFrame = this.frames[this.normalIndex];
+            this.on('touchstart', this.onTouchStart, this);
+            this.on('touchend', this.onTouchEnd, this);
+            this.on('click', this.onClick, this);
         }
+    },
+
+    onTouchStart : function() {
+        this.currentFrame = this.frames[this.pressIndex];
+    },
+
+    onTouchEnd : function() {
+        this.currentFrame = this.frames[this.normalIndex];
+    },
+    onClick : function() {
+        wozllajs.EventAdmin.notify(this.name + '.click');
+    },
+
+    destroyComponent : function() {
+        this.off('touchstart', this.onTouchStart, this);
+        this.off('touchend', this.onTouchEnd, this);
+        this.off('click', this.onClick, this);
     }
 
 });

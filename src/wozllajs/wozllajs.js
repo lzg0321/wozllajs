@@ -8,12 +8,16 @@ this.wozllajs = this.wozllajs || {};
 
     var componentMap = {};
 
+    wozllajs.UniqueKeyGen = 0;
+
+    wozllajs.debug = false;
+
     wozllajs.isTouchSupport = 'ontouchstart' in window;
 
     wozllajs.proxy = function (method, scope) {
         var aArgs = Array.prototype.slice.call(arguments, 2);
         return function () {
-            return method.apply(scope, Array.prototype.slice.call(arguments, 0).concat(aArgs));
+            return method.apply(scope || method, Array.prototype.slice.call(arguments, 0).concat(aArgs));
         };
     };
 
@@ -56,7 +60,9 @@ this.wozllajs = this.wozllajs || {};
         var k = null;
         while (k = NSList.shift()) {
             if (step[k] === undefined) {
-                console.log("[Warn] can't found namespace '" + ns + "'");
+                if(wozllajs.debug) {
+                    console.log("[Warn] can't found namespace '" + ns + "'");
+                }
                 return null;
             }
             step = step[k];
