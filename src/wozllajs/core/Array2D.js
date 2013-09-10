@@ -13,9 +13,9 @@ this.wozllajs = this.wozllajs || {};
         },
         get : function(key) {
             if(key === undefined) {
-                return data;
+                return this.data;
             }
-            return this.data[key];
+            return this.data[key] || [];
         },
         sort : function(key, sorter) {
             this.data[key].sort(sorter);
