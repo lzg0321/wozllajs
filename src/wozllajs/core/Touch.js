@@ -19,10 +19,10 @@ this.wozllajs.Touch = (function() {
         'dblclick' : true
     };
 
+    function emptyTouchStart() {}
     var listenerHolder = new wozllajs.EventDispatcher();
     var objectTouchListenerMap = {};
     var touchedGameObject;
-    var touchedListener;
 
     function getCanvasOffset() {
         var obj = topCanvas;
@@ -32,6 +32,10 @@ this.wozllajs.Touch = (function() {
             offset.y += obj.offsetTop;
         }
         return offset;
+    }
+
+    function getListenerTouchStartKey() {
+        return '_listener_touchstart';
     }
 
     function dispatchEvent(e) {
@@ -53,22 +57,22 @@ this.wozllajs.Touch = (function() {
         var x = e.x;
         var y = e.y;
         touchedGameObject = null;
-        touchedListener = null;
         listeners = listenerHolder.getListenersByType(type);
         if(listeners) {
             for(i=0,len=listeners.length; i<len; i++) {
                 listener = listeners[i];
                 gameObject = listener.gameObject;
                 handler = listener.handler;
-                if(touchedGameObject && touchedGameObject === gameObject) {
-                    handler && handler(e);
-                }
-                else {
+                if(!touchedGameObject) {
                     localPos = gameObject.transform.globalToLocal(x, y);
                     if(gameObject.testHit(localPos.x, localPos.y)) {
                         touchedGameObject = gameObject;
-                        touchedListener = listener;
                         handler && handler(e);
+                    }
+                }
+                else if(touchedGameObject === gameObject) {
+                    if(handler && handler !== emptyTouchStart) {
+                        handler(e);
                     }
                 }
             }
@@ -115,7 +119,7 @@ this.wozllajs.Touch = (function() {
         var type = e.type;
         var x = e.x;
         var y = e.y;
-        listeners = listenerHolder.getListenersByType(type);
+        listeners = [].concat(listenerHolder.getListenersByType(type));
         if(listeners) {
             for(i=0,len=listeners.length; i<len; i++) {
                 listener = listeners[i];
@@ -132,17 +136,23 @@ this.wozllajs.Touch = (function() {
     }
 
     function onEvent(e) {
-        var touchEvent, canvasOffset, x, y;
+        var touchEvent, canvasOffset, x, y, t;
         var type = e.type;
         canvasOffset = getCanvasOffset();
         if (!e.touches) {
             x = e.pageX - canvasOffset.x;
             y = e.pageY - canvasOffset.y;
         }
+        // touch event
         else if(e.changedTouches) {
-            var t = e.changedTouches[0];
-            x = t.pageX - canvasOffset.x;
-            y = t.pageY - canvasOffset.y;
+            t = e.changedTouches[0];
+            if(e.type === 'click') {
+                x = e.pageX - canvasOffset.x;
+                y = e.pageY - canvasOffset.y;
+            } else {
+                x = t.pageX - canvasOffset.x;
+                y = t.pageY - canvasOffset.y;
+            }
         }
         if(type === 'mousedown') {
             type = 'touchstart';
@@ -156,6 +166,7 @@ this.wozllajs.Touch = (function() {
         touchEvent = new wozllajs.TouchEvent(x, y, type, e);
         dispatchEvent(touchEvent);
     }
+
 
 
     return {
@@ -191,30 +202,54 @@ this.wozllajs.Touch = (function() {
         },
 
         on : function(type, gameObject, listener) {
-            var getLayerZ = wozllajs.LayerManager.getLayerZ;
+            var autoTouchstartList, autoTouchstart;
+            var layerZ = wozllajs.LayerManager.getLayerZ(gameObject.getEventLayer());
             type = mouseTouchMap[type] || type;
+            if(type !== 'touchstart') {
+                autoTouchstartList = listener[getListenerTouchStartKey()]
+                    = listener[getListenerTouchStartKey()] || [];
+                autoTouchstart = {
+                    gameObject : gameObject,
+                    handler : emptyTouchStart,
+                    layerZ : layerZ
+                };
+                autoTouchstartList.push(autoTouchstart);
+                listenerHolder.addEventListener('touchstart', autoTouchstart);
+            }
             listenerHolder.addEventListener(type, {
                 gameObject : gameObject,
-                handler : listener
+                handler : listener,
+                layerZ : layerZ
             });
             listenerHolder.sort(type, function(a, b) {
-                return getLayerZ(b.gameObject.getLayer(true)) - getLayerZ(a.gameObject.getLayer(true));
+                return b.layerZ - a.layerZ;
             });
         },
 
         off : function(type, gameObject, listener) {
-            var i, l, len;
-            var listeners = listenerHolder.get(type);
+            var i, l, len, j, len2, autoTouchstartList;
+            var listeners = listenerHolder.getListenersByType(type);
             type = mouseTouchMap[type] || type;
             if(listeners) {
                 for(i=0,len=listeners.length; i<len; i++) {
                     l = listeners[i];
-                    if(l.gameObject === gameObject && l.listener === listener) {
-                        listenerHolder.remove(type, l);
+                    if(l.gameObject === gameObject && l.handler === listener) {
+                        listenerHolder.removeEventListener(type, l);
+                        autoTouchstartList = listener[getListenerTouchStartKey()];
+                        if(autoTouchstartList) {
+                            for(j=0,len2=autoTouchstartList.length; j<len2; j++) {
+                                listenerHolder.removeEventListener('touchstart', autoTouchstartList[j].handler);
+                            }
+                            delete listener[getListenerTouchStartKey()];
+                        }
                         return;
                     }
                 }
             }
+        },
+
+        getListenerHolder : function() {
+            return listenerHolder;
         }
     }
 
