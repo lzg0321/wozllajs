@@ -11,9 +11,10 @@ this.wozllajs = this.wozllajs || {};
 
 	p.type = wozllajs.Component.BEHAVIOUR;
 
-	p.update = function(camera) {
-		throw new Error('a subclass of Behaviour must implements method "update"');
-	};
+    /**
+     * @abstract
+     */
+	// p.update = function(camera) {};
 
     /**
      * @abstract
