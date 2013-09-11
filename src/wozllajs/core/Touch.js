@@ -59,6 +59,7 @@ this.wozllajs.Touch = (function() {
         touchedGameObject = null;
         listeners = listenerHolder.getListenersByType(type);
         if(listeners) {
+            listeners = [].concat(listeners);
             for(i=0,len=listeners.length; i<len; i++) {
                 listener = listeners[i];
                 gameObject = listener.gameObject;
@@ -85,6 +86,7 @@ this.wozllajs.Touch = (function() {
         var type = e.type;
         listeners = listenerHolder.getListenersByType(type);
         if(listeners) {
+            listeners = [].concat(listeners);
             for(i=0,len=listeners.length; i<len; i++) {
                 listener = listeners[i];
                 gameObject = listener.gameObject;
@@ -102,6 +104,7 @@ this.wozllajs.Touch = (function() {
         var type = e.type;
         listeners = listenerHolder.getListenersByType(type);
         if(listeners) {
+            listeners = [].concat(listeners);
             for(i=0,len=listeners.length; i<len; i++) {
                 listener = listeners[i];
                 gameObject = listener.gameObject;
@@ -121,6 +124,7 @@ this.wozllajs.Touch = (function() {
         var y = e.y;
         listeners = [].concat(listenerHolder.getListenersByType(type));
         if(listeners) {
+            listeners = [].concat(listeners);
             for(i=0,len=listeners.length; i<len; i++) {
                 listener = listeners[i];
                 gameObject = listener.gameObject;
@@ -234,11 +238,12 @@ this.wozllajs.Touch = (function() {
                 for(i=0,len=listeners.length; i<len; i++) {
                     l = listeners[i];
                     if(l.gameObject === gameObject && l.handler === listener) {
+
                         listenerHolder.removeEventListener(type, l);
                         autoTouchstartList = listener[getListenerTouchStartKey()];
                         if(autoTouchstartList) {
                             for(j=0,len2=autoTouchstartList.length; j<len2; j++) {
-                                listenerHolder.removeEventListener('touchstart', autoTouchstartList[j].handler);
+                                listenerHolder.removeEventListener('touchstart', autoTouchstartList[j]);
                             }
                             delete listener[getListenerTouchStartKey()];
                         }
