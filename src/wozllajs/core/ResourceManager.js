@@ -23,7 +23,21 @@ this.wozllajs.ResourceManager = (function() {
         },
 
         load : function(params) {
+            var me = this;
             var loadHandler = function() {
+                var mark = {};
+                var item;
+                for(var i= 0; i<params.items.length; i++) {
+                    item = params.items[i];
+                    if(typeof item === 'object') {
+                        item = item.id;
+                    }
+                    if(mark[item] || me.getResource(item)) {
+                        params.items.splice(i, 1);
+                        i--;
+                    }
+                    mark[item] = true;
+                }
                 if(params.items.length === 0) {
                     setTimeout(params.onProgress, 0);
                     setTimeout(params.onComplete, 1);
