@@ -1936,7 +1936,7 @@ this.wozllajs = this.wozllajs || {};
             this.listenerMap.push(type, listener);
         },
         removeEventListener : function(type, listener) {
-            this.listenerMap.remove(type, listener);
+            return this.listenerMap.remove(type, listener);
         },
         getListenersByType : function(type) {
             return this.listenerMap.get(type);
@@ -2072,6 +2072,7 @@ this.wozllajs.Touch = (function() {
         touchedGameObject = null;
         listeners = listenerHolder.getListenersByType(type);
         if(listeners) {
+            listeners = [].concat(listeners);
             for(i=0,len=listeners.length; i<len; i++) {
                 listener = listeners[i];
                 gameObject = listener.gameObject;
@@ -2098,6 +2099,7 @@ this.wozllajs.Touch = (function() {
         var type = e.type;
         listeners = listenerHolder.getListenersByType(type);
         if(listeners) {
+            listeners = [].concat(listeners);
             for(i=0,len=listeners.length; i<len; i++) {
                 listener = listeners[i];
                 gameObject = listener.gameObject;
@@ -2115,6 +2117,7 @@ this.wozllajs.Touch = (function() {
         var type = e.type;
         listeners = listenerHolder.getListenersByType(type);
         if(listeners) {
+            listeners = [].concat(listeners);
             for(i=0,len=listeners.length; i<len; i++) {
                 listener = listeners[i];
                 gameObject = listener.gameObject;
@@ -2134,6 +2137,7 @@ this.wozllajs.Touch = (function() {
         var y = e.y;
         listeners = [].concat(listenerHolder.getListenersByType(type));
         if(listeners) {
+            listeners = [].concat(listeners);
             for(i=0,len=listeners.length; i<len; i++) {
                 listener = listeners[i];
                 gameObject = listener.gameObject;
@@ -2247,11 +2251,12 @@ this.wozllajs.Touch = (function() {
                 for(i=0,len=listeners.length; i<len; i++) {
                     l = listeners[i];
                     if(l.gameObject === gameObject && l.handler === listener) {
+
                         listenerHolder.removeEventListener(type, l);
                         autoTouchstartList = listener[getListenerTouchStartKey()];
                         if(autoTouchstartList) {
                             for(j=0,len2=autoTouchstartList.length; j<len2; j++) {
-                                listenerHolder.removeEventListener('touchstart', autoTouchstartList[j].handler);
+                                listenerHolder.removeEventListener('touchstart', autoTouchstartList[j]);
                             }
                             delete listener[getListenerTouchStartKey()];
                         }
@@ -2461,7 +2466,21 @@ this.wozllajs.ResourceManager = (function() {
         },
 
         load : function(params) {
+            var me = this;
             var loadHandler = function() {
+                var mark = {};
+                var item;
+                for(var i= 0; i<params.items.length; i++) {
+                    item = params.items[i];
+                    if(typeof item === 'object') {
+                        item = item.id;
+                    }
+                    if(mark[item] || me.getResource(item)) {
+                        params.items.splice(i, 1);
+                        i--;
+                    }
+                    mark[item] = true;
+                }
                 if(params.items.length === 0) {
                     setTimeout(params.onProgress, 0);
                     setTimeout(params.onComplete, 1);
