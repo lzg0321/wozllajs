@@ -11,7 +11,7 @@ this.wozllajs = this.wozllajs || {};
             this.listenerMap.push(type, listener);
         },
         removeEventListener : function(type, listener) {
-            this.listenerMap.remove(type, listener);
+            return this.listenerMap.remove(type, listener);
         },
         getListenersByType : function(type) {
             return this.listenerMap.get(type);
