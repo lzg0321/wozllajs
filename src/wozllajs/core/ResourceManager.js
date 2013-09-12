@@ -7,7 +7,10 @@ this.wozllajs.ResourceManager = (function() {
 
     var handlerQueue = [];
 
+    var loading = false;
+
     function loadNext() {
+        if(loading) return;
         var handler = handlerQueue.shift();
         handler && handler()
     }
@@ -24,6 +27,8 @@ this.wozllajs.ResourceManager = (function() {
 
         load : function(params) {
             var loadHandler = function() {
+                loading = true;
+                //console.log(params.items);
                 var mark = {};
                 var item;
                 for(var i= 0; i<params.items.length; i++) {
@@ -40,11 +45,13 @@ this.wozllajs.ResourceManager = (function() {
                 if(params.items.length === 0) {
                     setTimeout(params.onProgress, 0);
                     setTimeout(params.onComplete, 1);
+                    loading = false;
+                    loadNext();
                     return;
                 }
                 var total = params.items.length;
                 var loaded = 0;
-                queue.addEventListener('fileload', function() {
+                queue.addEventListener('fileload', function(e) {
                     params.onProgress && params.onProgress({
                         total : total,
                         loaded : ++loaded,
@@ -54,6 +61,7 @@ this.wozllajs.ResourceManager = (function() {
                 queue.addEventListener('complete', function() {
                     queue.removeAllEventListeners();
                     params.onComplete && params.onComplete();
+                    loading = false;
                     loadNext();
                 });
                 queue.loadManifest(params.items);
