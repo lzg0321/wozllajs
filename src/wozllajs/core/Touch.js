@@ -219,6 +219,9 @@ this.wozllajs.Touch = (function() {
                 };
                 autoTouchstartList.push(autoTouchstart);
                 listenerHolder.addEventListener('touchstart', autoTouchstart);
+                listenerHolder.sort('touchstart', function(a, b) {
+                    return b.layerZ - a.layerZ;
+                });
             }
             listenerHolder.addEventListener(type, {
                 gameObject : gameObject,

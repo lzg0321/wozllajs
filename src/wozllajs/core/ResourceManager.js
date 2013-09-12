@@ -23,7 +23,6 @@ this.wozllajs.ResourceManager = (function() {
         },
 
         load : function(params) {
-            var me = this;
             var loadHandler = function() {
                 var mark = {};
                 var item;
@@ -32,7 +31,7 @@ this.wozllajs.ResourceManager = (function() {
                     if(typeof item === 'object') {
                         item = item.id;
                     }
-                    if(mark[item] || me.getResource(item)) {
+                    if(mark[item] || wozllajs.ResourceManager.getResource(item)) {
                         params.items.splice(i, 1);
                         i--;
                     }
