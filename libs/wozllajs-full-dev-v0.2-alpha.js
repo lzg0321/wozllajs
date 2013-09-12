@@ -2493,10 +2493,7 @@ this.wozllajs.ResourceManager = (function() {
 
         load : function(params) {
             var loadHandler = function() {
-                var start = Date.now();
                 loading = true;
-                console.log('--------------');
-                console.log(start);
                 //console.log(params.items);
                 var mark = {};
                 var item;
@@ -2512,7 +2509,6 @@ this.wozllajs.ResourceManager = (function() {
                     mark[item] = true;
                 }
                 if(params.items.length === 0) {
-                    console.log('end ' + (Date.now() - start));
                     setTimeout(params.onProgress, 0);
                     setTimeout(params.onComplete, 1);
                     loading = false;
@@ -2522,7 +2518,6 @@ this.wozllajs.ResourceManager = (function() {
                 var total = params.items.length;
                 var loaded = 0;
                 queue.addEventListener('fileload', function(e) {
-                    console.log(start + ' loaded ' + e.item.id);
                     params.onProgress && params.onProgress({
                         total : total,
                         loaded : ++loaded,
@@ -2531,7 +2526,6 @@ this.wozllajs.ResourceManager = (function() {
                 });
                 queue.addEventListener('complete', function() {
                     queue.removeAllEventListeners();
-                    console.log(start + ' end ' + (Date.now() - start));
                     params.onComplete && params.onComplete();
                     loading = false;
                     loadNext();
