@@ -7,7 +7,10 @@ this.wozllajs = this.wozllajs || {};
 	};
 	
 	EventDispatcher.prototype = {
-        addEventListener : function(type, listener) {
+        addEventListener : function(type, listener, once) {
+            if(once) {
+                listener._once_flag = true;
+            }
             this.listenerMap.push(type, listener);
         },
         removeEventListener : function(type, listener) {
@@ -39,18 +42,24 @@ this.wozllajs = this.wozllajs || {};
             if(async) {
                 for(i=0, len=listeners.length; i<len; i++) {
                     listener = listeners[i];
-                    (function(l) {
+                    (function(d, t, p, l) {
                         setTimeout(function() {
-                            l.apply(l, [params]);
+                            if(l._once_flag) {
+                                d.removeEventListener(t, l);
+                            }
+                            l.apply(l, [p]);
                         }, 0);
-                    })(listener);
+                    })(this, type, params, listener);
                 }
             } else {
                 for(i=0, len=listeners.length; i<len; i++) {
                     listener = listeners[i];
-                   if(false === listener.apply(listener, [params])) {
-                       return;
-                   }
+                    if(listener._once_flag) {
+                        this.removeEventListener(type, listener);
+                    }
+                    if(false === listener.apply(listener, [params])) {
+                        return;
+                    }
                 }
             }
         }

@@ -1932,7 +1932,10 @@ this.wozllajs = this.wozllajs || {};
 	};
 	
 	EventDispatcher.prototype = {
-        addEventListener : function(type, listener) {
+        addEventListener : function(type, listener, once) {
+            if(once) {
+                listener._once_flag = true;
+            }
             this.listenerMap.push(type, listener);
         },
         removeEventListener : function(type, listener) {
@@ -1964,18 +1967,24 @@ this.wozllajs = this.wozllajs || {};
             if(async) {
                 for(i=0, len=listeners.length; i<len; i++) {
                     listener = listeners[i];
-                    (function(l) {
+                    (function(d, t, p, l) {
                         setTimeout(function() {
-                            l.apply(l, [params]);
+                            if(l._once_flag) {
+                                d.removeEventListener(t, l);
+                            }
+                            l.apply(l, [p]);
                         }, 0);
-                    })(listener);
+                    })(this, type, params, listener);
                 }
             } else {
                 for(i=0, len=listeners.length; i<len; i++) {
                     listener = listeners[i];
-                   if(false === listener.apply(listener, [params])) {
-                       return;
-                   }
+                    if(listener._once_flag) {
+                        this.removeEventListener(type, listener);
+                    }
+                    if(false === listener.apply(listener, [params])) {
+                        return;
+                    }
                 }
             }
         }
@@ -2303,7 +2312,11 @@ this.wozllajs.EventAdmin = (function() {
 
     return {
 
-        on : function(type, gameObject, listener, scope) {
+        once : function(type, gameObject, listener, scope) {
+            wozllajs.EventAdmin.on(type, gameObject, listener, scope, true);
+        },
+
+        on : function(type, gameObject, listener, scope, once) {
             var proxyKey, proxy;
             if(typeof gameObject === 'function') {
                 listener = gameObject;
@@ -2315,11 +2328,14 @@ this.wozllajs.EventAdmin = (function() {
             if(wozllajs.Touch.isTouchEvent(type)) {
                 wozllajs.Touch.on(type, gameObject, proxy);
             } else {
-                eventDispatcher.addEventListener(type, proxy);
+                eventDispatcher.addEventListener(type, proxy, once);
             }
         },
 
         off : function(type, gameObject, listener) {
+            if(typeof gameObject === 'function') {
+                listener = gameObject;
+            }
             var proxy, i, len;
             var proxyKey = getProxyKey(type);
             var proxies = listener[proxyKey];
