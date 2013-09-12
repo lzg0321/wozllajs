@@ -11,8 +11,12 @@ this.wozllajs.EventAdmin = (function() {
     return {
 
         on : function(type, gameObject, listener, scope) {
-            var proxyKey = getProxyKey(type);
-            var proxy = wozllajs.proxy(listener, scope);
+            var proxyKey, proxy;
+            if(typeof gameObject === 'function') {
+                listener = gameObject;
+            }
+            proxyKey = getProxyKey(type);
+            proxy = wozllajs.proxy(listener, scope || window);
             listener[proxyKey] = listener[proxyKey] || [];
             listener[proxyKey].push(proxy);
             if(wozllajs.Touch.isTouchEvent(type)) {
