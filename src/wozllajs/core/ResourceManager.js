@@ -25,17 +25,6 @@ this.wozllajs.ResourceManager = (function() {
             queue.remove(id);
         },
 
-        getJSON : function(url, onComplete) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', url, true);
-            xhr.send();
-            xhr.onreadystatechange = function() {
-                if(4 === xhr.readyState) {
-                    onComplete && onComplete(JSON.parse(xhr.responseText));
-                }
-            }
-        },
-
         load : function(params) {
             var loadHandler = function() {
                 loading = true;
