@@ -458,6 +458,11 @@ this.wozllajs = this.wozllajs || {};
             wozllajs.EventAdmin.on(type, this, proxy, scope);
         },
 
+        once : function(type, listener, scope) {
+            var proxy = listener[this._getSimpleProxyKey(scope, type)] = wozllajs.proxy(listener, scope);
+            wozllajs.EventAdmin.once(type, this, proxy, scope);
+        },
+
         off : function(type, listener, scope) {
             wozllajs.EventAdmin.off(type, this, listener[this._getSimpleProxyKey(scope, type)]);
         },
