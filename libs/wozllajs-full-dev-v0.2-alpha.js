@@ -1774,7 +1774,8 @@ this.wozllajs = this.wozllajs || {};
     wozllajs.createComponent = function(namespace, params) {
         var cmpConstructor = componentMap[namespace];
         if(!cmpConstructor) {
-            throw new Error("Can't find Component '" + namespace + "'");
+            console.log("Can't find Component '" + namespace + "'");
+            return null;
         }
         return new cmpConstructor(params);
     };
@@ -1798,7 +1799,7 @@ this.wozllajs = this.wozllajs || {};
                 step = step[k];
             } else {
                 if(step[k]) {
-                    console.log('The namespace "' + namespace + '" has been regsitered, override it.');
+                    //console.log('The namespace "' + namespace + '" has been regsitered, override it.');
                 }
                 if(typeof maker === 'function') {
                     cmpConstructor = maker();
@@ -2489,6 +2490,17 @@ this.wozllajs.ResourceManager = (function() {
 
         removeResource : function(id) {
             queue.remove(id);
+        },
+
+        getJSON : function(url, onComplete) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.send();
+            xhr.onreadystatechange = function() {
+                if(4 === xhr.readyState) {
+                    onComplete && onComplete(JSON.parse(xhr.responseText));
+                }
+            }
         },
 
         load : function(params) {
@@ -3603,6 +3615,11 @@ wozllajs.defineComponent('renderer.TextureRenderer', {
         if(this.frames) {
             this.currentFrame = this.frames[this.index];
         }
+    },
+
+    changeFrameIndex : function(index) {
+        this.index = index;
+        this.currentFrame = this.frames[index];
     },
 
     draw : function(context) {

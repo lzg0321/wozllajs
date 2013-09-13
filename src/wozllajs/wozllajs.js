@@ -77,7 +77,8 @@ this.wozllajs = this.wozllajs || {};
     wozllajs.createComponent = function(namespace, params) {
         var cmpConstructor = componentMap[namespace];
         if(!cmpConstructor) {
-            throw new Error("Can't find Component '" + namespace + "'");
+            console.log("Can't find Component '" + namespace + "'");
+            return null;
         }
         return new cmpConstructor(params);
     };
@@ -101,7 +102,7 @@ this.wozllajs = this.wozllajs || {};
                 step = step[k];
             } else {
                 if(step[k]) {
-                    console.log('The namespace "' + namespace + '" has been regsitered, override it.');
+                    //console.log('The namespace "' + namespace + '" has been regsitered, override it.');
                 }
                 if(typeof maker === 'function') {
                     cmpConstructor = maker();
