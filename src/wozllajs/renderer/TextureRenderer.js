@@ -26,6 +26,11 @@ wozllajs.defineComponent('renderer.TextureRenderer', {
         }
     },
 
+    changeFrameIndex : function(index) {
+        this.index = index;
+        this.currentFrame = this.frames[index];
+    },
+
     draw : function(context) {
         var w, h;
         var f = this.currentFrame;
