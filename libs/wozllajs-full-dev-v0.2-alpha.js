@@ -1723,7 +1723,7 @@ this.wozllajs = this.wozllajs || {};
     };
 
     wozllajs.is = function(testObj, type) {
-        return toString.call(testObj).toLowerCase() === type.toLowerCase();
+        return toString.call(testObj).toLowerCase() === '[object ' + type.toLowerCase() + ']';
     };
 
     wozllajs.indexOf = function(obj, arr) {
@@ -2746,6 +2746,10 @@ this.wozllajs = this.wozllajs || {};
 
         getChildren : function() {
             return this._children;
+        },
+
+        sortChildren : function(func) {
+            this._children.sort(func);
         },
 
 	    isActive : function() {
