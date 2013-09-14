@@ -155,6 +155,10 @@ this.wozllajs = this.wozllajs || {};
             return this._children;
         },
 
+        sortChildren : function(func) {
+            this._children.sort(func);
+        },
+
 	    isActive : function() {
 	    	return this._active;
 	    },
