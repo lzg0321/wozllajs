@@ -26,7 +26,7 @@ this.wozllajs = this.wozllajs || {};
 
 	p.height = 0;
 
-	p.autoClear = true;
+	p.autoClear = false;
 
 	p.GameObject_initialize = p.initialize;
 
