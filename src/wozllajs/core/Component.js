@@ -67,11 +67,11 @@ this.wozllajs = this.wozllajs || {};
 	    },
 
         on : function(type, listener, scope) {
-            this.gameObject.on(type, listener, scope);
+            this.gameObject.on(type, listener, scope || this);
         },
 
         off : function(type, listener, scope) {
-            this.gameObject.off(type, listener, scope);
+            this.gameObject.off(type, listener, scope || this);
         },
 
         notify : function(type, params) {

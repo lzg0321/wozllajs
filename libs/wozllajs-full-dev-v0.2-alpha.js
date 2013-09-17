@@ -3399,11 +3399,11 @@ this.wozllajs = this.wozllajs || {};
 	    },
 
         on : function(type, listener, scope) {
-            this.gameObject.on(type, listener, scope);
+            this.gameObject.on(type, listener, scope || this);
         },
 
         off : function(type, listener, scope) {
-            this.gameObject.off(type, listener, scope);
+            this.gameObject.off(type, listener, scope || this);
         },
 
         notify : function(type, params) {
@@ -3957,7 +3957,20 @@ this.wozllajs = this.wozllajs || {};
             Ajax.ajax({
                 url : url,
                 onComplete: function(data) {
-                    onComplete && onComplete(JSON.parse(data));
+                    if(data) {
+                        onComplete && onComplete(JSON.parse(data));
+                    } else {
+                        onComplete && onComplete({
+                            fail : true,
+                            status : -1
+                        });
+                    }
+                },
+                onFail : function(code) {
+                    onComplete && onComplete({
+                        fail : true,
+                        status : code
+                    });
                 }
             });
         },
@@ -3969,20 +3982,23 @@ this.wozllajs = this.wozllajs || {};
             });
         },
 
-        JSONP : function(url, onComplete) {
-            var callbackId = 'wozllajs_callback_' + Date.now();
-            window[callbackId] = onComplete;
-            url += '&_=' + Date.now() + '&jsoncallback=' + callbackId;
-            // TODO jsonp
-        },
-
         ajax : function(params) {
             var xhr = new XMLHttpRequest();
             xhr.open(params.method || 'GET', params.url, true);
-            xhr.send();
+            try {
+                xhr.send();
+            } catch(e) {
+                setTimeout(function() {
+                    params.onFail && params.onFail(-1);
+                }, 1);
+            }
             xhr.onreadystatechange = function() {
                 if(4 === xhr.readyState) {
-                    params.onComplete && params.onComplete(xhr.responseText);
+                    if(xhr.status === 0 || xhr.status === 200) {
+                        params.onComplete && params.onComplete(xhr.responseText);
+                    } else {
+                        params.onFail && params.onFail(xhr.status);
+                    }
                 }
             }
         }
