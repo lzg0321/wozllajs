@@ -366,6 +366,7 @@ this.wozllajs = this.wozllajs || {};
         	this.transform.updateContext(context);
             if(this._cacheCanvas) {
                 if(!this._cached) {
+                    cacheContext.clearRect(0, 0, this._cacheCanvas.width, this._cacheCanvas.height);
                     cacheContext = this._cacheContext;
                     cacheContext.translate(-this._cacheOffsetX, -this._cacheOffsetY);
                     this._draw(cacheContext, visibleRect);
@@ -388,6 +389,10 @@ this.wozllajs = this.wozllajs || {};
             this._cacheOffsetY = y;
             this._cacheCanvas = wozllajs.createCanvas(width, height);
             this._cacheContext = this._cacheCanvas.getContext('2d');
+            this._cached = false;
+        },
+
+        updateCache : function() {
             this._cached = false;
         },
 
