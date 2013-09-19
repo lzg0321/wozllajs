@@ -2037,7 +2037,7 @@ this.wozllajs.Touch = (function() {
     var activeGestures = {
         'touchstart' : true,
         'touchend' : true,
-        'touchmove' : false,
+        'touchmove' : true,
         'click' : true,
         'dblclick' : true
     };
