@@ -2205,9 +2205,20 @@ this.wozllajs.Touch = (function() {
                 canvas.addEventListener("touchend", onEvent, false);
                 canvas.addEventListener("touchmove", onEvent, false);
             } else {
-                canvas.addEventListener("mousedown", onEvent, false);
-                canvas.addEventListener("mouseup", onEvent, false);
-                canvas.addEventListener("mousemove", onEvent, false);
+                var down = false;
+                canvas.addEventListener("mousedown", function(e) {
+                    down = true;
+                    onEvent(e);
+                }, false);
+                canvas.addEventListener("mouseup", function(e) {
+                    down = false;
+                    onEvent(e);
+                }, false);
+                canvas.addEventListener("mousemove", function(e) {
+                    if(down) {
+                        onEvent(e);
+                    }
+                }, false);
             }
             canvas.addEventListener("click", onEvent, false);
         },
@@ -2820,6 +2831,9 @@ this.wozllajs = this.wozllajs || {};
 
         testHit : function(x, y) {
             var hit = false;
+            if(!this.isActive() || !this.isVisible()) {
+                return hit;
+            }
             if(this._hitTestDelegate) {
                 hit = this._hitTestDelegate.testHit(x, y);
             }

@@ -227,6 +227,9 @@ this.wozllajs = this.wozllajs || {};
 
         testHit : function(x, y) {
             var hit = false;
+            if(!this.isActive() || !this.isVisible()) {
+                return hit;
+            }
             if(this._hitTestDelegate) {
                 hit = this._hitTestDelegate.testHit(x, y);
             }
