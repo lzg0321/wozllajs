@@ -15,7 +15,8 @@
 <script>
     var stage = new wozllajs.Stage('sampleStageId', 'main', 960, 640);
     var stage2 = new wozllajs.Stage('sampleStageId2', 'other', 960, 640);
-
+    stage.autoClear = true;
+    stage2.autoClear = true;
     var gameObject = new wozllajs.GameObject('test');
     gameObject.transform.x = 150;
     gameObject.transform.y = 150;

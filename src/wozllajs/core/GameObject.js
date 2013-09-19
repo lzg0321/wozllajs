@@ -366,6 +366,7 @@ this.wozllajs = this.wozllajs || {};
         	this.transform.updateContext(context);
             if(this._cacheCanvas) {
                 if(!this._cached) {
+                    cacheContext = this._cacheContext;
                     cacheContext.clearRect(0, 0, this._cacheCanvas.width, this._cacheCanvas.height);
                     cacheContext = this._cacheContext;
                     cacheContext.translate(-this._cacheOffsetX, -this._cacheOffsetY);

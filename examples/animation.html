@@ -14,6 +14,7 @@
 <script>
     var canvas = document.getElementById('main');
     var stage = new wozllajs.Stage('sampleStageId', canvas, 960, 640);
+    stage.autoClear = true;
     var gameObject = new wozllajs.GameObject('test');
     gameObject.transform.x = 150;
     gameObject.transform.y = 150;
