@@ -399,6 +399,12 @@ this.wozllajs = this.wozllajs || {};
             this._cacheOffsetY = offsetY || this._cacheOffsetY;
         },
 
+        translateCache : function(deltaX, deltaY) {
+            this._cached = false;
+            this._cacheOffsetX += deltaX;
+            this._cacheOffsetY += deltaY;
+        },
+
         uncache : function() {
             if(this._cacheCanvas) {
                 this._cacheCanvas.dispose && this._cacheCanvas.dispose();
