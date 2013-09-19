@@ -11,9 +11,10 @@
 <script>
     var canvas = document.getElementById('main');
     var stage = new wozllajs.Stage('sampleStageId', canvas, 960, 640);
+    stage.autoClear = true;
     var gameObject = new wozllajs.GameObject('test');
-    gameObject.transform.x = 150;
-    gameObject.transform.y = 150;
+    gameObject.transform.x = 0;
+    gameObject.transform.y = 0;
     gameObject.setRenderer(wozllajs.createComponent('renderer.image', {
         src : 'images/logo.png'
     }));

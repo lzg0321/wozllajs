@@ -2967,7 +2967,7 @@ this.wozllajs = this.wozllajs || {};
                     cacheContext.translate(this._cacheOffsetX, this._cacheOffsetY);
                     this._cached = true;
                 }
-                context.drawImage(this._cacheCanvas, this._cacheOffsetX, this._cacheOffsetY);
+                context.drawImage(this._cacheCanvas, 0, 0);
             } else {
 			    this._draw(context, visibleRect);
             }
@@ -2986,8 +2986,10 @@ this.wozllajs = this.wozllajs || {};
             this._cached = false;
         },
 
-        updateCache : function() {
+        updateCache : function(offsetX, offsetY) {
             this._cached = false;
+            this._cacheOffsetX = offsetX || this._cacheOffsetX;
+            this._cacheOffsetY = offsetY || this._cacheOffsetY;
         },
 
         uncache : function() {
