@@ -20,6 +20,12 @@ wozllajs.defineComponent('renderer.TextureButton', {
         }
     },
 
+    changeTextureFrameIndex : function(normalIndex, pressIndex) {
+        this.normalIndex = normalIndex;
+        this.pressIndex = pressIndex;
+        this.currentFrame = this.frames[this.normalIndex];
+    },
+
     onTouchStart : function() {
         this.currentFrame = this.frames[this.pressIndex];
     },
