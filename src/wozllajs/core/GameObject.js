@@ -159,16 +159,42 @@ this.wozllajs = this.wozllajs || {};
             this._children.sort(func);
         },
 
-	    isActive : function() {
-	    	return this._active;
+	    isActive : function(parent) {
+            if(!parent) {
+	    	    return this._active;
+            } else {
+                var active = true;
+                var o = this;
+                while(o) {
+                    active = active && o._active;
+                    if(!active) {
+                        return false;
+                    }
+                    o = o._parent;
+                }
+                return active;
+            }
 	    },
 
 	    setActive : function(active) {
 	        this._active = !!active;
 	    },
 
-	    isVisible : function() {
-	    	return this._visible;
+	    isVisible : function(parent) {
+            if(!parent) {
+                return this._visible;
+            } else {
+                var visible = true;
+                var o = this;
+                while(o) {
+                    visible = visible && o._visible;
+                    if(!visible) {
+                        return false;
+                    }
+                    o = o._parent;
+                }
+                return visible;
+            }
 	    },
 
 	    setVisible : function(visible) {
@@ -227,7 +253,7 @@ this.wozllajs = this.wozllajs || {};
 
         testHit : function(x, y) {
             var hit = false;
-            if(!this.isActive() || !this.isVisible()) {
+            if(!this.isActive(true) || !this.isVisible(true)) {
                 return hit;
             }
             if(this._hitTestDelegate) {
