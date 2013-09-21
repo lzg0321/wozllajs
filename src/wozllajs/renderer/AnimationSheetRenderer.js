@@ -47,11 +47,19 @@ wozllajs.defineComponent('renderer.AnimationSheetRenderer', {
         if(Time.now - this._currentFrameStartTime >= this.frameTime) {
             this._currentFrameStartTime = Time.now;
             this._currentIndex ++;
-            if(this._currentIndex >= this._playingFrameSequence.length) {
-                this._currentIndex = 0;
-                this._playingFrameSequence = this.animations[this.defaultAnimation];
+            if(!this._playingFrameSequence) {
+                this._currentFrame = null;
+            } else {
+                if(this._currentIndex >= this._playingFrameSequence.length) {
+                    this._currentIndex = 0;
+                    this._playingFrameSequence = this.animations[this.defaultAnimation];
+                }
+                if(this._playingFrameSequence) {
+                    this._currentFrame = this.frames[this._playingFrameSequence[this._currentIndex]];
+                } else {
+                    this._currentFrame = null;
+                }
             }
-            this._currentFrame = this.frames[this._playingFrameSequence[this._currentIndex]];
         }
     },
 
@@ -64,6 +72,11 @@ wozllajs.defineComponent('renderer.AnimationSheetRenderer', {
             oy = frame.offsetY || frame.oy || 0;
             context.drawImage(this.image, frame.x, frame.y, w, h, ox, oy, w, h);
         }
+    },
+
+    stop : function() {
+        this.defaultAnimation = null;
+        this._playingFrameSequence = null;
     },
 
     play : function(animations, defaultAnimation) {
