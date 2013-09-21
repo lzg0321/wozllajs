@@ -58,6 +58,8 @@ this.wozllajs = this.wozllajs || {};
 
 	    destroyComponent : function() {},
 
+        onStageInit : function() {},
+
 	    setGameObject : function(gameObject) {
 	    	this.gameObject = gameObject;
 	    },

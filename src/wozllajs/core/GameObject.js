@@ -319,6 +319,14 @@ this.wozllajs = this.wozllajs || {};
                 }
             }
 	    	this._componentInited = true;
+
+            this._layout && this._layout.onStageInit();
+            this._renderer && this._renderer.onStageInit();
+            this._collider && this._collider.onStageInit();
+            for(behaviourId in this._behaviours) {
+                behaviour = this._behaviours[behaviourId];
+                behaviour && behaviour.onStageInit();
+            }
 		},
 
 		destroy : function() {
