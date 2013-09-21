@@ -20,15 +20,35 @@ this.wozllajs = this.wozllajs || {};
 
     NinePatch.prototype = {
         init : function() {
+            var canvas = wozllajs.createCanvas(this.width, this.height);
+            var ctx = canvas.getContext('2d');
+            canvas.width = this.width;
+            canvas.height = this.height;
+            this._draw(ctx);
+            this.image = canvas;
+        },
+        dispose : function() {
+            if(this.image && this.image.dispose) {
+                this.image.dispose();
+            }
+        },
+
+
+        draw : function(context) {
+            if(this.image) {
+                context.drawImage(this.image, this.x, this.y);
+            } else {
+                this._draw(context);
+            }
+        },
+
+        _draw : function(context) {
             var r = this.region;
             var b = this.borders;
             var oimg = this.originImage;
             var ow = r.w;
             var oh = r.h;
-            var canvas = wozllajs.createCanvas(this.width, this.height);
-            var ctx = canvas.getContext('2d');
-            canvas.width = this.width;
-            canvas.height = this.height;
+            var ctx = context;
 
             // top left
             ctx.drawImage(oimg, r.x, r.y, b.left, b.top,
@@ -66,16 +86,6 @@ this.wozllajs = this.wozllajs || {};
             ctx.drawImage(oimg, r.x + b.left, r.y + b.top, ow- b.left-b.right, oh- b.top -b.bottom,
                 b.left, b.top, this.width- b.left- b.right, this.height- b.top-b.bottom);
 
-            this.image = canvas;
-
-        },
-        dispose : function() {
-            if(this.image && this.image.dispose) {
-                this.image.dispose();
-            }
-        },
-        draw : function(context) {
-            context.drawImage(this.image, this.x, this.y);
         }
     };
 
