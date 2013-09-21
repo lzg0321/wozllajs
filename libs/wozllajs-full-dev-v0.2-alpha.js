@@ -2923,6 +2923,14 @@ this.wozllajs = this.wozllajs || {};
                 }
             }
 	    	this._componentInited = true;
+
+            this._layout && this._layout.onStageInit();
+            this._renderer && this._renderer.onStageInit();
+            this._collider && this._collider.onStageInit();
+            for(behaviourId in this._behaviours) {
+                behaviour = this._behaviours[behaviourId];
+                behaviour && behaviour.onStageInit();
+            }
 		},
 
 		destroy : function() {
@@ -3444,6 +3452,8 @@ this.wozllajs = this.wozllajs || {};
 
 	    destroyComponent : function() {},
 
+        onStageInit : function() {},
+
 	    setGameObject : function(gameObject) {
 	    	this.gameObject = gameObject;
 	    },
@@ -3741,11 +3751,19 @@ wozllajs.defineComponent('renderer.AnimationSheetRenderer', {
         if(Time.now - this._currentFrameStartTime >= this.frameTime) {
             this._currentFrameStartTime = Time.now;
             this._currentIndex ++;
-            if(this._currentIndex >= this._playingFrameSequence.length) {
-                this._currentIndex = 0;
-                this._playingFrameSequence = this.animations[this.defaultAnimation];
+            if(!this._playingFrameSequence) {
+                this._currentFrame = null;
+            } else {
+                if(this._currentIndex >= this._playingFrameSequence.length) {
+                    this._currentIndex = 0;
+                    this._playingFrameSequence = this.animations[this.defaultAnimation];
+                }
+                if(this._playingFrameSequence) {
+                    this._currentFrame = this.frames[this._playingFrameSequence[this._currentIndex]];
+                } else {
+                    this._currentFrame = null;
+                }
             }
-            this._currentFrame = this.frames[this._playingFrameSequence[this._currentIndex]];
         }
     },
 
@@ -3758,6 +3776,11 @@ wozllajs.defineComponent('renderer.AnimationSheetRenderer', {
             oy = frame.offsetY || frame.oy || 0;
             context.drawImage(this.image, frame.x, frame.y, w, h, ox, oy, w, h);
         }
+    },
+
+    stop : function() {
+        this.defaultAnimation = null;
+        this._playingFrameSequence = null;
     },
 
     play : function(animations, defaultAnimation) {
@@ -4091,15 +4114,35 @@ this.wozllajs = this.wozllajs || {};
 
     NinePatch.prototype = {
         init : function() {
+            var canvas = wozllajs.createCanvas(this.width, this.height);
+            var ctx = canvas.getContext('2d');
+            canvas.width = this.width;
+            canvas.height = this.height;
+            this._draw(ctx);
+            this.image = canvas;
+        },
+        dispose : function() {
+            if(this.image && this.image.dispose) {
+                this.image.dispose();
+            }
+        },
+
+
+        draw : function(context) {
+            if(this.image) {
+                context.drawImage(this.image, this.x, this.y);
+            } else {
+                this._draw(context);
+            }
+        },
+
+        _draw : function(context) {
             var r = this.region;
             var b = this.borders;
             var oimg = this.originImage;
             var ow = r.w;
             var oh = r.h;
-            var canvas = wozllajs.createCanvas(this.width, this.height);
-            var ctx = canvas.getContext('2d');
-            canvas.width = this.width;
-            canvas.height = this.height;
+            var ctx = context;
 
             // top left
             ctx.drawImage(oimg, r.x, r.y, b.left, b.top,
@@ -4137,16 +4180,6 @@ this.wozllajs = this.wozllajs || {};
             ctx.drawImage(oimg, r.x + b.left, r.y + b.top, ow- b.left-b.right, oh- b.top -b.bottom,
                 b.left, b.top, this.width- b.left- b.right, this.height- b.top-b.bottom);
 
-            this.image = canvas;
-
-        },
-        dispose : function() {
-            if(this.image && this.image.dispose) {
-                this.image.dispose();
-            }
-        },
-        draw : function(context) {
-            context.drawImage(this.image, this.x, this.y);
         }
     };
 
