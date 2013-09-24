@@ -112,7 +112,8 @@ this.wozllajs = this.wozllajs || {};
                         'Collider' : wozllajs.Collider,
                         'Layout'   : wozllajs.Layout,
                         'Behaviour' : wozllajs.Behaviour,
-                        'HitTestDelegate' : wozllajs.HitTestDelegate
+                        'HitTestDelegate' : wozllajs.HitTestDelegate,
+                        'Filter' : wozllajs.Filter
                     };
                     extend = maker.extend;
                     delete maker.extend;

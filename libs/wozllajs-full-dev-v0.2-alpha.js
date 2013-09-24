@@ -1809,7 +1809,8 @@ this.wozllajs = this.wozllajs || {};
                         'Collider' : wozllajs.Collider,
                         'Layout'   : wozllajs.Layout,
                         'Behaviour' : wozllajs.Behaviour,
-                        'HitTestDelegate' : wozllajs.HitTestDelegate
+                        'HitTestDelegate' : wozllajs.HitTestDelegate,
+                        'Filter' : wozllajs.Filter
                     };
                     extend = maker.extend;
                     delete maker.extend;
@@ -2505,11 +2506,14 @@ this.wozllajs.ResourceManager = (function() {
 
         load : function(params) {
             var loadHandler = function() {
-                loading = true;
-                //console.log(params.items);
                 var mark = {};
                 var item;
-                for(var i= 0; i<params.items.length; i++) {
+                var i;
+                loading = true;
+//var start = Date.now();
+//console.log('start ' + start);
+//console.log(params.items.length);
+                for(i= 0; i<params.items.length; i++) {
                     item = params.items[i];
                     if(typeof item === 'object') {
                         item = item.id;
@@ -2525,6 +2529,7 @@ this.wozllajs.ResourceManager = (function() {
                     setTimeout(params.onComplete, 1);
                     loading = false;
                     loadNext();
+//console.log('end ' + (Date.now() - start));
                     return;
                 }
                 var total = params.items.length;
@@ -2537,6 +2542,7 @@ this.wozllajs.ResourceManager = (function() {
                     });
                 });
                 queue.addEventListener('complete', function() {
+//console.log('end ' + (Date.now() - start));
                     queue.removeAllEventListeners();
                     params.onComplete && params.onComplete();
                     loading = false;
@@ -2635,6 +2641,8 @@ this.wozllajs = this.wozllajs || {};
 
 		_behaviours : null,
 
+        _filters : null,
+
         _aliasMap : null,
 
 		_parent : null,
@@ -2672,6 +2680,7 @@ this.wozllajs = this.wozllajs || {};
 			this.id = id;
 			this.transform = new wozllajs.Transform();
 			this._behaviours = {};
+            this._filters = {};
             this._aliasMap = {};
 			this._children = [];
 			this._childrenMap = {};
@@ -3007,12 +3016,7 @@ this.wozllajs = this.wozllajs || {};
         	this.transform.updateContext(context);
             if(this._cacheCanvas) {
                 if(!this._cached) {
-                    cacheContext = this._cacheContext;
-                    cacheContext.clearRect(0, 0, this._cacheCanvas.width, this._cacheCanvas.height);
-                    cacheContext = this._cacheContext;
-                    cacheContext.translate(-this._cacheOffsetX, -this._cacheOffsetY);
-                    this._draw(cacheContext, visibleRect);
-                    cacheContext.translate(this._cacheOffsetX, this._cacheOffsetY);
+                    this._drawCache();
                     this._cached = true;
                 }
                 context.drawImage(this._cacheCanvas, 0, 0);
@@ -3112,6 +3116,26 @@ this.wozllajs = this.wozllajs || {};
 			return this._behaviours[id] || this._aliasMap[id];
 		},
 
+        addFilter : function(filter) {
+            this._filters[filter.id] = filter;
+            filter.setGameObject(this);
+        },
+
+        removeFilter : function(filter) {
+            if(typeof filter === 'string') {
+                filter = this.getFilter(filter);
+                if(!filter) {
+                    return;
+                }
+            }
+            delete this._filters[filter.id];
+            filter.setGameObject(null);
+        },
+
+        getFilter : function(id) {
+            return this._filters[id];
+        },
+
         on : function(type, listener, scope) {
             var proxy = listener[this._getSimpleProxyKey(scope, type)] = wozllajs.proxy(listener, scope);
             wozllajs.EventAdmin.on(type, this, proxy, scope);
@@ -3143,6 +3167,24 @@ this.wozllajs = this.wozllajs || {};
 	    		children[i].draw(context, visibleRect);
 	    	}
 		},
+
+        _drawCache : function(context, visibleRect) {
+            var cacheContext = this._cacheContext;
+            cacheContext.clearRect(0, 0, this._cacheCanvas.width, this._cacheCanvas.height);
+            cacheContext = this._cacheContext;
+            cacheContext.translate(-this._cacheOffsetX, -this._cacheOffsetY);
+            this._draw(cacheContext, visibleRect);
+            cacheContext.translate(this._cacheOffsetX, this._cacheOffsetY);
+            this._applyFilters(cacheContext, 0, 0, this._cacheCanvas.width, this._cacheCanvas.height);
+        },
+
+        _applyFilters : function(cacheContext, x, y, width, height) {
+            for(var id in this._filters) {
+                cacheContext.save();
+                this._filters[id].applyFilter(cacheContext, x, y, width, height);
+                cacheContext.restore();
+            }
+        },
 
 		_collectResources : function(collection) {
 			var behaviourId, behaviour;
@@ -3404,6 +3446,7 @@ this.wozllajs = this.wozllajs || {};
 	Component.RENDERER = 'renderer';
 	Component.COLLIDER = 'collider';
     Component.LAYOUT = 'layout';
+    Component.FILTER = 'filter';
     Component.HIT_TEST = 'hitTest';
 	Component.BEHAVIOUR = 'behaviour';
 
@@ -3544,6 +3587,25 @@ this.wozllajs = this.wozllajs || {};
     p.doLayout = function() {};
 
     wozllajs.Layout = Layout;
+
+})();;
+
+this.wozllajs = this.wozllajs || {};
+
+(function() {
+    "use strict";
+
+    function Filter(params) {
+        this.initialize(params);
+    }
+
+    var p = Filter.prototype = Object.create(wozllajs.Component.prototype);
+
+    p.type = wozllajs.Component.FILTER;
+
+    p.applyFilter = function(context, x, y, width, height) {};
+
+    wozllajs.Filter = Filter;
 
 })();;
 
@@ -3865,6 +3927,9 @@ wozllajs.defineComponent('renderer.JSONTextureRenderer', {
     texture : null,
 
     initComponent : function() {
+        if(!this.src && this.texture) {
+            this.src = this.texture + '.png';
+        }
         if(this.src) {
             this.image = this.getResourceById(this.src);
         }
@@ -4007,6 +4072,9 @@ this.wozllajs = this.wozllajs || {};
                     else if(component.type === wozllajs.Component.BEHAVIOUR) {
                         gameObject.addBehaviour(component);
                     }
+                    else if(component.type === wozllajs.Component.FILTER) {
+                        gameObject.addFilter(component);
+                    }
                 }
                 var children = objData.children;
                 for(i= 0,len=children.length; i<len; i++) {
@@ -4115,14 +4183,7 @@ this.wozllajs = this.wozllajs || {};
     }
 
     NinePatch.prototype = {
-        init : function() {
-            var canvas = wozllajs.createCanvas(this.width, this.height);
-            var ctx = canvas.getContext('2d');
-            canvas.width = this.width;
-            canvas.height = this.height;
-            this._draw(ctx);
-            this.image = canvas;
-        },
+
         dispose : function() {
             if(this.image && this.image.dispose) {
                 this.image.dispose();
@@ -4136,6 +4197,16 @@ this.wozllajs = this.wozllajs || {};
             } else {
                 this._draw(context);
             }
+        },
+
+        cache : function() {
+            var canvas = this.image || wozllajs.createCanvas(this.width, this.height);
+            var ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, this.width, this.height);
+            canvas.width = this.width;
+            canvas.height = this.height;
+            this._draw(ctx);
+            this.image = canvas;
         },
 
         _draw : function(context) {

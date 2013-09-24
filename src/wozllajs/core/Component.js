@@ -10,6 +10,7 @@ this.wozllajs = this.wozllajs || {};
 	Component.RENDERER = 'renderer';
 	Component.COLLIDER = 'collider';
     Component.LAYOUT = 'layout';
+    Component.FILTER = 'filter';
     Component.HIT_TEST = 'hitTest';
 	Component.BEHAVIOUR = 'behaviour';
 

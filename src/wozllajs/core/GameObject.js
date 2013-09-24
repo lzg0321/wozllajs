@@ -31,6 +31,8 @@ this.wozllajs = this.wozllajs || {};
 
 		_behaviours : null,
 
+        _filters : null,
+
         _aliasMap : null,
 
 		_parent : null,
@@ -68,6 +70,7 @@ this.wozllajs = this.wozllajs || {};
 			this.id = id;
 			this.transform = new wozllajs.Transform();
 			this._behaviours = {};
+            this._filters = {};
             this._aliasMap = {};
 			this._children = [];
 			this._childrenMap = {};
@@ -403,12 +406,7 @@ this.wozllajs = this.wozllajs || {};
         	this.transform.updateContext(context);
             if(this._cacheCanvas) {
                 if(!this._cached) {
-                    cacheContext = this._cacheContext;
-                    cacheContext.clearRect(0, 0, this._cacheCanvas.width, this._cacheCanvas.height);
-                    cacheContext = this._cacheContext;
-                    cacheContext.translate(-this._cacheOffsetX, -this._cacheOffsetY);
-                    this._draw(cacheContext, visibleRect);
-                    cacheContext.translate(this._cacheOffsetX, this._cacheOffsetY);
+                    this._drawCache();
                     this._cached = true;
                 }
                 context.drawImage(this._cacheCanvas, 0, 0);
@@ -508,6 +506,26 @@ this.wozllajs = this.wozllajs || {};
 			return this._behaviours[id] || this._aliasMap[id];
 		},
 
+        addFilter : function(filter) {
+            this._filters[filter.id] = filter;
+            filter.setGameObject(this);
+        },
+
+        removeFilter : function(filter) {
+            if(typeof filter === 'string') {
+                filter = this.getFilter(filter);
+                if(!filter) {
+                    return;
+                }
+            }
+            delete this._filters[filter.id];
+            filter.setGameObject(null);
+        },
+
+        getFilter : function(id) {
+            return this._filters[id];
+        },
+
         on : function(type, listener, scope) {
             var proxy = listener[this._getSimpleProxyKey(scope, type)] = wozllajs.proxy(listener, scope);
             wozllajs.EventAdmin.on(type, this, proxy, scope);
@@ -539,6 +557,24 @@ this.wozllajs = this.wozllajs || {};
 	    		children[i].draw(context, visibleRect);
 	    	}
 		},
+
+        _drawCache : function(context, visibleRect) {
+            var cacheContext = this._cacheContext;
+            cacheContext.clearRect(0, 0, this._cacheCanvas.width, this._cacheCanvas.height);
+            cacheContext = this._cacheContext;
+            cacheContext.translate(-this._cacheOffsetX, -this._cacheOffsetY);
+            this._draw(cacheContext, visibleRect);
+            cacheContext.translate(this._cacheOffsetX, this._cacheOffsetY);
+            this._applyFilters(cacheContext, 0, 0, this._cacheCanvas.width, this._cacheCanvas.height);
+        },
+
+        _applyFilters : function(cacheContext, x, y, width, height) {
+            for(var id in this._filters) {
+                cacheContext.save();
+                this._filters[id].applyFilter(cacheContext, x, y, width, height);
+                cacheContext.restore();
+            }
+        },
 
 		_collectResources : function(collection) {
 			var behaviourId, behaviour;

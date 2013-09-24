@@ -27,11 +27,14 @@ this.wozllajs.ResourceManager = (function() {
 
         load : function(params) {
             var loadHandler = function() {
-                loading = true;
-                //console.log(params.items);
                 var mark = {};
                 var item;
-                for(var i= 0; i<params.items.length; i++) {
+                var i;
+                loading = true;
+//var start = Date.now();
+//console.log('start ' + start);
+//console.log(params.items.length);
+                for(i= 0; i<params.items.length; i++) {
                     item = params.items[i];
                     if(typeof item === 'object') {
                         item = item.id;
@@ -47,6 +50,7 @@ this.wozllajs.ResourceManager = (function() {
                     setTimeout(params.onComplete, 1);
                     loading = false;
                     loadNext();
+//console.log('end ' + (Date.now() - start));
                     return;
                 }
                 var total = params.items.length;
@@ -59,6 +63,7 @@ this.wozllajs.ResourceManager = (function() {
                     });
                 });
                 queue.addEventListener('complete', function() {
+//console.log('end ' + (Date.now() - start));
                     queue.removeAllEventListeners();
                     params.onComplete && params.onComplete();
                     loading = false;
