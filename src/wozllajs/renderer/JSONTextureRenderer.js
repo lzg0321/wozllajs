@@ -7,6 +7,9 @@ wozllajs.defineComponent('renderer.JSONTextureRenderer', {
     texture : null,
 
     initComponent : function() {
+        if(!this.src && this.texture) {
+            this.src = this.texture + '.png';
+        }
         if(this.src) {
             this.image = this.getResourceById(this.src);
         }
