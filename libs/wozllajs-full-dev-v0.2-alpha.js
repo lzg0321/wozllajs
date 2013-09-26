@@ -2512,7 +2512,6 @@ this.wozllajs.ResourceManager = (function() {
                 loading = true;
 //var start = Date.now();
 //console.log('start ' + start);
-//console.log(params.items.length);
                 for(i= 0; i<params.items.length; i++) {
                     item = params.items[i];
                     if(typeof item === 'object') {
@@ -2524,6 +2523,8 @@ this.wozllajs.ResourceManager = (function() {
                     }
                     mark[item] = true;
                 }
+
+//console.log(params.items.length);
                 if(params.items.length === 0) {
                     setTimeout(params.onProgress, 0);
                     setTimeout(params.onComplete, 1);
