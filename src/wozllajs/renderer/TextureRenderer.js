@@ -32,12 +32,14 @@ wozllajs.defineComponent('renderer.TextureRenderer', {
     },
 
     draw : function(context) {
-        var w, h;
+        var w, h, sw, sh;
         var f = this.currentFrame;
         if(this.image && f) {
             w = f.w || f.width;
             h = f.h || f.height;
-            context.drawImage(this.image, f.x, f.y, w, h, 0, 0, w, h);
+            sw = f.sw === undefined ? w : f.sw;
+            sh = f.sh === undefined ? h : f.sh;
+            context.drawImage(this.image, f.x, f.y, sw, sh, 0, 0, sw, sh);
         }
     },
 

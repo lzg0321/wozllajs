@@ -31,6 +31,7 @@ var files = [
     'src/wozllajs/core/Renderer.js',
     'src/wozllajs/core/Collider.js',
     'src/wozllajs/core/Layout.js',
+    'src/wozllajs/core/Filter.js',
     'src/wozllajs/core/HitTestDelegate.js',
     'src/wozllajs/core/Behaviour.js',
     'src/wozllajs/renderer/ImageRenderer.js',

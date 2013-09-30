@@ -19,14 +19,7 @@ this.wozllajs = this.wozllajs || {};
     }
 
     NinePatch.prototype = {
-        init : function() {
-            var canvas = wozllajs.createCanvas(this.width, this.height);
-            var ctx = canvas.getContext('2d');
-            canvas.width = this.width;
-            canvas.height = this.height;
-            this._draw(ctx);
-            this.image = canvas;
-        },
+
         dispose : function() {
             if(this.image && this.image.dispose) {
                 this.image.dispose();
@@ -40,6 +33,16 @@ this.wozllajs = this.wozllajs || {};
             } else {
                 this._draw(context);
             }
+        },
+
+        cache : function() {
+            var canvas = this.image || wozllajs.createCanvas(this.width, this.height);
+            var ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, this.width, this.height);
+            canvas.width = this.width;
+            canvas.height = this.height;
+            this._draw(ctx);
+            this.image = canvas;
         },
 
         _draw : function(context) {

@@ -39,6 +39,9 @@ this.wozllajs = this.wozllajs || {};
                     else if(component.type === wozllajs.Component.BEHAVIOUR) {
                         gameObject.addBehaviour(component);
                     }
+                    else if(component.type === wozllajs.Component.FILTER) {
+                        gameObject.addFilter(component);
+                    }
                 }
                 var children = objData.children;
                 for(i= 0,len=children.length; i<len; i++) {
