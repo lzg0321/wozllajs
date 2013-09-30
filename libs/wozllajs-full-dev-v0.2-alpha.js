@@ -4329,16 +4329,24 @@ this.wozllajs.SizeParser = (function() {
                 return parseInt(size);
             }
             if(typeof size === 'string') {
-                result = /^(\d+(\.\d+)?)%$/.exec(size);
-                if(!result) {
-                    return null;
+                if(size.indexof('exp:') == 0){
+                    size = size.slice(4);
+                    return eval(size);
                 }
-                return parseInt(stage.width * parseFloat(result[1]) / 100);
+                else{
+                    result = /^(\d+(\.\d+)?)%$/.exec(size);
+                    if(!result) {
+                        return null;
+                    }
+                    return parseInt(stage.width * parseFloat(result[1]) / 100);
+                }
             } else {
                 return size;
             }
         }
     }
 
-})();;
+})();
+
+;
 
