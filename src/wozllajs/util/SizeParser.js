@@ -9,7 +9,7 @@ this.wozllajs.SizeParser = (function() {
                 return parseInt(size);
             }
             if(typeof size === 'string') {
-                if(size.indexof('exp:') == 0){
+                if(size.indexOf('exp:') == 0){
                     size = size.slice(4);
                     return eval(size);
                 }
