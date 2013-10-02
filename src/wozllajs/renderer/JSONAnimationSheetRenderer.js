@@ -9,9 +9,7 @@ wozllajs.defineComponent('renderer.JSONAnimationSheetRenderer', {
     frameTime : null,
 
     initComponent : function() {
-        if(this.src) {
-            this.image = this.getResourceById(this.src);
-        }
+        this.AnimationSheetRenderer_initComponent();
         if(this.ans) {
             var ansData = this.getResourceById(this.ans);
             if(ansData) {

@@ -6,6 +6,8 @@ wozllajs.defineComponent('renderer.AnimationSheetRenderer', {
 
     image : null,
 
+    _eventDispatcher : null,
+
     _playingFrameSequence : null,
 
     _currentIndex : 0,
@@ -25,6 +27,7 @@ wozllajs.defineComponent('renderer.AnimationSheetRenderer', {
     defaultAnimation : null,
 
     initComponent : function() {
+        this._eventDispatcher = new wozllajs.EventDispatcher();
         if(this.src) {
             this.image = this.getResourceById(this.src);
         }
@@ -53,6 +56,7 @@ wozllajs.defineComponent('renderer.AnimationSheetRenderer', {
                 if(this._currentIndex >= this._playingFrameSequence.length) {
                     this._currentIndex = 0;
                     this._playingFrameSequence = this.animations[this.defaultAnimation];
+                    this._eventDispatcher.fireEvent('animationend');
                 }
                 if(this._playingFrameSequence) {
                     this._currentFrame = this.frames[this._playingFrameSequence[this._currentIndex]];
@@ -93,6 +97,14 @@ wozllajs.defineComponent('renderer.AnimationSheetRenderer', {
         if(defaultAnimation) {
             this.defaultAnimation = defaultAnimation;
         }
+    },
+
+    addEventListener : function() {
+        this._eventDispatcher.addEventListener.apply(this._eventDispatcher, arguments);
+    },
+
+    removeEventListener : function() {
+        this._eventDispatcher.removeEventListener.apply(this._eventDispatcher, arguments);
     },
 
     _collectResources : function(collection) {
