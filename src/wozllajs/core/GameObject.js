@@ -298,6 +298,20 @@ this.wozllajs = this.wozllajs || {};
             this.uncache();
 		},
 
+        callBehaviour : function(funcName, args) {
+            var i, len;
+            var behaviourId, behaviour, func;
+            var children = this._children;
+            for(behaviourId in this._behaviours) {
+                behaviour = this._behaviours[behaviourId];
+                behaviour && behaviour[funcName] && behaviour[funcName](args);
+            }
+
+            for(i=0,len=children.length; i<len; i++) {
+                children[i].callBehaviour(funcName, args);
+            }
+        },
+
 	    init : function() {
 	    	var i, len, layers;
 			var behaviourId, behaviour;

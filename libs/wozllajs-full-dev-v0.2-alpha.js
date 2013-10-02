@@ -2909,6 +2909,20 @@ this.wozllajs = this.wozllajs || {};
             this.uncache();
 		},
 
+        callBehaviour : function(funcName, args) {
+            var i, len;
+            var behaviourId, behaviour, func;
+            var children = this._children;
+            for(behaviourId in this._behaviours) {
+                behaviour = this._behaviours[behaviourId];
+                behaviour && behaviour[funcName] && behaviour[funcName](args);
+            }
+
+            for(i=0,len=children.length; i<len; i++) {
+                children[i].callBehaviour(funcName, args);
+            }
+        },
+
 	    init : function() {
 	    	var i, len, layers;
 			var behaviourId, behaviour;
@@ -3775,6 +3789,8 @@ wozllajs.defineComponent('renderer.AnimationSheetRenderer', {
 
     image : null,
 
+    _eventDispatcher : null,
+
     _playingFrameSequence : null,
 
     _currentIndex : 0,
@@ -3794,6 +3810,7 @@ wozllajs.defineComponent('renderer.AnimationSheetRenderer', {
     defaultAnimation : null,
 
     initComponent : function() {
+        this._eventDispatcher = new wozllajs.EventDispatcher();
         if(this.src) {
             this.image = this.getResourceById(this.src);
         }
@@ -3822,6 +3839,7 @@ wozllajs.defineComponent('renderer.AnimationSheetRenderer', {
                 if(this._currentIndex >= this._playingFrameSequence.length) {
                     this._currentIndex = 0;
                     this._playingFrameSequence = this.animations[this.defaultAnimation];
+                    this._eventDispatcher.fireEvent('animationend');
                 }
                 if(this._playingFrameSequence) {
                     this._currentFrame = this.frames[this._playingFrameSequence[this._currentIndex]];
@@ -3864,6 +3882,14 @@ wozllajs.defineComponent('renderer.AnimationSheetRenderer', {
         }
     },
 
+    addEventListener : function() {
+        this._eventDispatcher.addEventListener.apply(this._eventDispatcher, arguments);
+    },
+
+    removeEventListener : function() {
+        this._eventDispatcher.removeEventListener.apply(this._eventDispatcher, arguments);
+    },
+
     _collectResources : function(collection) {
         if(this.src) {
             collection.push(this.src);
@@ -3883,9 +3909,7 @@ wozllajs.defineComponent('renderer.JSONAnimationSheetRenderer', {
     frameTime : null,
 
     initComponent : function() {
-        if(this.src) {
-            this.image = this.getResourceById(this.src);
-        }
+        this.AnimationSheetRenderer_initComponent();
         if(this.ans) {
             var ansData = this.getResourceById(this.ans);
             if(ansData) {
