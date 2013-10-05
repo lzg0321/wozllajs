@@ -34,6 +34,7 @@ wozllajs.defineComponent('renderer.AnimationSheetRenderer', {
     },
 
     update : function() {
+        var frameNum, frame;
         var Time = wozllajs.Time;
         if(!this.frames) {
             return;
@@ -59,7 +60,21 @@ wozllajs.defineComponent('renderer.AnimationSheetRenderer', {
                     this._eventDispatcher.fireEvent('animationend');
                 }
                 if(this._playingFrameSequence) {
-                    this._currentFrame = this.frames[this._playingFrameSequence[this._currentIndex]];
+                    frameNum = this._playingFrameSequence[this._currentIndex];
+                    frame = this.frames[frameNum];
+                    if(this._currentFrame && this._currentFrame !== frame) {
+                        this._currentFrame = frame;
+                        this._eventDispatcher.fireEvent('framechanged', {
+                            frameNum : frameNum,
+                            frame : frame
+                        });
+                    } else if(!this._currentFrame) {
+                        this._currentFrame = frame;
+                        this._eventDispatcher.fireEvent('framechanged', {
+                            frameNum : frameNum,
+                            frame : frame
+                        });
+                    }
                 } else {
                     this._currentFrame = null;
                 }

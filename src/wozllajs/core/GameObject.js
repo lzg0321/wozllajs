@@ -53,6 +53,8 @@ this.wozllajs = this.wozllajs || {};
 
 		_childrenMap : null,
 
+        _delayRemoves : null,
+
 		_resources : null,
 
         _cacheCanvas : null,
@@ -75,7 +77,14 @@ this.wozllajs = this.wozllajs || {};
 			this._children = [];
 			this._childrenMap = {};
 			this._resources = [];
+            this._delayRemoves = [];
 		},
+
+        setId : function(id) {
+            delete this._parent._childrenMap[this.id];
+            this._parent._childrenMap[id] = this;
+            this.id = id;
+        },
 
 		getParent : function() {
 			return this._parent;
@@ -110,6 +119,23 @@ this.wozllajs = this.wozllajs || {};
 	        obj._parent = this;
             obj.transform.parent = this.transform;
 	    },
+
+        insertObject : function(obj, index) {
+            this._childrenMap[obj.id] = obj;
+            this._children.splice(index, 0, obj);
+            obj._parent = this;
+            obj.transform.parent = this.transform;
+        },
+
+        delayRemove : function() {
+            this._parent.delayRemoveObject(this);
+            this._parent = null;
+        },
+
+        delayRemoveObject : function(idOrObj) {
+            var obj = typeof idOrObj === 'string' ? this._childrenMap[idOrObj] : idOrObj;
+            this._delayRemoves.push(obj);
+        },
 
 	    removeObject : function(idOrObj) {
 	        var children = this._children;
@@ -316,6 +342,7 @@ this.wozllajs = this.wozllajs || {};
 	    	var i, len, layers;
 			var behaviourId, behaviour;
 			var children = this._children;
+
             this._layout && this._layout.initComponent();
 	    	this._renderer && this._renderer.initComponent();
 	    	this._collider && this._collider.initComponent();
@@ -344,6 +371,8 @@ this.wozllajs = this.wozllajs || {};
                 behaviour = this._behaviours[behaviourId];
                 behaviour && behaviour.onStageInit();
             }
+
+            this._doDelayRemove();
 		},
 
 		destroy : function() {
@@ -378,9 +407,12 @@ this.wozllajs = this.wozllajs || {};
 			var behaviourId, behaviour;
 			var children = this._children;
 
+            this._doDelayRemove();
+
 			if(!this._componentInited || !this._active) {
 				return;
 			}
+
 			for(behaviourId in this._behaviours) {
 	    		behaviour = this._behaviours[behaviourId];
 	    		behaviour && behaviour.update && behaviour.update();
@@ -395,6 +427,8 @@ this.wozllajs = this.wozllajs || {};
 			var i, len;
 			var behaviourId, behaviour;
 			var children = this._children;
+
+            this._doDelayRemove();
 
 			if(!this._componentInited || !this._active) {
 				return;
@@ -602,7 +636,16 @@ this.wozllajs = this.wozllajs || {};
             for(i=0,len=children.length; i<len; i++) {
                 children[i]._collectResources(collection);
             }
-		}
+            this._doDelayRemove();
+		},
+
+        _doDelayRemove : function() {
+            var i, len;
+            for(i=0,len=this._delayRemoves.length; i<len; i++) {
+                this.removeObject(this._delayRemoves[i]);
+            }
+            this._delayRemoves = [];
+        }
 
 	};
 
