@@ -330,7 +330,7 @@ this.wozllajs = this.wozllajs || {};
             var children = this._children;
             for(behaviourId in this._behaviours) {
                 behaviour = this._behaviours[behaviourId];
-                behaviour && behaviour[funcName] && behaviour[funcName](args);
+                behaviour && behaviour[funcName] && behaviour[funcName].apply(behaviour, args);
             }
 
             for(i=0,len=children.length; i<len; i++) {
