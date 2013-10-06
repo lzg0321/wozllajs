@@ -2941,7 +2941,7 @@ this.wozllajs = this.wozllajs || {};
             var children = this._children;
             for(behaviourId in this._behaviours) {
                 behaviour = this._behaviours[behaviourId];
-                behaviour && behaviour[funcName] && behaviour[funcName](args);
+                behaviour && behaviour[funcName] && behaviour[funcName].apply(behaviour, args);
             }
 
             for(i=0,len=children.length; i<len; i++) {
@@ -3836,7 +3836,9 @@ wozllajs.defineComponent('renderer.AnimationSheetRenderer', {
 
     _playingFrameSequence : null,
 
-    _currentIndex : 0,
+    _currentIndex : null,
+
+    _currentAnimation : null,
 
     _currentFrame : null,
 
@@ -3851,8 +3853,10 @@ wozllajs.defineComponent('renderer.AnimationSheetRenderer', {
     animations : null,
 
     defaultAnimation : null,
+    _defaultAnimation : null,
 
     initComponent : function() {
+        this._defaultAnimation = this.defaultAnimation;
         this._eventDispatcher = new wozllajs.EventDispatcher();
         if(this.src) {
             this.image = this.getResourceById(this.src);
@@ -3860,52 +3864,75 @@ wozllajs.defineComponent('renderer.AnimationSheetRenderer', {
     },
 
     update : function() {
-        var frameNum, frame;
+        var fireIndex, fireFrame, fireEnd;
+        var index = this._currentIndex, frameNum, frame;
+        var animation = this._currentAnimation;
         var Time = wozllajs.Time;
         if(!this.frames) {
             return;
         }
-
         if(!this._currentFrameStartTime) {
             this._currentFrameStartTime = Time.now;
         }
-
         if(!this._playingFrameSequence) {
             this._playingFrameSequence = this.animations[this.defaultAnimation];
+        }
+        if(!this._playingFrameSequence) {
+            this._currentIndex = null;
+            this._currentFrame = null;
+            this._currentFrameStartTime = null;
+            return;
         }
 
         if(Time.now - this._currentFrameStartTime >= this.frameTime) {
             this._currentFrameStartTime = Time.now;
-            this._currentIndex ++;
-            if(!this._playingFrameSequence) {
-                this._currentFrame = null;
-            } else {
-                if(this._currentIndex >= this._playingFrameSequence.length) {
-                    this._currentIndex = 0;
-                    this._playingFrameSequence = this.animations[this.defaultAnimation];
-                    this._eventDispatcher.fireEvent('animationend');
-                }
-                if(this._playingFrameSequence) {
-                    frameNum = this._playingFrameSequence[this._currentIndex];
-                    frame = this.frames[frameNum];
-                    if(this._currentFrame && this._currentFrame !== frame) {
-                        this._currentFrame = frame;
-                        this._eventDispatcher.fireEvent('framechanged', {
-                            frameNum : frameNum,
-                            frame : frame
-                        });
-                    } else if(!this._currentFrame) {
-                        this._currentFrame = frame;
-                        this._eventDispatcher.fireEvent('framechanged', {
-                            frameNum : frameNum,
-                            frame : frame
-                        });
-                    }
-                } else {
+            index = this._currentIndex + 1;
+            if(index >= this._playingFrameSequence.length) {
+                index = 0;
+                this._eventDispatcher.fireEvent('animationend', {
+                    animation : animation
+                });
+                this._playingFrameSequence = this.animations[this.defaultAnimation];
+                this._currentAnimation = this.defaultAnimation;
+                if(!this._playingFrameSequence) {
+                    this._currentIndex = null;
                     this._currentFrame = null;
+                    this._currentFrameStartTime = null;
+                    return;
                 }
             }
         }
+
+        if(!index) {
+            index = 0;
+        }
+        if(index !== this._currentIndex) {
+            fireIndex = true;
+            this._currentIndex = index;
+            frameNum = this._playingFrameSequence[index];
+            frame = this.frames[frameNum];
+            if(frame !== this._currentFrame) {
+                fireFrame = true;
+                this._currentFrame = frame;
+            }
+        }
+
+        if(fireIndex) {
+            this._eventDispatcher.fireEvent('indexchanged', {
+                index : index,
+                animation : this._currentAnimation
+            });
+        }
+
+        if(fireFrame) {
+            this._eventDispatcher.fireEvent('framechanged', {
+                frameNum : frameNum,
+                frame : frame,
+                animation : this._currentAnimation
+            });
+        }
+
+
     },
 
     draw : function(context) {
@@ -3919,22 +3946,30 @@ wozllajs.defineComponent('renderer.AnimationSheetRenderer', {
         }
     },
 
+    pause : function() {
+
+    },
+
     stop : function() {
         this.defaultAnimation = null;
         this._playingFrameSequence = null;
+        this._currentAnimation = null;
+        this._currentFrameStartTime = null;
+        this._currentFrame = null;
+        this._currentIndex = null;
     },
 
-    play : function(animations, defaultAnimation) {
-        var sequence = [];
-        var i, len;
-        if(!wozllajs.isArray(animations)) {
-            animations = [animations];
+    play : function(animation, defaultAnimation) {
+        if(!animation) {
+            animation = this.defaultAnimation = this._defaultAnimation;
         }
-        for(i=0,len=animations.length; i<len; i++) {
-            sequence = sequence.concat(this.animations[animations[i]]);
+        this._playingFrameSequence = this.animations[animation];
+        this._currentIndex = null;
+        this._currentFrameStartTime = null;
+        this._currentAnimation = animation;
+        if(this._playingFrameSequence) {
+            this._currentFrame = this.frames[this._playingFrameSequence[this._currentIndex]];
         }
-        this._playingFrameSequence = sequence;
-        this._currentIndex = 0;
         if(defaultAnimation) {
             this.defaultAnimation = defaultAnimation;
         }
