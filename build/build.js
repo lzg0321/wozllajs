@@ -15,6 +15,10 @@ var libs = [
 var files = [
     'src/wozllajs/wozllajs.js',
     'src/wozllajs/geom/geom.js',
+
+    'src/wozllajs/events/Event.js',
+    'src/wozllajs/events/EventTarget.js',
+
     'src/wozllajs/core/Array2D.js',
     'src/wozllajs/core/EventDispatcher.js',
     'src/wozllajs/core/Time.js',

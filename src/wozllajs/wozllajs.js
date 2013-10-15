@@ -14,6 +14,22 @@ this.wozllajs = this.wozllajs || {};
 
     wozllajs.isTouchSupport = 'ontouchstart' in window;
 
+    wozllajs.map = function(keys, values) {
+        var i, len;
+        var obj = {};
+        if(!values) values = [];
+        for(i=0,len=keys.length; i<len; i++) {
+            obj[keys[i]] = values[i];
+        }
+        return obj;
+    };
+
+    wozllajs.extend = function(obj, properties) {
+        for(var i in properties) {
+            obj[i] = properties[i];
+        }
+    };
+
     wozllajs.proxy = function (method, scope) {
         var aArgs = Array.prototype.slice.call(arguments, 2);
         return function () {
@@ -26,7 +42,12 @@ this.wozllajs = this.wozllajs || {};
     };
 
     wozllajs.is = function(testObj, type) {
-        return toString.call(testObj).toLowerCase() === '[object ' + type.toLowerCase() + ']';
+        var objstr = toString.call(testObj).toLowerCase();
+        type = type.toLowerCase();
+        if(type === 'image' || type === 'htmlimageelement') {
+            return  objstr === '[object image]' || objstr === '[object htmlimageelement]';
+        }
+        return objstr === '[object ' + type + ']';
     };
 
     wozllajs.indexOf = function(obj, arr) {

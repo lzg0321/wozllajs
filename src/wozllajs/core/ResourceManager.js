@@ -21,8 +21,11 @@ this.wozllajs.ResourceManager = (function() {
             return queue.getResult(id);
         },
 
-        removeResource : function(id) {
+        removeResource : function(id, resource) {
             queue.remove(id);
+            if(wozllajs.is(resource, 'Image')) {
+                wozllajs.ResourceManager.disposeImage(resource);
+            }
         },
 
         load : function(params) {

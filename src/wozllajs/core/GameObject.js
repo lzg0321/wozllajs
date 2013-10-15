@@ -10,10 +10,13 @@ this.wozllajs = this.wozllajs || {};
     testHitCanvas.height = 1;
 
 	var GameObject = function(id) {
+        wozllajs.EventTarget.call(this);
 		this.initialize(id);
 	};
 
-	GameObject.prototype = {
+    var p = GameObject.prototype = Object.create(wozllajs.EventTarget.prototype);
+
+	wozllajs.extend(p, {
 
         UID : null,
 
@@ -67,6 +70,26 @@ this.wozllajs = this.wozllajs || {};
 
         _cacheOffsetY : 0,
 
+        g : function() {
+            return this.getObjectById.apply(this, arguments);
+        },
+
+        f : function() {
+            return this.findObjectById.apply(this, arguments);
+        },
+
+        fp : function() {
+            return this.findObjectByPath.apply(this, arguments);
+        },
+
+        bset : function() {
+            this.batchSetProperties.apply(this, arguments);
+        },
+
+        bcset : function() {
+            this.batchSetChildrenProperties.apply(this, arguments);
+        },
+
 		initialize : function(id) {
             this.UID = wozllajs.UniqueKeyGen ++;
 			this.id = id;
@@ -81,8 +104,10 @@ this.wozllajs = this.wozllajs || {};
 		},
 
         setId : function(id) {
-            delete this._parent._childrenMap[this.id];
-            this._parent._childrenMap[id] = this;
+            if(this._parent) {
+                delete this._parent._childrenMap[this.id];
+                this._parent._childrenMap[id] = this;
+            }
             this.id = id;
         },
 
@@ -182,6 +207,67 @@ this.wozllajs = this.wozllajs || {};
 
         getChildren : function() {
             return this._children;
+        },
+
+        batchSetChildrenProperties : function(objectProperties) {
+            var children = this._children;
+            var i, len;
+            for(i=0,len=children.length; i<len; i++) {
+                children[i].batchSetProperties(objectProperties);
+            }
+        },
+
+        batchSetProperties : function(path, objectProperties, multiObject) {
+            var target, obj;
+            var property;
+            if(typeof path !== 'string') {
+                multiObject = objectProperties;
+                objectProperties = path;
+                if(multiObject) {
+                    for(obj in objectProperties) {
+                        target.findObjectByPath(obj).batchSetProperties(objectProperties[obj]);
+                    }
+                } else {
+                    for(property in objectProperties) {
+                        switch(property) {
+                            case 'active' :
+                                this.setActive(objectProperties[property]); break;
+                            case 'visible' :
+                                this.setVisible(objectProperties[property]); break;
+                            case 'x' :
+                            case 'y' :
+                            case 'regX' :
+                            case 'regY' :
+                            case 'scaleX' :
+                            case 'scaleY' :
+                            case 'alpha' :
+                            case 'rotation' :
+                                this.transform[property] = objectProperties[property]; break;
+                        }
+                    }
+                }
+            }
+            else if(path) {
+                target = this.findObjectByPath(path);
+                if(multiObject) {
+                    for(obj in objectProperties) {
+                        target.findObjectByPath(obj).batchSetProperties(objectProperties[obj]);
+                    }
+                } else {
+                    target.batchSetProperties(objectProperties);
+                }
+            }
+        },
+
+        removeAll : function(destroy) {
+            var i, len;
+            if(destroy) {
+                for(i=0,len=this._children.length; i<len; i++) {
+                    this._children[i].destroy();
+                }
+            }
+            this._children = [];
+            this._childrenMap = {};
         },
 
         sortChildren : function(func) {
@@ -311,15 +397,15 @@ this.wozllajs = this.wozllajs || {};
 		},
 
 		releaseResources : function(whiteList) {
-	        var i, len, resource;
+	        var i, len, resource, r, id;
 			var res = this._resources;
 	        for(i=0, len=res.length; i<len; i++) {
-	            resource = res[i];
-	            if(wozllajs.is(resource, 'Image')) {
-	                if(whiteList && wozllajs.indexOf(resource.src, whiteList) === -1) {
-	                    wozllajs.ResourceManager.disposeImage(resource);
-	                }
-	            }
+                r = res[i];
+                id = typeof r === 'string' ? r : r.id;
+                resource = wozllajs.ResourceManager.getResource(id);
+                if(!whiteList || wozllajs.indexOf(id, whiteList) === -1) {
+                    wozllajs.ResourceManager.removeResource(id, resource);
+                }
 	        }
             this.uncache();
 		},
@@ -647,7 +733,7 @@ this.wozllajs = this.wozllajs || {};
             this._delayRemoves = [];
         }
 
-	};
+	});
 
 	wozllajs.GameObject = GameObject;
 

@@ -566,27 +566,25 @@ this.createjs = this.createjs || {};
             this.init(this.useXHR)
         }else {
             while(args.length) {
-                var item = args.pop();
-                var r = this.getResult(item);
+                var idOrSrc = args.pop();
+                var r = this.getResult(idOrSrc);
                 for(i = this._loadQueue.length - 1;i >= 0;i--) {
                     loadItem = this._loadQueue[i].getItem();
-                    if(loadItem.id == item || loadItem.src == item) {
+                    if(loadItem.id == idOrSrc || loadItem.src == idOrSrc) {
                         this._loadQueue.splice(i, 1)[0].cancel();
                         break
                     }
                 }
                 for(i = this._loadQueueBackup.length - 1;i >= 0;i--) {
                     loadItem = this._loadQueueBackup[i].getItem();
-                    if(loadItem.id == item || loadItem.src == item) {
+                    if(loadItem.id == idOrSrc || loadItem.src == idOrSrc) {
                         this._loadQueueBackup.splice(i, 1)[0].cancel();
                         break
                     }
                 }
                 if(r) {
-                    delete this._loadItemsById[r.id];
-                    delete this._loadItemsBySrc[r.src];
-                    this._disposeItem(r)
-                }else {
+                    this._disposeItem(this.getItem(idOrSrc));
+                } else {
                     for(var i = this._currentLoads.length - 1;i >= 0;i--) {
                         var loadItem = this._currentLoads[i].getItem();
                         if(loadItem.id == item || loadItem.src == item) {
@@ -1711,6 +1709,22 @@ this.wozllajs = this.wozllajs || {};
 
     wozllajs.isTouchSupport = 'ontouchstart' in window;
 
+    wozllajs.map = function(keys, values) {
+        var i, len;
+        var obj = {};
+        if(!values) values = [];
+        for(i=0,len=keys.length; i<len; i++) {
+            obj[keys[i]] = values[i];
+        }
+        return obj;
+    };
+
+    wozllajs.extend = function(obj, properties) {
+        for(var i in properties) {
+            obj[i] = properties[i];
+        }
+    };
+
     wozllajs.proxy = function (method, scope) {
         var aArgs = Array.prototype.slice.call(arguments, 2);
         return function () {
@@ -1723,7 +1737,12 @@ this.wozllajs = this.wozllajs || {};
     };
 
     wozllajs.is = function(testObj, type) {
-        return toString.call(testObj).toLowerCase() === '[object ' + type.toLowerCase() + ']';
+        var objstr = toString.call(testObj).toLowerCase();
+        type = type.toLowerCase();
+        if(type === 'image' || type === 'htmlimageelement') {
+            return  objstr === '[object image]' || objstr === '[object htmlimageelement]';
+        }
+        return objstr === '[object ' + type + ']';
     };
 
     wozllajs.indexOf = function(obj, arr) {
@@ -1870,6 +1889,160 @@ this.wozllajs.geom = {
             ry <= y && ry + rh >= y;
     }
 };;
+
+this.wozllajs = this.wozllajs || {};
+
+(function() {
+
+    function Event(type, bubbles, cancelable) {
+        this.type = type;
+        this.bubbles = bubbles || false;
+        this.cancelable = cancelable || false;
+
+        this.currentTarget = null;
+        this.target = null;
+        this.eventPhase = Event.CAPTURING_PHASE;
+
+        this._stopImmediatePropagation = false;
+        this._stopPropagation = false;
+        this._removeListener = false;
+    }
+
+    Event.CAPTURING_PHASE = 1;
+    Event.BUBBLING_PHASE = 2;
+    Event.TARGET_PHASE = 3;
+
+    Event.prototype = {
+        stopImmediatePropagation : function() {
+            this.__stopPropagation = true;
+            this._stopImmediatePropagation = true;
+        },
+        stopPropagation : function() {
+            this._stopPropagation = true;
+        },
+        removeListener : function() {
+            this._removeListener = true;
+        }
+    };
+
+    wozllajs.Event = Event;
+
+})();;
+
+this.wozllajs = this.wozllajs || {};
+
+(function() {
+
+    function EventTarget() {
+        this._captureListeners = {};
+        this._listeners = {};
+    }
+
+    EventTarget.prototype = {
+
+        addEventListener : function(eventType, listener, useCapture) {
+            var listeners = useCapture ? this._captureListeners : this._listeners;
+            var arr = listeners[eventType];
+            if (arr) { this.removeEventListener(eventType, listener, useCapture); }
+            arr = listeners[eventType];
+            if (!arr) {
+                listeners[eventType] = [listener];
+            }
+            else {
+                arr.push(listener);
+            }
+            return listener;
+        },
+
+        removeEventListener : function(eventType, listener, useCapture) {
+            var listeners = useCapture ? this._captureListeners : this._listeners;
+            if (!listeners) { return; }
+            var arr = listeners[eventType];
+            if (!arr) { return; }
+            for (var i=0,l=arr.length; i<l; i++) {
+                if (arr[i] == listener) {
+                    if (l==1) {
+                        delete(listeners[eventType]);
+                    }
+                    else { arr.splice(i,1); }
+                    break;
+                }
+            }
+        },
+
+        hasEventListener : function(eventType) {
+            var listeners = this._listeners, captureListeners = this._captureListeners;
+            return !!((listeners && listeners[eventType]) || (captureListeners && captureListeners[eventType]));
+        },
+
+        dispatchEvent : function(event) {
+            var i, len, list;
+            event.target = this;
+            if(!event.bubbles) {
+                event.eventPhase = wozllajs.Event.TARGET_PHASE;
+                this._dispatchEvent(event);
+                return;
+            }
+
+            list = this.getAncients();
+            event.eventPhase = wozllajs.Event.CAPTURING_PHASE;
+            for(i=list.length-1; i>=0 ; i--) {
+                list[i]._dispatchEvent(event);
+                if(event._stopPropagation) {
+                    return;
+                }
+            }
+            event.eventPhase = wozllajs.Event.TARGET_PHASE;
+            this._dispatchEvent(event);
+            if(event._stopPropagation) {
+                return;
+            }
+            event.eventPhase = wozllajs.Event.BUBBLING_PHASE;
+            for(i=0,len=list.length; i<len; i++) {
+                list[i]._dispatchEvent(event);
+                if(event._stopPropagation) {
+                    return;
+                }
+            }
+        },
+
+        getAncients : function() {
+            var list = [];
+            var parent = this;
+            while (parent._parent) {
+                parent = parent._parent;
+                list.push(parent);
+            }
+            return list;
+        },
+
+        _dispatchEvent : function(event) {
+            var i, len, arr, listeners, handler;
+            event.currentTarget = this;
+            event.removed = false;
+            listeners = event.eventPhase === wozllajs.Event.CAPTURING_PHASE ? this._captureListeners : this._listeners;
+            if(listeners) {
+                arr = listeners[event.type];
+                if(!arr || arr.length === 0) return;
+                arr = arr.slice();
+                for(i=0,len=arr.length; i<len; i++) {
+                    handler = arr[i];
+                    handler(event);
+                    if(event.removed) {
+                        this.removeEventListener(event.type, handler, event.eventPhase === wozllajs.Event.CAPTURING_PHASE);
+                    }
+                    if(event._stopImmediatePropagation) {
+                        break;
+                    }
+                }
+            }
+        }
+
+    };
+
+    wozllajs.EventTarget = EventTarget;
+
+})();;
 
 this.wozllajs = this.wozllajs || {};
 
@@ -2500,8 +2673,11 @@ this.wozllajs.ResourceManager = (function() {
             return queue.getResult(id);
         },
 
-        removeResource : function(id) {
+        removeResource : function(id, resource) {
             queue.remove(id);
+            if(wozllajs.is(resource, 'Image')) {
+                wozllajs.ResourceManager.disposeImage(resource);
+            }
         },
 
         load : function(params) {
@@ -2621,10 +2797,13 @@ this.wozllajs = this.wozllajs || {};
     testHitCanvas.height = 1;
 
 	var GameObject = function(id) {
+        wozllajs.EventTarget.call(this);
 		this.initialize(id);
 	};
 
-	GameObject.prototype = {
+    var p = GameObject.prototype = Object.create(wozllajs.EventTarget.prototype);
+
+	wozllajs.extend(p, {
 
         UID : null,
 
@@ -2678,6 +2857,26 @@ this.wozllajs = this.wozllajs || {};
 
         _cacheOffsetY : 0,
 
+        g : function() {
+            return this.getObjectById.apply(this, arguments);
+        },
+
+        f : function() {
+            return this.findObjectById.apply(this, arguments);
+        },
+
+        fp : function() {
+            return this.findObjectByPath.apply(this, arguments);
+        },
+
+        bset : function() {
+            this.batchSetProperties.apply(this, arguments);
+        },
+
+        bcset : function() {
+            this.batchSetChildrenProperties.apply(this, arguments);
+        },
+
 		initialize : function(id) {
             this.UID = wozllajs.UniqueKeyGen ++;
 			this.id = id;
@@ -2692,8 +2891,10 @@ this.wozllajs = this.wozllajs || {};
 		},
 
         setId : function(id) {
-            delete this._parent._childrenMap[this.id];
-            this._parent._childrenMap[id] = this;
+            if(this._parent) {
+                delete this._parent._childrenMap[this.id];
+                this._parent._childrenMap[id] = this;
+            }
             this.id = id;
         },
 
@@ -2793,6 +2994,67 @@ this.wozllajs = this.wozllajs || {};
 
         getChildren : function() {
             return this._children;
+        },
+
+        batchSetChildrenProperties : function(objectProperties) {
+            var children = this._children;
+            var i, len;
+            for(i=0,len=children.length; i<len; i++) {
+                children[i].batchSetProperties(objectProperties);
+            }
+        },
+
+        batchSetProperties : function(path, objectProperties, multiObject) {
+            var target, obj;
+            var property;
+            if(typeof path !== 'string') {
+                multiObject = objectProperties;
+                objectProperties = path;
+                if(multiObject) {
+                    for(obj in objectProperties) {
+                        target.findObjectByPath(obj).batchSetProperties(objectProperties[obj]);
+                    }
+                } else {
+                    for(property in objectProperties) {
+                        switch(property) {
+                            case 'active' :
+                                this.setActive(objectProperties[property]); break;
+                            case 'visible' :
+                                this.setVisible(objectProperties[property]); break;
+                            case 'x' :
+                            case 'y' :
+                            case 'regX' :
+                            case 'regY' :
+                            case 'scaleX' :
+                            case 'scaleY' :
+                            case 'alpha' :
+                            case 'rotation' :
+                                this.transform[property] = objectProperties[property]; break;
+                        }
+                    }
+                }
+            }
+            else if(path) {
+                target = this.findObjectByPath(path);
+                if(multiObject) {
+                    for(obj in objectProperties) {
+                        target.findObjectByPath(obj).batchSetProperties(objectProperties[obj]);
+                    }
+                } else {
+                    target.batchSetProperties(objectProperties);
+                }
+            }
+        },
+
+        removeAll : function(destroy) {
+            var i, len;
+            if(destroy) {
+                for(i=0,len=this._children.length; i<len; i++) {
+                    this._children[i].destroy();
+                }
+            }
+            this._children = [];
+            this._childrenMap = {};
         },
 
         sortChildren : function(func) {
@@ -2922,15 +3184,15 @@ this.wozllajs = this.wozllajs || {};
 		},
 
 		releaseResources : function(whiteList) {
-	        var i, len, resource;
+	        var i, len, resource, r, id;
 			var res = this._resources;
 	        for(i=0, len=res.length; i<len; i++) {
-	            resource = res[i];
-	            if(wozllajs.is(resource, 'Image')) {
-	                if(whiteList && wozllajs.indexOf(resource.src, whiteList) === -1) {
-	                    wozllajs.ResourceManager.disposeImage(resource);
-	                }
-	            }
+                r = res[i];
+                id = typeof r === 'string' ? r : r.id;
+                resource = wozllajs.ResourceManager.getResource(id);
+                if(!whiteList || wozllajs.indexOf(id, whiteList) === -1) {
+                    wozllajs.ResourceManager.removeResource(id, resource);
+                }
 	        }
             this.uncache();
 		},
@@ -3258,7 +3520,7 @@ this.wozllajs = this.wozllajs || {};
             this._delayRemoves = [];
         }
 
-	};
+	});
 
 	wozllajs.GameObject = GameObject;
 
