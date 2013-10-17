@@ -1903,6 +1903,8 @@ this.wozllajs = this.wozllajs || {};
         this.target = null;
         this.eventPhase = Event.CAPTURING_PHASE;
 
+        this.data = null;
+
         this._stopImmediatePropagation = false;
         this._stopPropagation = false;
         this._removeListener = false;
@@ -1926,6 +1928,34 @@ this.wozllajs = this.wozllajs || {};
     };
 
     wozllajs.Event = Event;
+
+})();;
+
+this.wozllajs = this.wozllajs || {};
+
+(function() {
+
+    function ChangeEvent() {
+        wozllajs.Event.apply(this, ['change', true, true]);
+    }
+
+    var p = ChangeEvent.prototype = Object.create(wozllajs.Event.prototype);
+
+    wozllajs.ChangeEvent = ChangeEvent;
+
+})();;
+
+this.wozllajs = this.wozllajs || {};
+
+(function() {
+
+    function TouchEvent(type) {
+        wozllajs.Event.apply(this, [type, true, true]);
+    }
+
+    var p = TouchEvent.prototype = Object.create(wozllajs.Event.prototype);
+
+    wozllajs.MouseEvent = TouchEvent;
 
 })();;
 
@@ -2797,7 +2827,6 @@ this.wozllajs = this.wozllajs || {};
     testHitCanvas.height = 1;
 
 	var GameObject = function(id) {
-        wozllajs.EventTarget.call(this);
 		this.initialize(id);
 	};
 
@@ -2878,6 +2907,7 @@ this.wozllajs = this.wozllajs || {};
         },
 
 		initialize : function(id) {
+            wozllajs.EventTarget.call(this);
             this.UID = wozllajs.UniqueKeyGen ++;
 			this.id = id;
 			this.transform = new wozllajs.Transform();
@@ -3364,6 +3394,7 @@ this.wozllajs = this.wozllajs || {};
         uncache : function() {
             if(this._cacheCanvas) {
                 this._cacheCanvas.dispose && this._cacheCanvas.dispose();
+                this._cacheContext.dispose && this._cacheContext.dispose();
                 this._cacheCanvas = null;
             }
             this._cached = false;
@@ -4401,6 +4432,7 @@ wozllajs.defineComponent('renderer.TextureButton', {
     },
     onClick : function() {
         wozllajs.EventAdmin.notify(this.name + '.click');
+        this.gameObject.dispatchEvent(new wozllajs.MouseEvent('click'));
     },
 
     destroyComponent : function() {

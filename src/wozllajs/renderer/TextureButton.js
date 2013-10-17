@@ -35,6 +35,7 @@ wozllajs.defineComponent('renderer.TextureButton', {
     },
     onClick : function() {
         wozllajs.EventAdmin.notify(this.name + '.click');
+        this.gameObject.dispatchEvent(new wozllajs.MouseEvent('click'));
     },
 
     destroyComponent : function() {

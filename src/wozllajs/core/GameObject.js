@@ -10,7 +10,6 @@ this.wozllajs = this.wozllajs || {};
     testHitCanvas.height = 1;
 
 	var GameObject = function(id) {
-        wozllajs.EventTarget.call(this);
 		this.initialize(id);
 	};
 
@@ -91,6 +90,7 @@ this.wozllajs = this.wozllajs || {};
         },
 
 		initialize : function(id) {
+            wozllajs.EventTarget.call(this);
             this.UID = wozllajs.UniqueKeyGen ++;
 			this.id = id;
 			this.transform = new wozllajs.Transform();
@@ -577,6 +577,7 @@ this.wozllajs = this.wozllajs || {};
         uncache : function() {
             if(this._cacheCanvas) {
                 this._cacheCanvas.dispose && this._cacheCanvas.dispose();
+                this._cacheContext.dispose && this._cacheContext.dispose();
                 this._cacheCanvas = null;
             }
             this._cached = false;

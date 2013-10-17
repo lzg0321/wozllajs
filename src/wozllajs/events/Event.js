@@ -11,6 +11,8 @@ this.wozllajs = this.wozllajs || {};
         this.target = null;
         this.eventPhase = Event.CAPTURING_PHASE;
 
+        this.data = null;
+
         this._stopImmediatePropagation = false;
         this._stopPropagation = false;
         this._removeListener = false;

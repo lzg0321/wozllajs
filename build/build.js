@@ -17,6 +17,8 @@ var files = [
     'src/wozllajs/geom/geom.js',
 
     'src/wozllajs/events/Event.js',
+    'src/wozllajs/events/ChangeEvent.js',
+    'src/wozllajs/events/TouchEvent.js',
     'src/wozllajs/events/EventTarget.js',
 
     'src/wozllajs/core/Array2D.js',
