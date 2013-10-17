@@ -477,6 +477,8 @@ this.wozllajs = this.wozllajs || {};
 	    		children[i].destroy();
 	    	}
             wozllajs.LayerManager.removeFrom(this._layer, this);
+
+            this.uncache();
 		},
 
         layout : function() {
