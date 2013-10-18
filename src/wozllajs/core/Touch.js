@@ -176,9 +176,7 @@ this.wozllajs.Touch = (function() {
 
         // for EventTarget
         if(wozllajs.Stage.root) {
-            var start = Date.now();
             var target = wozllajs.Stage.root.getTopObjectUnderPoint(x, y);
-            console.log(Date.now() - start);
             target && target.dispatchEvent(touchEvent);
         }
 

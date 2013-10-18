@@ -2441,9 +2441,7 @@ this.wozllajs.Touch = (function() {
 
         // for EventTarget
         if(wozllajs.Stage.root) {
-            var start = Date.now();
             var target = wozllajs.Stage.root.getTopObjectUnderPoint(x, y);
-            console.log(Date.now() - start);
             target && target.dispatchEvent(touchEvent);
         }
 
@@ -3686,7 +3684,7 @@ this.wozllajs = this.wozllajs || {};
 
 	p.initialize = function(stageId, canvasIdOrElt, width, height) {
 		this.GameObject_initialize(stageId);
-		this.stageCanvas = typeof canvasIdOrElt === 'string' ? 
+		this.stageCanvas = typeof canvasIdOrElt === 'string' ?
 			document.getElementById(canvasIdOrElt) : canvasIdOrElt;
 		this.stageContext = this.stageCanvas.getContext('2d');
 		this.width = width || 0;
