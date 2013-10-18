@@ -7,6 +7,14 @@ this.wozllajs = this.wozllajs || {};
         this._listeners = {};
     }
 
+    EventTarget.DEFAULT_ACTION_MAP = {
+        'touchstart' : 'onTouchStart',
+        'touchmove' : 'onTouchMove',
+        'touchend' : 'onTouchEnd',
+        'tap' : 'onTap',
+        'click' : 'onClick'
+    };
+
     EventTarget.prototype = {
 
         addEventListener : function(eventType, listener, useCapture) {
@@ -45,30 +53,44 @@ this.wozllajs = this.wozllajs || {};
         },
 
         dispatchEvent : function(event) {
-            var i, len, list;
+            var i, len, list, object, defaultAction;
             event.target = this;
             if(!event.bubbles) {
                 event.eventPhase = wozllajs.Event.TARGET_PHASE;
-                this._dispatchEvent(event);
+                if(!this._dispatchEvent(event)) {
+                    defaultAction = this[EventTarget.DEFAULT_ACTION_MAP[event.type]];
+                    defaultAction && defaultAction(event);
+                }
                 return;
             }
 
             list = this.getAncients();
             event.eventPhase = wozllajs.Event.CAPTURING_PHASE;
             for(i=list.length-1; i>=0 ; i--) {
-                list[i]._dispatchEvent(event);
+                object = list[i];
+                if(!object._dispatchEvent(event)) {
+                    defaultAction = object[EventTarget.DEFAULT_ACTION_MAP[event.type]];
+                    defaultAction && defaultAction(event);
+                }
                 if(event._stopPropagation) {
                     return;
                 }
             }
             event.eventPhase = wozllajs.Event.TARGET_PHASE;
-            this._dispatchEvent(event);
+            if(!this._dispatchEvent(event)) {
+                defaultAction = this[EventTarget.DEFAULT_ACTION_MAP[event.type]];
+                defaultAction && defaultAction(event);
+            }
             if(event._stopPropagation) {
                 return;
             }
             event.eventPhase = wozllajs.Event.BUBBLING_PHASE;
             for(i=0,len=list.length; i<len; i++) {
-                list[i]._dispatchEvent(event);
+                object = list[i];
+                if(!object._dispatchEvent(event)) {
+                    defaultAction = object[EventTarget.DEFAULT_ACTION_MAP[event.type]];
+                    defaultAction && defaultAction(event);
+                }
                 if(event._stopPropagation) {
                     return;
                 }
@@ -105,6 +127,7 @@ this.wozllajs = this.wozllajs || {};
                     }
                 }
             }
+            return event._preventDefault;
         }
 
     };

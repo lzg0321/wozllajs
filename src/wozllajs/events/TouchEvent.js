@@ -17,6 +17,8 @@ this.wozllajs = this.wozllajs || {};
     p.globalX = null;
     p.globalY = null;
 
+    // 兼容老代码
     wozllajs.MouseEvent = TouchEvent;
+    wozllajs.TouchEvent = TouchEvent;
 
 })();

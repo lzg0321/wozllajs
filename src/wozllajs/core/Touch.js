@@ -21,7 +21,6 @@ this.wozllajs.Touch = (function() {
 
     function emptyTouchStart() {}
     var listenerHolder = new wozllajs.EventDispatcher();
-    var objectTouchListenerMap = {};
     var touchedGameObject;
 
     function getCanvasOffset() {
@@ -56,6 +55,8 @@ this.wozllajs.Touch = (function() {
         var type = e.type;
         var x = e.x;
         var y = e.y;
+
+        // for EventAdmin
         touchedGameObject = null;
         listeners = listenerHolder.getListenersByType(type);
         if(listeners) {
@@ -78,6 +79,8 @@ this.wozllajs.Touch = (function() {
                 }
             }
         }
+
+
     }
 
     function onTouchMove(e) {
@@ -167,7 +170,18 @@ this.wozllajs.Touch = (function() {
         else if(type === 'mousemove') {
             type = 'touchmove';
         }
-        touchEvent = new wozllajs.TouchEvent(x, y, type, e);
+        touchEvent = new wozllajs.TouchEvent(type);
+        touchEvent.x = x;
+        touchEvent.y = y;
+
+        // for EventTarget
+        if(wozllajs.Stage.root) {
+            var start = Date.now();
+            var target = wozllajs.Stage.root.getTopObjectUnderPoint(x, y);
+            console.log(Date.now() - start);
+            target && target.dispatchEvent(touchEvent);
+        }
+
         dispatchEvent(touchEvent);
     }
 
@@ -176,6 +190,9 @@ this.wozllajs.Touch = (function() {
     return {
 
         init : function(canvas) {
+            if(typeof canvas === 'string') {
+                canvas = document.getElementById(canvas);
+            }
             topCanvas = canvas;
             if(wozllajs.isTouchSupport) {
                 canvas.addEventListener("touchstart", onEvent, false);
@@ -197,6 +214,7 @@ this.wozllajs.Touch = (function() {
                     }
                 }, false);
             }
+            // TODO fix to tap gesture
             canvas.addEventListener("click", onEvent, false);
         },
 

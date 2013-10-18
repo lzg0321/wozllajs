@@ -152,6 +152,32 @@ this.wozllajs = this.wozllajs || {};
             obj.transform.parent = this.transform;
         },
 
+        insertBefore : function(obj, objOrId) {
+            var i, len, child;
+            var index;
+            for(i=0,len=this._children.length; i<len; i++) {
+                child = this._children[i];
+                if(child === objOrId || child.id === objOrId) {
+                    index = i;
+                    break;
+                }
+            }
+            this.insertObject(obj, index);
+        },
+
+        insertAfter : function(obj, objOrId) {
+            var i, len, child;
+            var index;
+            for(i=0,len=this._children.length; i<len; i++) {
+                child = this._children[i];
+                if(child === objOrId || child.id === objOrId) {
+                    index = i;
+                    break;
+                }
+            }
+            this.insertObject(obj, index+1);
+        },
+
         delayRemove : function() {
             this._parent.delayRemoveObject(this);
             this._parent = null;
@@ -366,7 +392,7 @@ this.wozllajs = this.wozllajs || {};
             this._mouseEnable = enable;
         },
 
-        testHit : function(x, y) {
+        testHit : function(x, y, onlyRenderSelf) {
             var hit = false;
             if(!this.isActive(true) || !this.isVisible(true)) {
                 return hit;
@@ -379,12 +405,32 @@ this.wozllajs = this.wozllajs || {};
             }
             else {
                 testHitContext.setTransform(1, 0, 0, 1, -x, -y);
-                this._draw(testHitContext, this.getStage().getVisibleRect());
+                if(onlyRenderSelf) {
+                    this._renderer && this._renderer.draw(testHitContext, this.getStage().getVisibleRect());
+                } else {
+                    this._draw(testHitContext, this.getStage().getVisibleRect());
+                }
                 hit = testHitContext.getImageData(0, 0, 1, 1).data[3] > 1;
                 testHitContext.setTransform(1, 0, 0, 1, 0, 0);
                 testHitContext.clearRect(0, 0, 2, 2);
             }
             return hit;
+        },
+
+        getTopObjectUnderPoint : function(x, y) {
+            var i, child, obj, localPoint;
+            for(i=this._children.length-1; i>=0 ; i--) {
+                child = this._children[i];
+                obj = child.getTopObjectUnderPoint(x, y);
+                if(obj) {
+                    return obj;
+                }
+            }
+            localPoint = this.transform.globalToLocal(x, y);
+            if(this.testHit(localPoint.x, localPoint.y, true)) {
+                return this;
+            }
+            return null;
         },
 
 	    loadResources : function(params) {

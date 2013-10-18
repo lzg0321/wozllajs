@@ -25,7 +25,6 @@ var files = [
     'src/wozllajs/core/EventDispatcher.js',
     'src/wozllajs/core/Time.js',
     'src/wozllajs/core/Touch.js',
-    'src/wozllajs/core/TouchEvent.js',
     'src/wozllajs/core/EventAdmin.js',
     'src/wozllajs/core/Engine.js',
     'src/wozllajs/core/ResourceManager.js',

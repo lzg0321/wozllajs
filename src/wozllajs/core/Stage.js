@@ -14,6 +14,12 @@ this.wozllajs = this.wozllajs || {};
 		this.initialize(stageId, canvasIdOrElt, width, height);
 	}
 
+    Stage.init = function(canvasIdOrElt, width, height) {
+        Stage.root = new Stage('root', canvasIdOrElt, width, height);
+        Stage.root.autoClear = true;
+        return Stage.root;
+    };
+
 	var p = Stage.prototype = Object.create(wozllajs.GameObject.prototype);
 
 	p.isStage = true;
@@ -32,7 +38,7 @@ this.wozllajs = this.wozllajs || {};
 
 	p.initialize = function(stageId, canvasIdOrElt, width, height) {
 		this.GameObject_initialize(stageId);
-		this.stageCanvas = typeof canvasIdOrElt === 'string' ? 
+		this.stageCanvas = typeof canvasIdOrElt === 'string' ?
 			document.getElementById(canvasIdOrElt) : canvasIdOrElt;
 		this.stageContext = this.stageCanvas.getContext('2d');
 		this.width = width || 0;

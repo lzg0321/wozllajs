@@ -15,6 +15,7 @@ this.wozllajs = this.wozllajs || {};
 
         this._stopImmediatePropagation = false;
         this._stopPropagation = false;
+        this._preventDefault = false;
         this._removeListener = false;
     }
 
@@ -29,6 +30,9 @@ this.wozllajs = this.wozllajs || {};
         },
         stopPropagation : function() {
             this._stopPropagation = true;
+        },
+        preventDefault : function() {
+            this._preventDefault = true;
         },
         removeListener : function() {
             this._removeListener = true;
