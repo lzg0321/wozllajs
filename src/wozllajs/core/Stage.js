@@ -17,6 +17,7 @@ this.wozllajs = this.wozllajs || {};
     Stage.init = function(canvasIdOrElt, width, height) {
         Stage.root = new Stage('root', canvasIdOrElt, width, height);
         Stage.root.autoClear = true;
+        Stage.root.init();
         return Stage.root;
     };
 
@@ -41,8 +42,8 @@ this.wozllajs = this.wozllajs || {};
 		this.stageCanvas = typeof canvasIdOrElt === 'string' ?
 			document.getElementById(canvasIdOrElt) : canvasIdOrElt;
 		this.stageContext = this.stageCanvas.getContext('2d');
-		this.width = width || 0;
-		this.height = height || 0;
+		this.width = width || this.stageCanvas.width;
+		this.height = height || this.stageCanvas.height;
 		this.stageCanvas.width = this.width;
 		this.stageCanvas.height = this.height;
 	};

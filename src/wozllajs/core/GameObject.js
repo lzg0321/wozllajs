@@ -154,7 +154,7 @@ this.wozllajs = this.wozllajs || {};
 
         insertBefore : function(obj, objOrId) {
             var i, len, child;
-            var index;
+            var index = 0;
             for(i=0,len=this._children.length; i<len; i++) {
                 child = this._children[i];
                 if(child === objOrId || child.id === objOrId) {
@@ -167,7 +167,7 @@ this.wozllajs = this.wozllajs || {};
 
         insertAfter : function(obj, objOrId) {
             var i, len, child;
-            var index;
+            var index = this._children.length;
             for(i=0,len=this._children.length; i<len; i++) {
                 child = this._children[i];
                 if(child === objOrId || child.id === objOrId) {
@@ -201,7 +201,7 @@ this.wozllajs = this.wozllajs || {};
 	    },
 
 	    remove : function() {
-	        this._parent.removeObject(this);
+	        this._parent && this._parent.removeObject(this);
 	        this._parent = null;
 	    },
 

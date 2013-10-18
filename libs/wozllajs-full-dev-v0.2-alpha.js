@@ -2441,8 +2441,12 @@ this.wozllajs.Touch = (function() {
 
         // for EventTarget
         if(wozllajs.Stage.root) {
+            var start = Date.now();
             var target = wozllajs.Stage.root.getTopObjectUnderPoint(x, y);
+            var now = Date.now();
+            console.log('testHit on ' + touchEvent.type + ', took ' + (now-start) + 'ms');
             target && target.dispatchEvent(touchEvent);
+            console.log('dispatchEvent ' + touchEvent.type + ', took ' + (Date.now()-now) + 'ms');
         }
 
         dispatchEvent(touchEvent);
@@ -3010,7 +3014,7 @@ this.wozllajs = this.wozllajs || {};
 
         insertBefore : function(obj, objOrId) {
             var i, len, child;
-            var index;
+            var index = 0;
             for(i=0,len=this._children.length; i<len; i++) {
                 child = this._children[i];
                 if(child === objOrId || child.id === objOrId) {
@@ -3023,7 +3027,7 @@ this.wozllajs = this.wozllajs || {};
 
         insertAfter : function(obj, objOrId) {
             var i, len, child;
-            var index;
+            var index = this._children.length;
             for(i=0,len=this._children.length; i<len; i++) {
                 child = this._children[i];
                 if(child === objOrId || child.id === objOrId) {
@@ -3057,7 +3061,7 @@ this.wozllajs = this.wozllajs || {};
 	    },
 
 	    remove : function() {
-	        this._parent.removeObject(this);
+	        this._parent && this._parent.removeObject(this);
 	        this._parent = null;
 	    },
 
@@ -3663,6 +3667,7 @@ this.wozllajs = this.wozllajs || {};
     Stage.init = function(canvasIdOrElt, width, height) {
         Stage.root = new Stage('root', canvasIdOrElt, width, height);
         Stage.root.autoClear = true;
+        Stage.root.init();
         return Stage.root;
     };
 
@@ -3687,8 +3692,8 @@ this.wozllajs = this.wozllajs || {};
 		this.stageCanvas = typeof canvasIdOrElt === 'string' ?
 			document.getElementById(canvasIdOrElt) : canvasIdOrElt;
 		this.stageContext = this.stageCanvas.getContext('2d');
-		this.width = width || 0;
-		this.height = height || 0;
+		this.width = width || this.stageCanvas.width;
+		this.height = height || this.stageCanvas.height;
 		this.stageCanvas.width = this.width;
 		this.stageCanvas.height = this.height;
 	};
