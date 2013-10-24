@@ -11,7 +11,7 @@ wozllajs.defineComponent('behaviour.ConstantLoopRotation', {
     update : function() {
         var trans = this.gameObject.transform;
         trans.rotation += (this.speed * wozllajs.Time.delta || 0);
-        if(trans.rotation > 99999999) {
+        if(trans.rotation >= 360) {
             trans.rotation = 0;
         }
     }

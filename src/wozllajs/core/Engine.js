@@ -94,7 +94,11 @@ this.wozllajs.Engine = (function() {
             Time.update();
             Time.delta = frameTime;
             engineEventDispatcher.fireEvent(EVENT_TYPE);
+        },
+
+        setFPS : function(fps) {
+
         }
-    }
+    };
 
 })();

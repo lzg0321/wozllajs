@@ -33,6 +33,7 @@
     wozllajs.Engine.start();
 
     gameObject.addEventListener('click', function(e) {
+        e.stopPropagation();
     	console.log('click gameObject');
         console.log('target: ', e.target.id);
         console.log('currentTarget: ', e.currentTarget.id);
