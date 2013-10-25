@@ -1,7 +1,7 @@
 define([
     'require',
     'module',
-    './../wozllajs',
+    './../var',
     './../events/EventTarget',
     './Transform',
     './../annotation/$Inject'

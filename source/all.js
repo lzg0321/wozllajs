@@ -11,7 +11,7 @@ define.factoryProxy = function(callback, args, exports) {
 };
 
 define([
-    './wozllajs',
+    './var',
     './promise',
     './annotation',
     './ajax',

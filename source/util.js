@@ -1,5 +1,5 @@
 define([
-    './wozllajs',
+    './var',
     './util/Tuple'
 ], function(W, Tuple) {
 

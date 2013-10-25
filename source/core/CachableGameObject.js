@@ -1,6 +1,6 @@
 define([
     'module',
-    './../wozllajs',
+    './../var',
     './../globals',
     './UnityGameObject',
     './Filter',

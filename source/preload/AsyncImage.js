@@ -1,5 +1,5 @@
 define([
-    './../wozllajs',
+    './../var',
     './LoadQueue'
 ], function(W, LoadQueue) {
 

@@ -1,5 +1,5 @@
 define([
-    './../wozllajs'
+    './../var'
 ], function(W) {
 
     function Component() {

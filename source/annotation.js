@@ -1,5 +1,5 @@
 define([
-    './wozllajs',
+    './var',
     './annotation/Annotation',
     './annotation/AnnotationRegistry'
 ], function(W, Annotation, AnnotationRegistry) {

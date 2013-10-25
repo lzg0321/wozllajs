@@ -1,5 +1,5 @@
 define([
-    './wozllajs',
+    './var',
     './core/Time',
     './core/Engine',
     './core/AbstractGameObject',

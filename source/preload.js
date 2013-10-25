@@ -1,5 +1,5 @@
 define([
-    './wozllajs',
+    './var',
     './preload/AsyncImage',
     './preload/Loader',
     './preload/ImageLoader',

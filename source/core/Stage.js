@@ -1,5 +1,5 @@
 define([
-    './../wozllajs',
+    './../var',
     './CachableGameObject'
 ], function(W, CachableGameObject) {
 

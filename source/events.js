@@ -1,5 +1,5 @@
 define([
-    './wozllajs',
+    './var',
     './events/Event',
     './events/EventTarget'
 ], function(W, Event, EventTarget) {

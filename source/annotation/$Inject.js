@@ -1,5 +1,5 @@
 define([
-    './../wozllajs',
+    './../var',
     './Annotation',
     './../core/AbstractGameObject'
 ], function(W, Annotation, AbstractGameObject) {

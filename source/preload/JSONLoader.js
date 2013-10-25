@@ -1,6 +1,6 @@
 define([
     'require',
-    './../wozllajs',
+    './../var',
     './../promise',
     './Loader'
 ], function(require, W, Promise, Loader) {

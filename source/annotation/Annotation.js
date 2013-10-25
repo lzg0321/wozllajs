@@ -1,5 +1,5 @@
 define([
-    './../wozllajs',
+    './../var',
     './../util/Tuple',
     './AnnotationRegistry'
 ], function(W, Tuple, AnnotationRegistry) {
@@ -25,7 +25,10 @@ define([
                     throw new Error('Undefined property "' + prop + '" in ' + name);
                 }
                 propValue = config[prop];
-                if(propValue instanceof Object) {
+                if(!propValue) {
+                    propValue = def[prop].defaults;
+                }
+                else if(propValue instanceof Object) {
                     if(!(propValue instanceof def[prop].type)) {
                         throw new Error('Type mismatch on property "' + prop + '" of ' + name);
                     }
