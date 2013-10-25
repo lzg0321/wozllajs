@@ -9,7 +9,7 @@ define([
     './globals'
 ], function(isArray, isImage,  extend, uniqueKey, slice, createCanvas, support, globals) {
 
-    var wozllajs = {
+    var vars = {
         isArray : isArray,
         isImage : isImage,
         extend : extend,
@@ -20,8 +20,8 @@ define([
     };
 
     for(var i in globals) {
-        wozllajs[i] = globals[i];
+        vars[i] = globals[i];
     }
 
-    return window.wozllajs = wozllajs;
+    return vars;
 });

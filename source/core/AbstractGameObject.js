@@ -3,14 +3,8 @@ define([
     'module',
     './../var',
     './../events/EventTarget',
-    './Transform',
-    './../annotation/$Inject'
-], function(require, module, W, EventTarget, Transform, $Inject) {
-
-    $Inject({
-        type : Object,
-        value : 'Login'
-    });
+    './Transform'
+], function(require, module, W, EventTarget, Transform) {
 
     /**
      *

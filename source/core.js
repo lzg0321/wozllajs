@@ -1,5 +1,4 @@
 define([
-    './var',
     './core/Time',
     './core/Engine',
     './core/AbstractGameObject',
@@ -16,25 +15,25 @@ define([
     './core/Touch',
     './core/events/GameObjectEvent',
     './core/events/TouchEvent'
-], function(W, Time, Engine, AbstractGameObject, UnityGameObject, CachableGameObject, Transform, Component,
+], function(Time, Engine, AbstractGameObject, UnityGameObject, CachableGameObject, Transform, Component,
     Behaviour, Collider, Filter, HitDelegate, Renderer, Stage, Touch, GameObjectEvent, TouchEvent) {
 
-    var config;
+    var cfg;
 
-    W.config = function(configuration) {
-        config = configuration;
+    var config = function(configuration) {
+        cfg = configuration;
     };
 
-    W.onStageInit = function(callback) {
+    var onStageInit = function(callback) {
         var stage = new Stage({
             id : 'wozllajs_Stage',
-            canvas : config.canvas,
-            width : config.width,
-            height : config.height,
-            autoClear : config.autoClear
+            canvas : cfg.canvas,
+            width : cfg.width,
+            height : cfg.height,
+            autoClear : cfg.autoClear
         });
-        config.canvas.width = config.width;
-        config.canvas.height = config.height;
+        cfg.canvas.width = cfg.width;
+        cfg.canvas.height = cfg.height;
         Touch.init(stage);
         stage.init();
         stage.addEventListener(GameObjectEvent.INIT, function(e) {
@@ -48,6 +47,10 @@ define([
     };
 
     return {
+
+        config : config,
+        onStageInit : onStageInit,
+
         Time : Time,
         Engine : Engine,
         AbstractGameObject : AbstractGameObject,

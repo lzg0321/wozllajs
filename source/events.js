@@ -1,8 +1,7 @@
 define([
-    './var',
     './events/Event',
     './events/EventTarget'
-], function(W, Event, EventTarget) {
+], function(Event, EventTarget) {
 
     return {
         Event : Event,

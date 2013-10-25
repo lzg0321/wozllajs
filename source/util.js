@@ -1,9 +1,8 @@
 define([
-    './var',
     './util/Tuple'
-], function(W, Tuple) {
+], function(Tuple) {
 
-    W.Tuple = Tuple;
-
-    return W;
+    return {
+        Tuple : Tuple
+    }
 });

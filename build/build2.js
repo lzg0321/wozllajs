@@ -1,5 +1,5 @@
 ({
     baseUrl: "./../source",
-    name: "all",
+    name: "wozllajs",
     out: "./../libs/wozllajs-v2.js"
 })

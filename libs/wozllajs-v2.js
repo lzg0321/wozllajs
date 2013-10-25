@@ -75,7 +75,7 @@ define('globals',[],function() {
         METHOD_DESTROY_COMPONENT : 'destroyComponent'
     }
 });
-define('wozllajs',[
+define('var',[
     './var/isArray',
     './var/isImage',
     './var/extend',
@@ -86,7 +86,7 @@ define('wozllajs',[
     './globals'
 ], function(isArray, isImage,  extend, uniqueKey, slice, createCanvas, support, globals) {
 
-    var wozllajs = {
+    var vars = {
         isArray : isArray,
         isImage : isImage,
         extend : extend,
@@ -97,14 +97,14 @@ define('wozllajs',[
     };
 
     for(var i in globals) {
-        wozllajs[i] = globals[i];
+        vars[i] = globals[i];
     }
 
-    return window.wozllajs = wozllajs;
+    return vars;
 });
 
 define('promise',[
-    './wozllajs'
+    './var'
 ], function(W){
 
     var Promise = function() {
@@ -270,12 +270,35 @@ define('annotation/AnnotationRegistry',[
 
 });
 define('annotation/Annotation',[
-    './../wozllajs',
+    './../var',
     './../util/Tuple',
     './AnnotationRegistry'
 ], function(W, Tuple, AnnotationRegistry) {
 
     var currentAnnotation;
+
+    function $Annotation(name, config, definition, $NamedAnnotation) {
+        var prop, propValue;
+        for(prop in config) {
+            if(!definition[prop]) {
+                throw new Error('Undefined property "' + prop + '" in ' + name);
+            }
+            propValue = config[prop];
+            if(!propValue) {
+                propValue = definition[prop].defaults;
+            }
+            else if(propValue instanceof Object) {
+                if(!(propValue instanceof definition[prop].type)) {
+                    throw new Error('Type mismatch on property "' + prop + '" of ' + name);
+                }
+            }
+            else if((typeof propValue) !== definition[prop].type) {
+                throw new Error('Type mismatch on property "' + prop + '" of ' + name);
+            }
+            this[prop] = propValue;
+        }
+        currentAnnotation.addAnnotation($NamedAnnotation, this);
+    }
 
     var Annotation = function(param) {
         this._$annotationTuple = new Tuple();
@@ -283,39 +306,25 @@ define('annotation/Annotation',[
         currentAnnotation = this;
     };
 
-    Annotation.get = function(module) {
+    Annotation.forModule = function(module) {
         return AnnotationRegistry.get(module);
     };
 
     Annotation.define = function(name, definition) {
-        function $Annotation(config) {
-            var def = $Annotation.definition;
-            var prop, propValue;
-            for(prop in config) {
-                if(!def[prop]) {
-                    throw new Error('Undefined property "' + prop + '" in ' + name);
-                }
-                propValue = config[prop];
-                if(!propValue) {
-                    propValue = def[prop].defaults;
-                }
-                else if(propValue instanceof Object) {
-                    if(!(propValue instanceof def[prop].type)) {
-                        throw new Error('Type mismatch on property "' + prop + '" of ' + name);
-                    }
-                }
-                else if((typeof propValue) !== def[prop].type) {
-                    throw new Error('Type mismatch on property "' + prop + '" of ' + name);
-                }
-                this[prop] = propValue;
-            }
-            currentAnnotation.addAnnotation($Annotation, this);
-        }
-        $Annotation._annotation_name = name;
-        $Annotation.definition = definition;
-        W.annotation = W.annotation || {};
-        W.annotation[name] = function(config) { new $Annotation(config); };
-        return W.annotation[name];
+
+        var $NamedAnnotation = function(config) {
+            new $Annotation(name, config, definition, $NamedAnnotation);
+        };
+
+        $NamedAnnotation.forModule = function(module) {
+            return Annotation.forModule(module).getAnnotations($NamedAnnotation);
+        };
+        $NamedAnnotation.isPresent = function(module) {
+            return Annotation.forModule(module).isAnnotationPresent($NamedAnnotation);
+        };
+        $NamedAnnotation._annotation_name = name;
+        // export for global
+        return window[name] = $NamedAnnotation;
     };
 
     var p = Annotation.prototype;
@@ -329,7 +338,6 @@ define('annotation/Annotation',[
     };
 
     p.getAnnotation = function(type) {
-
         return this._$annotationTuple.get(type._annotation_name)[0];
     };
 
@@ -345,20 +353,48 @@ define('annotation/Annotation',[
     return Annotation;
 
 });
-define('annotation',[
-    './wozllajs',
-    './annotation/Annotation',
-    './annotation/AnnotationRegistry'
-], function(W, Annotation, AnnotationRegistry) {
+define('annotation/$Inject',[
+    './../var',
+    './Annotation'
+], function(W, Annotation) {
 
-    // must export first
-    W.Annotation = Annotation;
-    W.AnnotationRegistry = AnnotationRegistry;
+    return Annotation.define('$Inject', {
+        type : {
+            type : Object,
+            defaults : null
+        },
+        value : {
+            type : 'string',
+            defaults : null
+        }
+    });
+
+});
+define('annotation',[
+    './annotation/Annotation',
+    './annotation/AnnotationRegistry',
+    './annotation/$Inject'
+], function(Annotation, AnnotationRegistry) {
 
     return {
         Annotation : Annotation,
         AnnotationRegistry : AnnotationRegistry
+    }
+});
+define('factoryProxy',[
+    './annotation/Annotation',
+    './annotation/AnnotationRegistry'
+], function(Annotation, AnnotationRegistry) {
+
+    define.factoryProxy = function(callback, args, exports) {
+        var annotation = new Annotation();
+        exports = callback.apply(exports, args);
+        if(!annotation.isEmpty()) {
+            AnnotationRegistry.register(exports, annotation);
+        }
+        return exports;
     };
+
 });
 define('ajax/param',[],function() {
 
@@ -518,7 +554,7 @@ define('ajax',[
 
 });
 define('events/Event',[
-    './../wozllajs'
+    './../var'
 ], function(W) {
 
     /**
@@ -763,10 +799,9 @@ define('events/EventTarget',[
 
 
 define('events',[
-    './wozllajs',
     './events/Event',
     './events/EventTarget'
-], function(W, Event, EventTarget) {
+], function(Event, EventTarget) {
 
     return {
         Event : Event,
@@ -774,7 +809,7 @@ define('events',[
     };
 });
 define('preload/Loader',[
-    './../wozllajs'
+    './../var'
 ], function(W) {
 
     var Loader = function(item) {
@@ -789,7 +824,7 @@ define('preload/Loader',[
 });
 define('preload/ImageLoader',[
     'require',
-    './../wozllajs',
+    './../var',
     './../promise',
     './Loader'
 ], function(require, W, Promise, Loader) {
@@ -823,7 +858,7 @@ define('preload/ImageLoader',[
 });
 define('preload/StringLoader',[
     'require',
-    './../wozllajs',
+    './../var',
     './../promise',
     './Loader'
 ], function(require, W, Promise, Loader) {
@@ -844,7 +879,7 @@ define('preload/StringLoader',[
 });
 define('preload/JSONLoader',[
     'require',
-    './../wozllajs',
+    './../var',
     './../promise',
     './Loader'
 ], function(require, W, Promise, Loader) {
@@ -865,7 +900,7 @@ define('preload/JSONLoader',[
 });
 define('preload/LoadQueue',[
     'require',
-    './../wozllajs',
+    './../var',
     './../promise',
     './ImageLoader',
     './StringLoader',
@@ -980,7 +1015,7 @@ define('preload/LoadQueue',[
 
 });
 define('preload/AsyncImage',[
-    './../wozllajs',
+    './../var',
     './LoadQueue'
 ], function(W, LoadQueue) {
 
@@ -1016,7 +1051,7 @@ define('preload/AsyncImage',[
     return AsyncImage;
 });
 define('preload',[
-    './wozllajs',
+    './var',
     './preload/AsyncImage',
     './preload/Loader',
     './preload/ImageLoader',
@@ -1729,37 +1764,13 @@ define('core/Transform',[
     return Transform;
 
 });
-define('annotation/$Inject',[
-    './../wozllajs',
-    './Annotation',
-    './../core/AbstractGameObject'
-], function(W, Annotation, AbstractGameObject) {
-
-    return Annotation.define('$Inject', {
-        type : {
-            type : Object,
-            defaults : null
-        },
-        value : {
-            type : 'string',
-            defaults : null
-        }
-    });
-
-});
 define('core/AbstractGameObject',[
     'require',
     'module',
-    './../wozllajs',
+    './../var',
     './../events/EventTarget',
-    './Transform',
-    './../annotation/$Inject'
-], function(require, module, W, EventTarget, Transform, $Inject) {
-
-    $Inject({
-        type : Object,
-        value : 'Login'
-    });
+    './Transform'
+], function(require, module, W, EventTarget, Transform) {
 
     /**
      *
@@ -1923,7 +1934,7 @@ define('core/AbstractGameObject',[
 
 });
 define('core/Component',[
-    './../wozllajs'
+    './../var'
 ], function(W) {
 
     function Component() {
@@ -1961,7 +1972,7 @@ define('core/Component',[
 
 });
 define('core/Behaviour',[
-    './../wozllajs',
+    './../var',
     './Component'
 ], function(W, Component) {
 
@@ -1981,7 +1992,7 @@ define('core/Behaviour',[
 
 });
 define('core/Renderer',[
-    './../wozllajs',
+    './../var',
     './Component'
 ], function(W, Component) {
 
@@ -1999,7 +2010,7 @@ define('core/Renderer',[
 
 });
 define('core/HitDelegate',[
-    './../wozllajs',
+    './../var',
     './Component'
 ], function(W, Component) {
 
@@ -2017,7 +2028,7 @@ define('core/HitDelegate',[
 
 });
 define('core/events/GameObjectEvent',[
-    './../../wozllajs',
+    './../../var',
     './../../events/Event'
 ], function(W, Event) {
 
@@ -2034,7 +2045,7 @@ define('core/events/GameObjectEvent',[
 
 });
 define('core/UnityGameObject',[
-    './../wozllajs',
+    './../var',
     './../globals',
     './AbstractGameObject',
     './Component',
@@ -2315,7 +2326,7 @@ define('core/UnityGameObject',[
     return UnityGameObject;
 });
 define('core/Filter',[
-    './../wozllajs',
+    './../var',
     './Component'
 ], function(W, Component) {
 
@@ -2335,7 +2346,7 @@ define('core/Filter',[
 });
 define('core/CachableGameObject',[
     'module',
-    './../wozllajs',
+    './../var',
     './../globals',
     './UnityGameObject',
     './Filter',
@@ -2424,7 +2435,7 @@ define('core/CachableGameObject',[
     return CachableGameObject;
 });
 define('core/Stage',[
-    './../wozllajs',
+    './../var',
     './CachableGameObject'
 ], function(W, CachableGameObject) {
 
@@ -2595,7 +2606,7 @@ define('core/Engine',[
 
 });
 define('core/Collider',[
-    './../wozllajs',
+    './../var',
     './Component'
 ], function(W, Component) {
 
@@ -2611,7 +2622,7 @@ define('core/Collider',[
 
 });
 define('core/events/TouchEvent',[
-    './../../wozllajs',
+    './../../var',
     './../../events/Event'
 ], function(W, Event) {
 
@@ -2737,7 +2748,6 @@ define('core/Touch',[
     }
 });
 define('core',[
-    './wozllajs',
     './core/Time',
     './core/Engine',
     './core/AbstractGameObject',
@@ -2754,25 +2764,25 @@ define('core',[
     './core/Touch',
     './core/events/GameObjectEvent',
     './core/events/TouchEvent'
-], function(W, Time, Engine, AbstractGameObject, UnityGameObject, CachableGameObject, Transform, Component,
+], function(Time, Engine, AbstractGameObject, UnityGameObject, CachableGameObject, Transform, Component,
     Behaviour, Collider, Filter, HitDelegate, Renderer, Stage, Touch, GameObjectEvent, TouchEvent) {
 
-    var config;
+    var cfg;
 
-    W.config = function(configuration) {
-        config = configuration;
+    var config = function(configuration) {
+        cfg = configuration;
     };
 
-    W.onStageInit = function(callback) {
+    var onStageInit = function(callback) {
         var stage = new Stage({
             id : 'wozllajs_Stage',
-            canvas : config.canvas,
-            width : config.width,
-            height : config.height,
-            autoClear : config.autoClear
+            canvas : cfg.canvas,
+            width : cfg.width,
+            height : cfg.height,
+            autoClear : cfg.autoClear
         });
-        config.canvas.width = config.width;
-        config.canvas.height = config.height;
+        cfg.canvas.width = cfg.width;
+        cfg.canvas.height = cfg.height;
         Touch.init(stage);
         stage.init();
         stage.addEventListener(GameObjectEvent.INIT, function(e) {
@@ -2786,6 +2796,10 @@ define('core',[
     };
 
     return {
+
+        config : config,
+        onStageInit : onStageInit,
+
         Time : Time,
         Engine : Engine,
         AbstractGameObject : AbstractGameObject,
@@ -2807,22 +2821,11 @@ define('core',[
         }
     };
 });
-define.factoryProxy = function(callback, args, exports) {
-    if(window.wozllajs && window.wozllajs.Annotation) {
-        var annotation = new wozllajs.Annotation();
-        exports = callback.apply(exports, args);
-        if(!annotation.isEmpty()) {
-            wozllajs.AnnotationRegistry.register(exports, annotation);
-        }
-        return exports;
-    }
-    return callback.apply(exports, args);
-};
-
-define('all',[
-    './wozllajs',
+define('wozllajs',[
+    './var',
     './promise',
     './annotation',
+    './factoryProxy',
     './ajax',
     './events',
     './preload',
@@ -2836,14 +2839,10 @@ define('all',[
     var i, len, m, p;
     for(i=0,len=modules.length; i<len; i++) {
         m = modules[i];
-        if(typeof m === 'function') {
-            continue;
-        }
         for(p in m) {
             wozllajs[p] = m[p];
         }
     }
-
 
     return window.wozllajs = wozllajs;
 });
