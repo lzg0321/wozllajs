@@ -1,6 +1,6 @@
 this.wozllajs = this.wozllajs || {};
 
-
+// wozllajs 1.0
 
 (function() {
 
