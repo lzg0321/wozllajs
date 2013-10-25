@@ -1,8 +1,7 @@
 define([
     './../var',
-    './Annotation',
-    './../core/AbstractGameObject'
-], function(W, Annotation, AbstractGameObject) {
+    './Annotation'
+], function(W, Annotation) {
 
     return Annotation.define('$Inject', {
         type : {

@@ -6,45 +6,54 @@ define([
 
     var currentAnnotation;
 
+    function $Annotation(name, config, definition, $NamedAnnotation) {
+        var prop, propValue;
+        for(prop in config) {
+            if(!definition[prop]) {
+                throw new Error('Undefined property "' + prop + '" in ' + name);
+            }
+            propValue = config[prop];
+            if(!propValue) {
+                propValue = definition[prop].defaults;
+            }
+            else if(propValue instanceof Object) {
+                if(!(propValue instanceof definition[prop].type)) {
+                    throw new Error('Type mismatch on property "' + prop + '" of ' + name);
+                }
+            }
+            else if((typeof propValue) !== definition[prop].type) {
+                throw new Error('Type mismatch on property "' + prop + '" of ' + name);
+            }
+            this[prop] = propValue;
+        }
+        currentAnnotation.addAnnotation($NamedAnnotation, this);
+    }
+
     var Annotation = function(param) {
         this._$annotationTuple = new Tuple();
         this._empty = true;
         currentAnnotation = this;
     };
 
-    Annotation.get = function(module) {
+    Annotation.forModule = function(module) {
         return AnnotationRegistry.get(module);
     };
 
     Annotation.define = function(name, definition) {
-        function $Annotation(config) {
-            var def = $Annotation.definition;
-            var prop, propValue;
-            for(prop in config) {
-                if(!def[prop]) {
-                    throw new Error('Undefined property "' + prop + '" in ' + name);
-                }
-                propValue = config[prop];
-                if(!propValue) {
-                    propValue = def[prop].defaults;
-                }
-                else if(propValue instanceof Object) {
-                    if(!(propValue instanceof def[prop].type)) {
-                        throw new Error('Type mismatch on property "' + prop + '" of ' + name);
-                    }
-                }
-                else if((typeof propValue) !== def[prop].type) {
-                    throw new Error('Type mismatch on property "' + prop + '" of ' + name);
-                }
-                this[prop] = propValue;
-            }
-            currentAnnotation.addAnnotation($Annotation, this);
-        }
-        $Annotation._annotation_name = name;
-        $Annotation.definition = definition;
-        W.annotation = W.annotation || {};
-        W.annotation[name] = function(config) { new $Annotation(config); };
-        return W.annotation[name];
+
+        var $NamedAnnotation = function(config) {
+            new $Annotation(name, config, definition, $NamedAnnotation);
+        };
+
+        $NamedAnnotation.forModule = function(module) {
+            return Annotation.forModule(module).getAnnotations($NamedAnnotation);
+        };
+        $NamedAnnotation.isPresent = function(module) {
+            return Annotation.forModule(module).isAnnotationPresent($NamedAnnotation);
+        };
+        $NamedAnnotation._annotation_name = name;
+        // export for global
+        return window[name] = $NamedAnnotation;
     };
 
     var p = Annotation.prototype;
@@ -58,7 +67,6 @@ define([
     };
 
     p.getAnnotation = function(type) {
-
         return this._$annotationTuple.get(type._annotation_name)[0];
     };
 
