@@ -1,13 +1,13 @@
-require.config({
-    baseUrl: './',
-    paths: {
-        'wozllajs': './../libs/wozllajs-v2'
-    }
-});
+//require.config({
+//    baseUrl: './',
+//    paths: {
+//        'wozllajs': './../libs/wozllajs-v2'
+//    }
+//});
 
 require([
-    'wozllajs',
-], function(W, UnitGameObject) {
+    './../source/wozllajs',
+], function(W) {
     W.config({
         canvas : document.getElementById('canvas'),
         width : 960,

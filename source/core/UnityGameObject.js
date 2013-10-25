@@ -151,7 +151,8 @@ define([
         this._doDelayRemove();
         this._initialized = true;
         this.dispatchEvent(new GameObjectEvent({
-            type : GameObjectEvent.INIT
+            type : GameObjectEvent.INIT,
+            bubbles : true
         }))
     };
 
@@ -165,7 +166,8 @@ define([
         this._doDelayRemove();
         this.sendMessage(G.METHOD_DESTROY_COMPONENT);
         this.dispatchEvent(new GameObjectEvent({
-            type : GameObjectEvent.DESTROY
+            type : GameObjectEvent.DESTROY,
+            bubbles : true
         }))
     };
 

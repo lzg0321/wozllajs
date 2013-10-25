@@ -34,8 +34,6 @@ define([
         });
         cfg.canvas.width = cfg.width;
         cfg.canvas.height = cfg.height;
-        Touch.init(stage);
-        stage.init();
         stage.addEventListener(GameObjectEvent.INIT, function(e) {
             e.removeListener();
             setTimeout(function() {
@@ -43,6 +41,8 @@ define([
             }, 1);
         });
         Stage.root = stage;
+        Touch.init(stage);
+        stage.init();
         Engine.start();
     };
 
