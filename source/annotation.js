@@ -1,7 +1,6 @@
 define([
     './annotation/Annotation',
-    './annotation/AnnotationRegistry',
-    './annotation/$Inject'
+    './annotation/AnnotationRegistry'
 ], function(Annotation, AnnotationRegistry) {
 
     return {
