@@ -1,8 +1,9 @@
 define([
     './var',
     './promise',
-    './annotation',
-    './factoryProxy',
+    './math',
+    //'./annotation',
+    //'./factoryProxy',
     './ajax',
     './events',
     './preload',
