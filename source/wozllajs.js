@@ -7,6 +7,7 @@ define([
     './ajax',
     './events',
     './preload',
+    './assets',
     './core'
 ], function(wozllajs, Promise) {
 

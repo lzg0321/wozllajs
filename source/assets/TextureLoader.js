@@ -1,0 +1,31 @@
+define([
+    './../var',
+    './../ajax',
+    './../promise',
+    './../assets/Texture',
+    './../preload/Loader',
+    './../preload/LoadQueue',
+    './../preload/ImageLoader'
+], function(W, ajax, Promise, Texture, Loader, LoadQueue, ImageLoader) {
+
+    var TextureLoader = function() {
+        Loader.apply(this, arguments);
+    };
+
+    var p = TextureLoader.prototype;
+
+    p.load = function() {
+        var src = this._item['src'];
+        var jsonSrc = src.replace('.tt', '.json');
+        var imageSrc = src.replace('.tt', '.png');
+        return Promise.wait(ajax.getJSON(jsonSrc), ImageLoader.loadSrc(imageSrc)).then(function(ajaxResult, image) {
+            return new Texture(image, ajaxResult[0].frames);
+        });
+    };
+
+    W.extend(TextureLoader, Loader);
+
+    LoadQueue.registerLoader('tt', TextureLoader);
+
+    return TextureLoader;
+});

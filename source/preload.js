@@ -3,13 +3,17 @@ define([
     './preload/AsyncImage',
     './preload/Loader',
     './preload/ImageLoader',
-    './preload/LoadQueue'
-], function(W, AsyncImage, Loader, ImageLoader, LoadQueue) {
+    './preload/LoadQueue',
+    './preload/JSONLoader',
+    './preload/StringLoader'
+], function(W, AsyncImage, Loader, ImageLoader, LoadQueue, JSONLoader, StringLoader) {
 
     return {
         AsyncImage : AsyncImage,
         Loader : Loader,
         ImageLoader : ImageLoader,
-        LoadQueue : LoadQueue
+        LoadQueue : LoadQueue,
+        JSONLoader : JSONLoader,
+        StringLoader : StringLoader
     };
 });

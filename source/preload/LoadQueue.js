@@ -7,6 +7,11 @@ define([
     './JSONLoader'
 ], function(require, W, Promise, ImageLoader, StringLoader, JSONLoader) {
 
+    var loaderMap = {
+        'jpg' : ImageLoader,
+        'png' : ImageLoader,
+        'json' : JSONLoader
+    };
     var cache = {},
         loadQueue = [],
         loading = false;
@@ -15,18 +20,8 @@ define([
     var loadingMap = {}, cancelMap = {};
 
     function createLoader(item) {
-        switch(item['type']) {
-            case 'jpg':
-            case 'png':
-                return new ImageLoader(item);
-            case 'json' :
-                return new JSONLoader(item);
-            case 'sprite' :
-                // TODO
-                return new SpriteLoader(item);
-            default:
-                return new StringLoader(item);
-        }
+        var loaderConstructor = loaderMap[item.type] || StringLoader;
+        return new loaderConstructor(item);
     }
 
     function loadNext() {
@@ -36,6 +31,7 @@ define([
         var loadUnit, promise, loads, item, id, loader;
         var i, len;
         var promises = [];
+        var loadedResult = {};
         loading = true;
         loadUnit = loadQueue.shift();
         promise = loadUnit.promise;
@@ -49,14 +45,16 @@ define([
                     var p = loader.load().then(function(result) {
                         item.result = result;
                         cache[id] = item;
+                        loadedResult[id] = result;
                     }).catchError(function(error) {
+                        console.log(error);
                     });
                     promises.push(p);
                 })(id, loader, item);
             }
         }
         Promise.wait(promises).then(function() {
-            promise.done();
+            promise.done(loadedResult);
             loading = false;
             loadNext();
         });
@@ -94,14 +92,6 @@ define([
         get : function(id) {
             return cache[id].result;
         },
-        getAsyncImage : function(id) {
-            var AsyncImage = require('./AsyncImage');
-            var image = cache[id].result;
-            if(W.isImage(image)) {
-                return new AsyncImage(id);
-            }
-            return null;
-        },
         remove : function(id) {
             var resource = cache[id].result;
             if(resource) {
@@ -110,6 +100,12 @@ define([
                 }
                 delete cache[id];
             }
+        },
+        registerLoader : function(fileExtension, loaderConstructor) {
+            loaderMap[fileExtension] = loaderConstructor;
+        },
+        unregisterLoader : function(fileExtension) {
+            delete loaderMap[fileExtension];
         }
     };
 

@@ -2,8 +2,9 @@ define([
     'require',
     './../var',
     './../promise',
-    './Loader'
-], function(require, W, Promise, Loader) {
+    './Loader',
+    './AsyncImage'
+], function(require, W, Promise, Loader, AsyncImage) {
 
     var ImageLoader = function() {
         Loader.apply(this, arguments);
@@ -22,10 +23,16 @@ define([
         return p;
     };
 
+    ImageLoader.loadAsyncImage = function(src) {
+        return ImageLoader.loadSrc(src).then(function(image) {
+            return new AsyncImage(image);
+        });
+    };
+
     var p = ImageLoader.prototype;
 
     p.load = function() {
-        return ImageLoader.loadSrc(this._item['src']);
+        return ImageLoader.loadAsyncImage(this._item['src']);
     };
 
     W.extend(ImageLoader, Loader);
