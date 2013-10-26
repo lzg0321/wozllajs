@@ -7,7 +7,7 @@ define([
     './var/createCanvas',
     './var/support',
     './globals'
-], function(isArray, isImage,  extend, inherits, uniqueKey, slice, createCanvas, support, globals) {
+], function(isArray, isImage, inherits, uniqueKey, slice, createCanvas, support, globals) {
 
     var vars = {
         isArray : isArray,
