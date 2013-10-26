@@ -28,7 +28,7 @@ define([
         if(loading || loadQueue.length === 0) {
             return;
         }
-        var loadUnit, promise, loads, item, id, loader;
+        var loadUnit, promise, loads, item, id, loader, cachedItem;
         var i, len;
         var promises = [];
         var loadedResult = {};
@@ -39,7 +39,8 @@ define([
         for(i=0,len=loads.length; i<len; i++) {
             item = loads[i];
             id = item.id;
-            if(!cache[id]) {
+            cachedItem = cache[id];
+            if(!cachedItem) {
                 loader = createLoader(item);
                 (function(id, loader, item) {
                     var p = loader.load().then(function(result) {
@@ -51,13 +52,23 @@ define([
                     });
                     promises.push(p);
                 })(id, loader, item);
+            } else {
+                loadedResult[id] = cachedItem.result;
             }
         }
-        Promise.wait(promises).then(function() {
-            promise.done(loadedResult);
-            loading = false;
-            loadNext();
-        });
+        if(promises.length === 0) {
+            setTimeout(function() {
+                promise.done(loadedResult);
+                loading = false;
+                loadNext();
+            }, 1);
+        } else {
+            Promise.wait(promises).then(function() {
+                promise.done(loadedResult);
+                loading = false;
+                loadNext();
+            });
+        }
     }
 
     return {
@@ -67,6 +78,7 @@ define([
             }
             var p = new Promise();
             var loads = [];
+            var repeatTestFlag = {};
             var i, len, item, src;
             for(i=0,len=items.length; i<len; i++) {
                 item = items[i];
@@ -80,7 +92,10 @@ define([
                 if(!item.type) {
                     item.type = src.substr(src.lastIndexOf('.') + 1);
                 }
-                loads.push(item);
+                if(!repeatTestFlag[item.id]) {
+                    loads.push(item);
+                    repeatTestFlag[item.id] = true;
+                }
             }
             loadQueue.push({
                 promise : p,

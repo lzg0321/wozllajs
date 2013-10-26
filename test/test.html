@@ -3,11 +3,12 @@
 <head>
     <meta http-equiv="pragma" content="no-cache">
     <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
-    <meta http-equiv="expires" content="Wed, 26 Feb 1997 08:21:57 GMT">
     <title>test</title>
 </head>
 <body>
 <canvas id="canvas" width="960" height="640"></canvas>
-<script src="require.js" data-main="main"></script>
+<script type="text/javascript">
+    document.write('<script src="require.js" data-main="main.js?t=' + Date.now() + '"><\/script>');
+</script>
 </body>
 </html>

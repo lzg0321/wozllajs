@@ -18,7 +18,6 @@ define([
     p.drawFrame = function(context, name, x, y, w, h) {
         var f = this.getFrame(name);
         if(f) {
-            console.log(f.x, f.y, f.w, f.h, x||0, y||0, w||f.w, h||f.h);
             this.draw(context, f.x, f.y, f.w, f.h, x||0, y||0, w||f.w, h||f.h);
         }
     };
