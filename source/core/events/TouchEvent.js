@@ -14,7 +14,7 @@ define([
     TouchEvent.TOUCH_MOVE = 'touchmove';
     TouchEvent.CLICK = 'click';
 
-    W.extend(TouchEvent, Event);
+    W.inherits(TouchEvent, Event);
 
     return TouchEvent;
 

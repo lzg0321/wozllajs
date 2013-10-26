@@ -9,13 +9,11 @@ define([
         Loader.apply(this, arguments);
     };
 
-    var p = StringLoader.prototype;
+    var p = W.inherits(StringLoader, Loader);
 
     p.load = function() {
         return W.get(this._item['src']);
     };
-
-    W.extend(StringLoader, Loader);
 
     return StringLoader;
 });

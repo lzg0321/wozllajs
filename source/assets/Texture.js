@@ -8,7 +8,7 @@ define([
         this.frames = frames;
     };
 
-    var p = Texture.prototype;
+    var p = W.inherits(Texture, AsyncImage);
 
     p.getFrame = function(name) {
         var frame;
@@ -30,7 +30,6 @@ define([
         }
     };
 
-    W.extend(Texture, AsyncImage);
 
     return Texture;
 });

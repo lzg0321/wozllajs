@@ -27,7 +27,7 @@ define([
         this._childrenMap = {};
     };
 
-    var p = AbstractGameObject.prototype;
+    var p = W.inherits(AbstractGameObject, EventTarget);
 
     p.setId = function(id) {
         if(this._parent) {
@@ -160,9 +160,6 @@ define([
         }
         return obj;
     };
-
-
-    W.extend(AbstractGameObject, EventTarget);
 
     return AbstractGameObject;
 

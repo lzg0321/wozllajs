@@ -21,7 +21,7 @@ define([
 
     Stage.root = null;
 
-    var p = Stage.prototype;
+    var p = W.inherits(Stage, CachableGameObject);
 
     p.tick = function() {
         this.update();
@@ -48,8 +48,6 @@ define([
         visibleRect.height = this.height;
         return visibleRect;
     };
-
-    W.extend(Stage, CachableGameObject);
 
     return Stage;
 

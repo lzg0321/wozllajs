@@ -12,7 +12,7 @@ define([
         Loader.apply(this, arguments);
     };
 
-    var p = TextureLoader.prototype;
+    var p = W.inherits(TextureLoader, Loader);
 
     p.load = function() {
         var src = this._item['src'];
@@ -22,8 +22,6 @@ define([
             return new Texture(image, ajaxResult[0].frames);
         });
     };
-
-    W.extend(TextureLoader, Loader);
 
     LoadQueue.registerLoader('tt', TextureLoader);
 

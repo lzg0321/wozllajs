@@ -8,11 +8,9 @@ define([
         this.enabled = false;
     }
 
-    var p = Renderer.prototype;
+    var p = W.inherits(Renderer, Component);
 
     p.applyFilter = function(cacheContext, x, y, width, height) {};
-
-    W.extend(Renderer, Component);
 
     return Renderer;
 

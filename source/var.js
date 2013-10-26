@@ -1,18 +1,18 @@
 define([
     './var/isArray',
     './var/isImage',
-    './var/extend',
+    './var/inherits',
     './var/uniqueKey',
     './var/slice',
     './var/createCanvas',
     './var/support',
     './globals'
-], function(isArray, isImage,  extend, uniqueKey, slice, createCanvas, support, globals) {
+], function(isArray, isImage,  extend, inherits, uniqueKey, slice, createCanvas, support, globals) {
 
     var vars = {
         isArray : isArray,
         isImage : isImage,
-        extend : extend,
+        inherits : inherits,
         uniqueKey : uniqueKey,
         slice : slice,
         createCanvas : createCanvas,

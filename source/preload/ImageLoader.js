@@ -29,13 +29,11 @@ define([
         });
     };
 
-    var p = ImageLoader.prototype;
+    var p = W.inherits(ImageLoader, Loader);
 
     p.load = function() {
         return ImageLoader.loadAsyncImage(this._item['src']);
     };
-
-    W.extend(ImageLoader, Loader);
 
     return ImageLoader;
 });

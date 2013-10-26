@@ -7,11 +7,9 @@ define([
         Component.apply(this, arguments);
     }
 
-    var p = HitDelegate.prototype;
+    var p = W.inherits(HitDelegate, Component);
 
     p.testHit = function(x, y) {};
-
-    W.extend(HitDelegate, Component);
 
     return HitDelegate;
 

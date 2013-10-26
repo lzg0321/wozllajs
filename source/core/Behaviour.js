@@ -8,12 +8,10 @@ define([
         this.enabled = false;
     }
 
-    var p = Behaviour.prototype;
+    var p = W.inherits(Behaviour, Component);
 
     p.update = function() {};
     p.lateUpdate = function() {};
-
-    W.extend(Behaviour, Component);
 
     return Behaviour;
 

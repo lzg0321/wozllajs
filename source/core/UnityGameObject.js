@@ -21,7 +21,7 @@ define([
         this._delayRemoves = [];
     };
 
-    var p = UnityGameObject.prototype;
+    var p = W.inherits(UnityGameObject, AbstractGameObject);
 
     p.isActive = function(upWards) {
         if(upWards === false) {
@@ -276,8 +276,6 @@ define([
             child.draw(context, visibleRect);
         }
     };
-
-    W.extend(UnityGameObject, AbstractGameObject);
 
     return UnityGameObject;
 });

@@ -7,9 +7,7 @@ define([
         Component.apply(this, arguments);
     }
 
-    var p = Collider.prototype;
-
-    W.extend(Collider, Component);
+    var p = W.inherits(Collider, Component);
 
     return Collider;
 

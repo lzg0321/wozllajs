@@ -7,11 +7,9 @@ define([
         Component.apply(this, arguments);
     }
 
-    var p = Renderer.prototype;
+    var p = W.inherits(Renderer, Component);
 
     p.draw = function(context, visibleRect) {};
-
-    W.extend(Renderer, Component);
 
     return Renderer;
 

@@ -16,7 +16,7 @@ define([
         this._cacheOffsetY = 0;
     };
 
-    var p = CachableGameObject.prototype;
+    var p = W.inherits(CachableGameObject, UnityGameObject);
 
     p.cache = function(x, y, width, height) {
         if(this._cacheCanvas) {
@@ -83,8 +83,6 @@ define([
         }
     };
 
-
-    W.extend(CachableGameObject, UnityGameObject);
 
     return CachableGameObject;
 });

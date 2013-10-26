@@ -10,7 +10,7 @@ define([
     GameObjectEvent.INIT = 'init';
     GameObjectEvent.DESTROY = 'destroy';
 
-    W.extend(GameObjectEvent, Event);
+    W.inherits(GameObjectEvent, Event);
 
     return GameObjectEvent;
 

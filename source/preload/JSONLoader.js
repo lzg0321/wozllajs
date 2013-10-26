@@ -9,13 +9,11 @@ define([
         Loader.apply(this, arguments);
     };
 
-    var p = JSONLoader.prototype;
+    var p = W.inherits(JSONLoader, Loader);
 
     p.load = function() {
         return W.getJSON(this._item['src']);
     };
-
-    W.extend(JSONLoader, Loader);
 
     return JSONLoader;
 });
