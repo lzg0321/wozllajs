@@ -105,7 +105,11 @@ define([
             return p;
         },
         get : function(id) {
-            return cache[id].result;
+            var cached = cache[id];
+            if(!cached) {
+                return null;
+            }
+            return cached.result;
         },
         remove : function(id) {
             var resource = cache[id].result;
