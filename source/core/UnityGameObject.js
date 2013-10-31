@@ -5,9 +5,10 @@ define([
     './Component',
     './Behaviour',
     './Renderer',
+    './Layout',
     './HitDelegate',
     './events/GameObjectEvent'
-], function(W, G, AbstractGameObject, Component, Behaviour, Renderer, HitDelegate, GameObjectEvent) {
+], function(W, G, AbstractGameObject, Component, Behaviour, Renderer, Layout, HitDelegate, GameObjectEvent) {
 
     var testHitCanvas = W.createCanvas(1, 1);
     var testHitContext = testHitCanvas.getContext('2d');
@@ -148,6 +149,7 @@ define([
             child = children[i];
             child.init();
         }
+        this.layout();
         this._doDelayRemove();
         this._initialized = true;
         this.dispatchEvent(new GameObjectEvent({
@@ -169,6 +171,17 @@ define([
             type : GameObjectEvent.DESTROY,
             bubbles : true
         }))
+    };
+
+    p.layout = function() {
+        var layout = this.getComponent(Layout);
+        var children = this._children;
+        var i, len, child;
+        for(i=0,len=children.length; i<len; i++) {
+            child = children[i];
+            child.layout();
+        }
+        layout && layout.doLayout();
     };
 
     p.update = function() {
