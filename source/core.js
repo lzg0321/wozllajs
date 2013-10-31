@@ -4,6 +4,7 @@ define([
     './core/AbstractGameObject',
     './core/UnityGameObject',
     './core/CachableGameObject',
+    './core/GameObject',
     './core/Transform',
     './core/Component',
     './core/Behaviour',
@@ -15,7 +16,7 @@ define([
     './core/Touch',
     './core/events/GameObjectEvent',
     './core/events/TouchEvent'
-], function(Time, Engine, AbstractGameObject, UnityGameObject, CachableGameObject, Transform, Component,
+], function(Time, Engine, AbstractGameObject, UnityGameObject, CachableGameObject, GameObject, Transform, Component,
     Behaviour, Collider, Filter, HitDelegate, Renderer, Stage, Touch, GameObjectEvent, TouchEvent) {
 
     var cfg;
@@ -56,7 +57,7 @@ define([
         AbstractGameObject : AbstractGameObject,
         UnityGameObject : UnityGameObject,
         CachableGameObject : CachableGameObject,
-        GameObject : CachableGameObject,
+        GameObject : GameObject,
         Transform : Transform,
         Component : Component,
         Behaviour : Behaviour,

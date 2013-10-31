@@ -8,7 +8,9 @@ define([
     './events',
     './preload',
     './assets',
-    './core'
+    './core',
+    './component',
+    './build'
 ], function(wozllajs, Promise) {
 
     wozllajs.Promise = Promise;

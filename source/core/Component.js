@@ -29,6 +29,12 @@ define([
         this.gameObject.dispatchEvent(event);
     };
 
+    p.applyProperties = function(properties) {
+        for(var p in properties) {
+            this[p] = properties[p];
+        }
+    };
+
     p.isInstanceof = function(type) {
         return this instanceof type;
     };

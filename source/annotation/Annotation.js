@@ -7,22 +7,25 @@ define([
     var currentAnnotation;
 
     function $Annotation(name, config, definition, $NamedAnnotation) {
-        var prop, propValue;
+        var prop, propValue, defineType;
         for(prop in config) {
             if(!definition[prop]) {
                 throw new Error('Undefined property "' + prop + '" in ' + name);
             }
             propValue = config[prop];
+            defineType = definition[prop].type;
             if(!propValue) {
                 propValue = definition[prop].defaults;
+            }
+            else if(((typeof defineType) === 'string')) {
+                if(((typeof propValue) !== defineType)) {
+                    throw new Error('Type mismatch on property "' + prop + '" of ' + name);
+                }
             }
             else if(propValue instanceof Object) {
                 if(!(propValue instanceof definition[prop].type)) {
                     throw new Error('Type mismatch on property "' + prop + '" of ' + name);
                 }
-            }
-            else if((typeof propValue) !== definition[prop].type) {
-                throw new Error('Type mismatch on property "' + prop + '" of ' + name);
             }
             this[prop] = propValue;
         }
@@ -36,13 +39,36 @@ define([
     };
 
     Annotation.forModule = function(module) {
-        return AnnotationRegistry.get(module);
+        var i, len;
+        var theModule = module;
+        var arr = [];
+        while(theModule) {
+            arr.unshift(theModule);
+            theModule = W.getSuperConstructor(theModule);
+        }
+        var annotation = new Annotation();
+        var mAnnotation;
+        for(i=0,len=arr.length; i<len; i++) {
+            mAnnotation = AnnotationRegistry.get(arr[i]);
+            if(mAnnotation) {
+                mAnnotation.forEach(function(type, $annos) {
+                    var i, len;
+                    type = window[type];
+                    for(i=0,len=$annos.length; i<len; i++) {
+                        annotation.addAnnotation(type, $annos[i]);
+                    }
+                });
+            }
+        }
+        return annotation;
     };
 
     Annotation.define = function(name, definition) {
-
         var $NamedAnnotation = function(config) {
-            new $Annotation(name, config, definition, $NamedAnnotation);
+            if(typeof config !== 'object') {
+                config = { value : config };
+            }
+            return new $Annotation(name, config, definition, $NamedAnnotation);
         };
 
         $NamedAnnotation.forModule = function(module) {
@@ -50,6 +76,9 @@ define([
         };
         $NamedAnnotation.isPresent = function(module) {
             return Annotation.forModule(module).isAnnotationPresent($NamedAnnotation);
+        };
+        $NamedAnnotation.all = function() {
+            return AnnotationRegistry.getAll($NamedAnnotation);
         };
         $NamedAnnotation._annotation_name = name;
         // export for global
@@ -77,6 +106,13 @@ define([
     p.addAnnotation = function(type, $annotation) {
         this._$annotationTuple.push(type._annotation_name, $annotation);
         this._empty = false;
+    };
+
+    p.forEach = function(callback) {
+        var data = this._$annotationTuple.data;
+        for(var type in data) {
+            callback(type, data[type]);
+        }
     };
 
     return Annotation;

@@ -13,6 +13,17 @@ define([
     }
 
     return {
+        getAll : function($annoType) {
+            var arr = [];
+            var anno;
+            for(var mKey in registry) {
+                anno = registry[mKey];
+                if(anno) {
+                    arr = arr.concat(anno.getAnnotation($annoType));
+                }
+            }
+            return arr;
+        },
         get : function(module) {
             return registry[module[getModuleKey()]];
         },

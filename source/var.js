@@ -6,8 +6,9 @@ define([
     './var/slice',
     './var/createCanvas',
     './var/support',
+    './var/getSuperConstructor',
     './globals'
-], function(isArray, isImage, inherits, uniqueKey, slice, createCanvas, support, globals) {
+], function(isArray, isImage, inherits, uniqueKey, slice, createCanvas, support, getSuperConstructor, globals) {
 
     var vars = {
         isArray : isArray,
@@ -16,7 +17,8 @@ define([
         uniqueKey : uniqueKey,
         slice : slice,
         createCanvas : createCanvas,
-        support : support
+        support : support,
+        getSuperConstructor : getSuperConstructor
     };
 
     for(var i in globals) {
