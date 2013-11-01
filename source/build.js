@@ -1,10 +1,14 @@
 define([
     './build/buildObject',
-    './build/buildComponent'
-], function(buildObject, buildComponent) {
+    './build/buildComponent',
+    './build/traverseObject',
+    './build/loadAndInitObjFile'
+], function(buildObject, buildComponent, traverseObject, loadAndInitObjFile) {
 
     return {
         buildObject : buildObject,
-        buildComponent : buildComponent
+        buildComponent : buildComponent,
+        traverseObject : traverseObject,
+        loadAndInitObjFile : loadAndInitObjFile
     }
 });

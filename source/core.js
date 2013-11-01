@@ -14,10 +14,11 @@ define([
     './core/Renderer',
     './core/Stage',
     './core/Touch',
+    './core/Query',
     './core/events/GameObjectEvent',
     './core/events/TouchEvent'
 ], function(Time, Engine, AbstractGameObject, UnityGameObject, CachableGameObject, GameObject, Transform, Component,
-    Behaviour, Collider, Filter, HitDelegate, Renderer, Stage, Touch, GameObjectEvent, TouchEvent) {
+    Behaviour, Collider, Filter, HitDelegate, Renderer, Stage, Touch, Query, GameObjectEvent, TouchEvent) {
 
     var cfg;
 
@@ -66,6 +67,7 @@ define([
         Renderer : Renderer,
         Stage : Stage,
         Touch : Touch,
+        Query : Query,
 
         events : {
             TouchEvent : TouchEvent,

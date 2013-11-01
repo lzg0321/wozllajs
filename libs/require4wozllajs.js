@@ -228,7 +228,13 @@ var requirejs, require, define;
          */
         function trimDots(ary) {
             var i, part;
-            for (i = 0; ary[i]; i += 1) {
+            // there is a bug for start with ../../
+            if(ary[0] === '..' && ary[1] === '..' && (ary[2] !== '..' || ary[2] !== '.')) {
+                i = 3;
+            } else {
+                i = 0;
+            }
+            for (; ary[i]; i += 1) {
                 part = ary[i];
                 if (part === '.') {
                     ary.splice(i, 1);
@@ -448,7 +454,6 @@ var requirejs, require, define;
                 } else {
                     //A regular module.
                     normalizedName = normalize(name, parentName, applyMap);
-
                     //Normalized name may be a plugin ID due to map config
                     //application in normalize. The map config values must
                     //already be normalized, so do not need to redo that part.

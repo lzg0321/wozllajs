@@ -1,8 +1,7 @@
 define([
     'require',
-    './../var',
-    './LoadQueue'
-], function(require, W, LoadQueue) {
+    './../var'
+], function(require, W) {
 
     var AsyncImage = function(image) {
         this.image = image;

@@ -48,7 +48,7 @@ define([
             path.unshift(o.id);
             o = o._parent;
         }
-        return path.join(seperator || '.');
+        return path.join(seperator || '/');
     };
 
     p.getStage = function() {
@@ -148,9 +148,9 @@ define([
         return obj;
     };
 
-    p.findObjectByPath = function(path) {
+    p.findObjectByPath = function(path, seperator) {
         var i, len;
-        var paths = path.split('.');
+        var paths = path.split(seperator || '/');
         var obj = this.findObjectById(paths[0]);
         if(obj) {
             for(i=1, len=paths.length; i<len; i++) {

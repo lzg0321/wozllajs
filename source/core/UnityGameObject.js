@@ -7,8 +7,9 @@ define([
     './Renderer',
     './Layout',
     './HitDelegate',
+    './Query',
     './events/GameObjectEvent'
-], function(W, G, AbstractGameObject, Component, Behaviour, Renderer, Layout, HitDelegate, GameObjectEvent) {
+], function(W, G, AbstractGameObject, Component, Behaviour, Renderer, Layout, HitDelegate, Query, GameObjectEvent) {
 
     var testHitCanvas = W.createCanvas(1, 1);
     var testHitContext = testHitCanvas.getContext('2d');
@@ -72,10 +73,22 @@ define([
     p.getComponent = function(type) {
         var i, len, comp;
         var components = this._components;
-        for(i=0,len=components.length; i<len; i++) {
-            comp = components[i];
-            if(comp.isInstanceof(type)) {
-                return comp;
+        var alias;
+        if(typeof type === 'string') {
+            alias = type;
+            for(i=0,len=components.length; i<len; i++) {
+                comp = components[i];
+                if(comp.alias === alias) {
+                    return comp;
+                }
+            }
+        }
+        else {
+            for(i=0,len=components.length; i<len; i++) {
+                comp = components[i];
+                if(comp.isInstanceof(type)) {
+                    return comp;
+                }
             }
         }
         return null;
@@ -117,6 +130,10 @@ define([
 
     p.delayRemove = function() {
         this._parent.delayRemoveObject(this);
+    };
+
+    p.query = function(expression) {
+        return Query(expression, this);
     };
 
     p.sendMessage = function(methodName, args, type) {

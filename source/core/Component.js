@@ -9,6 +9,8 @@ define([
 
     var p = Component.prototype;
 
+    p.alias = undefined;
+
     p.setGameObject = function(gameObject) {
         this.gameObject = gameObject;
     };
