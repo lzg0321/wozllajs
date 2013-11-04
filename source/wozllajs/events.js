@@ -1,6 +1,6 @@
 define([
     './events/Event',
-    './events/EventTarget'
+    './../wozllajs/events/EventTarget'
 ], function(Event, EventTarget) {
 
     return {

@@ -2,7 +2,7 @@ define([
     './../var',
     './../ajax',
     './../promise',
-    './../assets/Texture',
+    './Texture',
     './../preload/Loader',
     './../preload/LoadQueue',
     './../preload/ImageLoader'

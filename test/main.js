@@ -7,7 +7,7 @@ require.config({
 });
 
 require([
-    '../source/wozllajs'
+    '../source/wozlla.js'
 ], function(W) {
     var context = document.getElementById('canvas').getContext('2d');
     W.config({

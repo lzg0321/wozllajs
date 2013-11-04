@@ -1,10 +1,10 @@
 define([
     './promise',
-    './ajax/param',
-    './ajax/xhr',
-    './ajax/transport',
-    './ajax/get',
-    './ajax/post'
+    './../wozllajs/ajax/param',
+    './../wozllajs/ajax/xhr',
+    './../wozllajs/ajax/transport',
+    './../wozllajs/ajax/get',
+    './../wozllajs/ajax/post'
 ], function(Promise, param, createXHR, ajaxTransport,GET, POST) {
 
     return {

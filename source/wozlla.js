@@ -1,16 +1,16 @@
 define([
-    './var',
-    './promise',
-    './math',
-    './annotation',
-    './factoryProxy',
-    './ajax',
-    './events',
-    './preload',
-    './assets',
-    './core',
-    './component',
-    './build'
+    './wozllajs/var',
+    './wozllajs/promise',
+    './wozllajs/math',
+    './wozllajs/annotation',
+    './wozllajs/factoryProxy',
+    './wozllajs/ajax',
+    './wozllajs/events',
+    './wozllajs/preload',
+    './wozllajs/assets',
+    './wozllajs/core',
+    './wozllajs/component',
+    './wozllajs/build'
 ], function(wozllajs, Promise) {
 
     wozllajs.Promise = Promise;

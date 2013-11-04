@@ -1,8 +1,8 @@
 define([
     './build/buildObject',
-    './build/buildComponent',
-    './build/traverseObject',
-    './build/loadAndInitObjFile'
+    './../wozllajs/build/buildComponent',
+    './../wozllajs/build/traverseObject',
+    './../wozllajs/build/loadAndInitObjFile'
 ], function(buildObject, buildComponent, traverseObject, loadAndInitObjFile) {
 
     return {

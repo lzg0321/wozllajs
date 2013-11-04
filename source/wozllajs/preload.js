@@ -1,11 +1,11 @@
 define([
     './var',
-    './preload/AsyncImage',
-    './preload/Loader',
-    './preload/ImageLoader',
-    './preload/LoadQueue',
-    './preload/JSONLoader',
-    './preload/StringLoader'
+    './../wozllajs/preload/AsyncImage',
+    './../wozllajs/preload/Loader',
+    './../wozllajs/preload/ImageLoader',
+    './../wozllajs/preload/LoadQueue',
+    './../wozllajs/preload/JSONLoader',
+    './../wozllajs/preload/StringLoader'
 ], function(W, AsyncImage, Loader, ImageLoader, LoadQueue, JSONLoader, StringLoader) {
 
     return {

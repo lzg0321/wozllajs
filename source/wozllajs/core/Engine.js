@@ -1,5 +1,5 @@
 define([
-    './time',
+    './Time',
     './../util/Tuple',
     './Stage'
 ], function(Time, Tuple, Stage) {

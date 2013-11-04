@@ -1,12 +1,12 @@
 define([
     './var/isArray',
-    './var/isImage',
-    './var/inherits',
-    './var/uniqueKey',
-    './var/slice',
-    './var/createCanvas',
-    './var/support',
-    './var/getSuperConstructor',
+    './../wozllajs/var/isImage',
+    './../wozllajs/var/inherits',
+    './../wozllajs/var/uniqueKey',
+    './../wozllajs/var/slice',
+    './../wozllajs/var/createCanvas',
+    './../wozllajs/var/support',
+    './../wozllajs/var/getSuperConstructor',
     './globals'
 ], function(isArray, isImage, inherits, uniqueKey, slice, createCanvas, support, getSuperConstructor, globals) {
 

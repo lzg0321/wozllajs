@@ -1,6 +1,6 @@
 define([
     './math/Matrix2D',
-    './math/Point'
+    './../wozllajs/math/Point'
 ], function(Matrix2D, Point) {
 
     return {

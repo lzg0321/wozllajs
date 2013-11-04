@@ -1,6 +1,6 @@
 define([
     './assets/Texture',
-    './assets/TextureLoader'
+    './../wozllajs/assets/TextureLoader'
 ], function(Texture, TextureLoader) {
 
     return {
