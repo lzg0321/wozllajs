@@ -1,9 +1,9 @@
 define([
     './../../var',
-    './.././Renderer',
+    './../../core/Renderer',
     './../../build/annotation/$Resource',
-    './.././annotation/$Component',
-    './.././annotation/$Query'
+    './../../build/annotation/$Component',
+    './../../build/annotation/$Query'
 ], function(W, Renderer, $Resource, $Component, $Query) {
 
     $Component({ id: 'renderer.Ninepatch', constructor: Ninepatch });

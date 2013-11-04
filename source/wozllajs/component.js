@@ -1,10 +1,14 @@
 define([
-    './component/renderer/Image'
-], function(Image) {
+    './component/renderer/Image',
+    './component/renderer/Texture',
+    './component/renderer/Ninepatch'
+], function(Image, Texture, Ninepatch) {
 
     return {
         renderer : {
-            Image : Image
+            Image : Image,
+            Texture : Texture,
+            Ninepatch : Ninepatch
         }
     }
 });
