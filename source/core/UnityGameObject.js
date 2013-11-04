@@ -95,13 +95,23 @@ define([
     };
 
     p.getComponents = function(type) {
-        var i, len, comp;
+        var i, len, comp, alias;
         var components = this._components;
         var found = [];
-        for(i=0,len=components.length; i<len; i++) {
-            comp = components[i];
-            if(comp.isInstanceof(type)) {
-                found.push(comp);
+        if(typeof type === 'string') {
+            alias = type;
+            for(i=0,len=components.length; i<len; i++) {
+                comp = components[i];
+                if(comp.alias === alias) {
+                    found.push(comp);
+                }
+            }
+        } else {
+            for(i=0,len=components.length; i<len; i++) {
+                comp = components[i];
+                if(comp.isInstanceof(type)) {
+                    found.push(comp);
+                }
             }
         }
         return found;

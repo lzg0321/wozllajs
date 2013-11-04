@@ -3,6 +3,7 @@ define([
     './annotation/AnnotationRegistry'
 ], function(Annotation, AnnotationRegistry) {
 
+
     define.factoryProxy = function(callback, args, exports) {
         var annotation = new Annotation();
         exports = callback.apply(exports, args);

@@ -42,7 +42,7 @@ define([
 
     Query.findComponent = function(obj, param) {
         var doFind =
-            (typeof param === 'string' && param.indexOf('x-') === 0) ||
+            (typeof param === 'string' && param.indexOf('c-') === 0) ||
                 (typeof param === 'function' && Component.prototype.isPrototypeOf &&
                     Component.prototype.isPrototypeOf(param.prototype));
         return doFind && obj.getComponent(param);

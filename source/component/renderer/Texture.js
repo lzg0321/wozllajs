@@ -6,22 +6,24 @@ define([
     './../../build/annotation/$Query'
 ], function(W, Renderer, $Resource, $Component, $Query) {
 
-    $Component({ id: 'renderer.Image', constructor: Image });
-    function Image() {
+    $Component({ id: 'renderer.Texture', constructor: Texture });
+    function Texture() {
         Renderer.apply(this, arguments);
     }
 
-    var p = W.inherits(Image, Renderer);
+    var p = W.inherits(Texture, Renderer);
 
-    p.alias = 'c-image';
+    p.alias = 'c-texture';
 
-    $Resource({ property: 'image' });
-    p.image = undefined;
+    $Resource({ property: 'texture' });
+    p.texture = undefined;
+
+    p.frame = undefined;
 
     p.draw = function(context, visibleRect) {
-        this.image.draw(context, 0, 0);
+        this.texture.drawFrame(context, this.frame);
     };
 
-    return Image;
+    return Texture;
 
 });
