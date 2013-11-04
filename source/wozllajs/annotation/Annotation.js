@@ -82,7 +82,7 @@ define([
         };
         $NamedAnnotation._annotation_name = name;
         // export for global
-        return window ? window[name] = $NamedAnnotation : $NamedAnnotation;
+        return $NamedAnnotation;
     };
 
     var p = Annotation.prototype;
