@@ -1,10 +1,9 @@
 define([
     'require',
-    'module',
     './../var',
     './../events/EventTarget',
     './Transform'
-], function(require, module, W, EventTarget, Transform) {
+], function(require, W, EventTarget, Transform) {
 
     /**
      *
