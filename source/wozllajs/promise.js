@@ -54,12 +54,18 @@ define([
     };
 
     p.done = function() {
-        this._nextThen.apply(this, arguments);
+        var me = this;
+        setTimeout(function() {
+            me._nextThen.apply(this, arguments);
+        }, 1);
         return this;
     };
 
     p.sendError = function(error) {
-        this._nextError(error);
+        var me = this;
+        setTimeout(function() {
+            me._nextError(error);
+        }, 1);
         return this;
     };
 
