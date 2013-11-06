@@ -56,7 +56,7 @@ define([
     p.done = function() {
         var me = this;
         setTimeout(function() {
-            me._nextThen.apply(this, arguments);
+            me._nextThen.apply(me, arguments);
         }, 1);
         return this;
     };
