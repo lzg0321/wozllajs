@@ -3006,7 +3006,9 @@ define('wozllajs/core/Touch',[
 
     return {
         init : function(theStage) {
+            var canvas = theStage.stageCanvas;
             stage = theStage;
+
             if(support.touch) {
                 canvas.addEventListener("touchstart", onEvent, false);
                 canvas.addEventListener("touchend", onEvent, false);
@@ -3068,8 +3070,8 @@ define('wozllajs/core',[
         var stage = new Stage({
             id : 'wozllajs_Stage',
             canvas : cfg.canvas,
-            width : cfg.width,
-            height : cfg.height,
+            width : cfg.width || cfg.canvas.width,
+            height : cfg.height || cfg.canvas.height,
             autoClear : cfg.autoClear
         });
         cfg.canvas.width = cfg.width;
@@ -3374,5 +3376,6 @@ define('wozllajs',[
             wozllajs[p] = m[p];
         }
     }
+
     return window.wozllajs = wozllajs;
 });

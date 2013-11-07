@@ -73,7 +73,9 @@ define([
 
     return {
         init : function(theStage) {
+            var canvas = theStage.stageCanvas;
             stage = theStage;
+
             if(support.touch) {
                 canvas.addEventListener("touchstart", onEvent, false);
                 canvas.addEventListener("touchend", onEvent, false);

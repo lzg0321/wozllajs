@@ -30,8 +30,8 @@ define([
         var stage = new Stage({
             id : 'wozllajs_Stage',
             canvas : cfg.canvas,
-            width : cfg.width,
-            height : cfg.height,
+            width : cfg.width || cfg.canvas.width,
+            height : cfg.height || cfg.canvas.height,
             autoClear : cfg.autoClear
         });
         cfg.canvas.width = cfg.width;
