@@ -295,7 +295,6 @@ var requirejs, require, define;
 
                     name = normalizedBaseParts.concat(name.split('/'));
                     trimDots(name);
-
                     //Some use of packages may use a . path to reference the
                     //'main' module name, so normalize for that.
                     pkgConfig = getOwn(config.pkgs, (pkgName = name[0]));
@@ -855,7 +854,6 @@ var requirejs, require, define;
                     //define itself again. If already in the process
                     //of doing that, skip this work.
                     this.defining = true;
-
                     if (this.depCount < 1 && !this.defined) {
                         if (isFunction(factory)) {
                             //If there is an error listener, favor passing
@@ -1638,9 +1636,6 @@ var requirejs, require, define;
              * @private
              */
             execCb: function (name, callback, args, exports) {
-                if(window.define.factoryProxy) {
-                    return window.define.factoryProxy(callback, args, exports);
-                }
                 return callback.apply(exports, args);
             },
 

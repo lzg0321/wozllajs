@@ -2,12 +2,14 @@ require.config({
     baseUrl: './',
     urlArgs: "t=" + Date.now(),
     paths: {
-        'wozllajs': './../libs/wozllajs-v2-min-non-amd'
+        'wozllajs': './../source/wozllajs',
+        'wozllajs_components': './../source/wozllajs_components'
     }
 });
 
 require([
     'wozllajs',
+    'wozllajs_components'
 ], function() {
     var W = wozllajs;
     var context = document.getElementById('canvas').getContext('2d');

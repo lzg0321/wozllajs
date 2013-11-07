@@ -4,7 +4,7 @@ define([
 
     function findComponentConstructor(id) {
         var construct;
-        var all = $Component.all();
+        var all = $Component.allModule();
         var i, len, $componentAnno;
         for(i=0,len=all.length; i<len; i++) {
             $componentAnno = all[i];

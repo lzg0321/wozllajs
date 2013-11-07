@@ -1,9 +1,9 @@
 define([
-    './../../var',
-    './../../core/Renderer',
-    './../../build/annotation/$Resource',
-    './../../build/annotation/$Component',
-    './../../build/annotation/$Query'
+    'wozllajs',
+    'wozllajs/core/Renderer',
+    'wozllajs/build/annotation/$Resource',
+    'wozllajs/build/annotation/$Component',
+    'wozllajs/build/annotation/$Query'
 ], function(W, Renderer, $Resource, $Component, $Query) {
 
     $Component({ id: 'renderer.Image', constructor: Image });

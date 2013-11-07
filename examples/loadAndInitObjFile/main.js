@@ -1,11 +1,25 @@
+
 require.config({
     baseUrl: './',
-    urlArgs: "t=" + Date.now()
+    urlArgs: "t=" + Date.now(),
+    paths: {
+                'wozllajs': '../../libs/wozllajs-v2',
+        'wozllajs_components': '../../libs/wozllajs-v2-components'
+//        'wozllajs': './../../source/wozllajs',
+//        'wozllajs_components': './../../source/wozllajs_components'
+    },
+    shim: {
+        'wozllajs_components': {
+            deps: ['wozllajs']
+        }
+    },
 });
 
 require([
-    '../../source/wozllajs'
-], function(W) {
+    'wozllajs',
+    'wozllajs_components'
+], function() {
+    var W = wozllajs;
     var context = document.getElementById('canvas').getContext('2d');
     W.config({
         canvas : document.getElementById('canvas'),

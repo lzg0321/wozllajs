@@ -5,6 +5,7 @@ define([
 ], function(W, Tuple, AnnotationRegistry) {
 
     var currentAnnotation;
+    var annotationMap = {};
 
     function $Annotation(name, config, definition, $NamedAnnotation) {
         var prop, propValue, defineType;
@@ -32,7 +33,7 @@ define([
         currentAnnotation.addAnnotation($NamedAnnotation, this);
     }
 
-    var Annotation = function(param) {
+    var Annotation = function() {
         this._$annotationTuple = new Tuple();
         this._empty = true;
         currentAnnotation = this;
@@ -53,7 +54,7 @@ define([
             if(mAnnotation) {
                 mAnnotation.forEach(function(type, $annos) {
                     var i, len;
-                    type = window[type];
+                    type = annotationMap[type];
                     for(i=0,len=$annos.length; i<len; i++) {
                         annotation.addAnnotation(type, $annos[i]);
                     }
@@ -77,11 +78,12 @@ define([
         $NamedAnnotation.isPresent = function(module) {
             return Annotation.forModule(module).isAnnotationPresent($NamedAnnotation);
         };
-        $NamedAnnotation.all = function() {
+        $NamedAnnotation.allModule = function() {
             return AnnotationRegistry.getAll($NamedAnnotation);
         };
         $NamedAnnotation._annotation_name = name;
-        // export for global
+        annotationMap[name] = $NamedAnnotation;
+        // if export for global ?
         return $NamedAnnotation;
     };
 
@@ -113,6 +115,16 @@ define([
         for(var type in data) {
             callback(type, data[type]);
         }
+    };
+
+    define.proxy = function(factory, args, scope) {
+        var exports;
+        currentAnnotation = new Annotation();
+        exports = factory.apply(scope, args);
+        if(!currentAnnotation.isEmpty()) {
+            AnnotationRegistry.register(exports, currentAnnotation);
+        }
+        return exports;
     };
 
     return Annotation;
