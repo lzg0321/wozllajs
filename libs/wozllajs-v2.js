@@ -1665,7 +1665,7 @@ define('wozllajs/preload/LoadQueue',[
     }
 
     return {
-        load : function(items) {
+        load : function(items, base) {
             if(!W.isArray(items)) {
                 items = [items];
             }
@@ -1679,7 +1679,7 @@ define('wozllajs/preload/LoadQueue',[
                     src = item;
                     item = {
                         id : src,
-                        src : src
+                        src : (base||'') + src
                     };
                 }
                 if(!item.type) {

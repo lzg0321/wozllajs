@@ -72,7 +72,7 @@ define([
     }
 
     return {
-        load : function(items) {
+        load : function(items, base) {
             if(!W.isArray(items)) {
                 items = [items];
             }
@@ -86,7 +86,7 @@ define([
                     src = item;
                     item = {
                         id : src,
-                        src : src
+                        src : (base||'') + src
                     };
                 }
                 if(!item.type) {
