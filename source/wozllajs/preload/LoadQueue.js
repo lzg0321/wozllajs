@@ -7,6 +7,7 @@ define([
     './JSONLoader'
 ], function(require, W, Promise, ImageLoader, StringLoader, JSONLoader) {
 
+    var baseUrl = '';
     var loaderMap = {
         'jpg' : ImageLoader,
         'png' : ImageLoader,
@@ -86,7 +87,7 @@ define([
                     src = item;
                     item = {
                         id : src,
-                        src : (base||'') + src
+                        src : (base || baseUrl) + src
                     };
                 }
                 if(!item.type) {
@@ -125,6 +126,9 @@ define([
         },
         unregisterLoader : function(fileExtension) {
             delete loaderMap[fileExtension];
+        },
+        setBaseUrl : function(base) {
+            baseUrl = base;
         }
     };
 
