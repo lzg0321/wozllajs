@@ -17,7 +17,8 @@ require.config({
 
 require([
     'wozllajs',
-    'wozllajs_components'
+    'wozllajs_components',
+    './map/AModule'
 ], function() {
     var W = wozllajs;
     var context = document.getElementById('canvas').getContext('2d');

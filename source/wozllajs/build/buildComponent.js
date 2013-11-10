@@ -23,6 +23,6 @@ define([
         comp = new compCtor();
         comp.applyProperties(properties);
         return comp;
-    }
+    };
 
 });

@@ -3160,7 +3160,7 @@ define('wozllajs/build/buildComponent',[
         comp = new compCtor();
         comp.applyProperties(properties);
         return comp;
-    }
+    };
 
 });
 define('wozllajs/build/buildObject',[
@@ -3169,6 +3169,10 @@ define('wozllajs/build/buildObject',[
 ], function(buildComponent, GameObject) {
 
     function buildObject(objData) {
+        if(buildObject.proxy) {
+            return buildObject.proxy(objData);
+        }
+
         var i, len, children = objData.children, components = objData.components;
         var obj = new GameObject({ id : objData.name });
         obj.setActive(objData.active);
@@ -3182,6 +3186,8 @@ define('wozllajs/build/buildObject',[
         obj.transform.applyTransform(objData.transform);
         return obj;
     }
+
+    buildObject.proxy = null;
 
     return buildObject;
 

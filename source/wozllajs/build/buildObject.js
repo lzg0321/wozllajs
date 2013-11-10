@@ -4,6 +4,10 @@ define([
 ], function(buildComponent, GameObject) {
 
     function buildObject(objData) {
+        if(buildObject.proxy) {
+            return buildObject.proxy(objData);
+        }
+
         var i, len, children = objData.children, components = objData.components;
         var obj = new GameObject({ id : objData.name });
         obj.setActive(objData.active);
@@ -17,6 +21,8 @@ define([
         obj.transform.applyTransform(objData.transform);
         return obj;
     }
+
+    buildObject.proxy = null;
 
     return buildObject;
 
