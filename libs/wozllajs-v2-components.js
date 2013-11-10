@@ -1,11 +1,28 @@
 
+define('wozllajs/component/annotation/$Property',[
+    'wozllajs/annotation/Annotation'
+], function(Annotation) {
+
+    return Annotation.define('$Property', {
+        property : {
+            type : 'string',
+            default : null
+        },
+        type : {
+            type : 'string',
+            default : 'string'
+        }
+    });
+
+});
 define('wozllajs/component/renderer/Image',[
     'wozllajs',
     'wozllajs/core/Renderer',
     'wozllajs/build/annotation/$Resource',
     'wozllajs/build/annotation/$Component',
-    'wozllajs/build/annotation/$Query'
-], function(W, Renderer, $Resource, $Component, $Query) {
+    'wozllajs/build/annotation/$Query',
+    './../annotation/$Property'
+], function(W, Renderer, $Resource, $Component, $Query, $Property) {
 
     $Component({ id: 'renderer.Image', constructor: Image });
     function Image() {
@@ -16,6 +33,7 @@ define('wozllajs/component/renderer/Image',[
 
     p.alias = 'c-image';
 
+    $Property({ property: 'image', type: 'image'});
     $Resource({ property: 'image' });
     p.image = undefined;
 
@@ -31,8 +49,9 @@ define('wozllajs/component/renderer/Ninepatch',[
     'wozllajs/core/Renderer',
     'wozllajs/build/annotation/$Resource',
     'wozllajs/build/annotation/$Component',
-    'wozllajs/build/annotation/$Query'
-], function(W, Renderer, $Resource, $Component, $Query) {
+    'wozllajs/build/annotation/$Query',
+    './../annotation/$Property'
+], function(W, Renderer, $Resource, $Component, $Query, $Property) {
 
     $Component({ id: 'renderer.Ninepatch', constructor: Ninepatch });
     function Ninepatch() {
@@ -43,9 +62,11 @@ define('wozllajs/component/renderer/Ninepatch',[
 
     p.alias = 'c-9patch';
 
+    $Property({ property: 'texture', type: 'texture' });
     $Resource({ property: 'texture' });
     p.texture = undefined;
 
+    $Property({ property: 'frame', type: 'texture_frame' });
     p.frame = undefined;
 
     p.grid = undefined;
@@ -64,8 +85,9 @@ define('wozllajs/component/renderer/Texture',[
     'wozllajs/core/Renderer',
     'wozllajs/build/annotation/$Resource',
     'wozllajs/build/annotation/$Component',
-    'wozllajs/build/annotation/$Query'
-], function(W, Renderer, $Resource, $Component, $Query) {
+    'wozllajs/build/annotation/$Query',
+    './../annotation/$Property'
+], function(W, Renderer, $Resource, $Component, $Query, $Property) {
 
     $Component({ id: 'renderer.Texture', constructor: Texture });
     function Texture() {
@@ -76,9 +98,11 @@ define('wozllajs/component/renderer/Texture',[
 
     p.alias = 'c-texture';
 
+    $Property({ property: 'texture', type: 'texture' });
     $Resource({ property: 'texture' });
     p.texture = undefined;
 
+    $Property({ property: 'frame', type: 'texture_frame' });
     p.frame = undefined;
 
     p.draw = function(context, visibleRect) {
@@ -90,11 +114,13 @@ define('wozllajs/component/renderer/Texture',[
 });
 define('wozllajs_components',[
     'wozllajs',
+    './wozllajs/component/annotation/$Property',
     './wozllajs/component/renderer/Image',
     './wozllajs/component/renderer/Ninepatch',
     './wozllajs/component/renderer/Texture'
-], function(wozllajs, Image, Ninepatch, Texture) {
+], function(wozllajs, $Property, Image, Ninepatch, Texture) {
 
+    wozllajs.annotation.$Property = $Property;
     wozllajs.renderer = wozllajs.renderer || {};
     wozllajs.renderer.Image = Image;
     wozllajs.renderer.Ninepatch = Ninepatch;

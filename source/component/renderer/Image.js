@@ -3,8 +3,9 @@ define([
     'wozllajs/core/Renderer',
     'wozllajs/build/annotation/$Resource',
     'wozllajs/build/annotation/$Component',
-    'wozllajs/build/annotation/$Query'
-], function(W, Renderer, $Resource, $Component, $Query) {
+    'wozllajs/build/annotation/$Query',
+    './../annotation/$Property'
+], function(W, Renderer, $Resource, $Component, $Query, $Property) {
 
     $Component({ id: 'renderer.Image', constructor: Image });
     function Image() {
@@ -15,6 +16,7 @@ define([
 
     p.alias = 'c-image';
 
+    $Property({ property: 'image', type: 'image'});
     $Resource({ property: 'image' });
     p.image = undefined;
 

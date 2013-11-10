@@ -3,8 +3,9 @@ define([
     'wozllajs/core/Renderer',
     'wozllajs/build/annotation/$Resource',
     'wozllajs/build/annotation/$Component',
-    'wozllajs/build/annotation/$Query'
-], function(W, Renderer, $Resource, $Component, $Query) {
+    'wozllajs/build/annotation/$Query',
+    './../annotation/$Property'
+], function(W, Renderer, $Resource, $Component, $Query, $Property) {
 
     $Component({ id: 'renderer.Texture', constructor: Texture });
     function Texture() {
@@ -15,9 +16,11 @@ define([
 
     p.alias = 'c-texture';
 
+    $Property({ property: 'texture', type: 'texture' });
     $Resource({ property: 'texture' });
     p.texture = undefined;
 
+    $Property({ property: 'frame', type: 'texture_frame' });
     p.frame = undefined;
 
     p.draw = function(context, visibleRect) {
