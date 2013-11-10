@@ -11,6 +11,10 @@ define('wozllajs/component/annotation/$Property',[
         type : {
             type : 'string',
             default : 'string'
+        },
+        config : {
+            type : 'object',
+            default : null
         }
     });
 
