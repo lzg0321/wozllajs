@@ -8,7 +8,7 @@ define([
         compCtor = findComponentConstructor(componentData.id);
         properties = componentData.properties;
         comp = new compCtor();
-        comp.applyProperties(properties);
+        comp.properties = properties || {};
         return comp;
     };
 

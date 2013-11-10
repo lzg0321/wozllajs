@@ -23,9 +23,9 @@ define([
                for(j=0,len2=$querys.length; j<len2; j++) {
                    $query = $querys[j];
                    property = $query.property;
-                   if(comp.hasOwnProperty(property) || comp.constructor.prototype.hasOwnProperty(property)) {
-                       expr = comp[property];
-                       if(!(comp[property] = o.query(expr))) {
+                   if(comp.properties.hasOwnProperty(property)) {
+                       expr = comp.properties[property];
+                       if(!(comp.properties[property] = o.query(expr))) {
                            throw new Error('Cant found by expression ' + expr);
                        }
                    } else {
@@ -35,8 +35,8 @@ define([
                $resources = $Resource.forModule(comp.constructor);
                for(j=0,len2=$resources.length; j<len2; j++) {
                    $resource = $resources[j];
-                   if(comp.hasOwnProperty($resource.property)) {
-                       item = comp[$resource.property];
+                   if(comp.properties.hasOwnProperty($resource.property)) {
+                       item = comp.properties[$resource.property];
                        resources.push(item);
                        id = item.id || item.src || item;
                        resourceInjectComponentMap[id] = resourceInjectComponentMap[id] || [];
@@ -56,7 +56,7 @@ define([
                if(comps) {
                    for(i=0,len=comps.length; i<len; i++) {
                        c = comps[i];
-                       c.component[c.property] = r;
+                       c.component.properties[c.property] = r;
                    }
                    delete resourceInjectComponentMap[id];
                } else {

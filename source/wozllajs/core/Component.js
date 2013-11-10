@@ -11,11 +11,15 @@ define([
 
     p.alias = undefined;
 
+    p.properties = {}; // for build
+
     p.setGameObject = function(gameObject) {
         this.gameObject = gameObject;
     };
 
-    p.initComponent = function() {};
+    p.initComponent = function() {
+        this.applyProperties(this.properties);
+    };
 
     p.destroyComponent = function() {};
 

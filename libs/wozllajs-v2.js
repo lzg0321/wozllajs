@@ -2132,11 +2132,15 @@ define('wozllajs/core/Component',[
 
     p.alias = undefined;
 
+    p.properties = {}; // for build
+
     p.setGameObject = function(gameObject) {
         this.gameObject = gameObject;
     };
 
-    p.initComponent = function() {};
+    p.initComponent = function() {
+        this.applyProperties(this.properties);
+    };
 
     p.destroyComponent = function() {};
 
@@ -3166,7 +3170,7 @@ define('wozllajs/build/buildComponent',[
         compCtor = findComponentConstructor(componentData.id);
         properties = componentData.properties;
         comp = new compCtor();
-        comp.applyProperties(properties);
+        comp.properties = properties || {};
         return comp;
     };
 
@@ -3265,9 +3269,9 @@ define('wozllajs/build/initObjData',[
                for(j=0,len2=$querys.length; j<len2; j++) {
                    $query = $querys[j];
                    property = $query.property;
-                   if(comp.hasOwnProperty(property) || comp.constructor.prototype.hasOwnProperty(property)) {
-                       expr = comp[property];
-                       if(!(comp[property] = o.query(expr))) {
+                   if(comp.properties.hasOwnProperty(property)) {
+                       expr = comp.properties[property];
+                       if(!(comp.properties[property] = o.query(expr))) {
                            throw new Error('Cant found by expression ' + expr);
                        }
                    } else {
@@ -3277,8 +3281,8 @@ define('wozllajs/build/initObjData',[
                $resources = $Resource.forModule(comp.constructor);
                for(j=0,len2=$resources.length; j<len2; j++) {
                    $resource = $resources[j];
-                   if(comp.hasOwnProperty($resource.property)) {
-                       item = comp[$resource.property];
+                   if(comp.properties.hasOwnProperty($resource.property)) {
+                       item = comp.properties[$resource.property];
                        resources.push(item);
                        id = item.id || item.src || item;
                        resourceInjectComponentMap[id] = resourceInjectComponentMap[id] || [];
@@ -3298,7 +3302,7 @@ define('wozllajs/build/initObjData',[
                if(comps) {
                    for(i=0,len=comps.length; i<len; i++) {
                        c = comps[i];
-                       c.component[c.property] = r;
+                       c.component.properties[c.property] = r;
                    }
                    delete resourceInjectComponentMap[id];
                } else {
