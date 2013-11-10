@@ -3135,11 +3135,11 @@ define('wozllajs/build/annotation/$Component',[
     });
 
 });
-define('wozllajs/build/buildComponent',[
+define('wozllajs/build/findComponentConstructor',[
     './annotation/$Component'
 ], function($Component) {
 
-    function findComponentConstructor(id) {
+    return function(id) {
         var construct;
         var all = $Component.allModule();
         var i, len, $componentAnno;
@@ -3149,9 +3149,17 @@ define('wozllajs/build/buildComponent',[
             if($componentAnno.id === id) {
                 break;
             }
+            if(construct.prototype.alias === id) {
+                break;
+            }
         }
         return construct;
-    }
+    };
+});
+define('wozllajs/build/buildComponent',[
+    './annotation/$Component',
+    './findComponentConstructor'
+], function($Component, findComponentConstructor) {
 
     return function(componentData) {
         var compCtor, properties, comp;
@@ -3336,17 +3344,19 @@ define('wozllajs/build/loadAndInitObjFile',[
 define('wozllajs/build',[
     './build/buildObject',
     './build/buildComponent',
+    './build/findComponentConstructor',
     './build/traverseObject',
     './build/initObjData',
     './build/loadAndInitObjFile',
     './build/annotation/$Component',
     './build/annotation/$Query',
     './build/annotation/$Resource'
-], function(buildObject, buildComponent, traverseObject, initObjData, loadAndInitObjFile, $Component, $Query, $Resource) {
+], function(buildObject, buildComponent, findComponentConstructor, traverseObject, initObjData, loadAndInitObjFile, $Component, $Query, $Resource) {
 
     return {
         buildObject : buildObject,
         buildComponent : buildComponent,
+        findComponentConstructor: findComponentConstructor,
         traverseObject : traverseObject,
         initObjData: initObjData,
         loadAndInitObjFile : loadAndInitObjFile,
