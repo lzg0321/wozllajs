@@ -38,7 +38,7 @@ define('wozllajs/component/renderer/Image',[
 
     p.alias = 'c-image';
 
-    $Property({ property: 'image', type: 'image'});
+    $Property({ property: 'image', type: 'image' });
     $Resource({ property: 'image' });
     p.image = undefined;
 
@@ -78,15 +78,23 @@ define('wozllajs/component/renderer/Ninepatch',[
     $Resource({ property: 'texture' });
     p.texture = undefined;
 
-    $Property({ property: 'frame', type: 'texture_frame' });
+    $Property({
+        property: 'frame',
+        type: 'texture_frame',
+        config: {
+            sourceProperty: 'texture'
+        }
+    });
     p.frame = undefined;
 
+    $Property({ property: 'grid', type: 'position' });
     p.grid = undefined;
 
+    $Property({ property: 'size', type: 'size' });
     p.size = undefined;
 
     p.draw = function(context, visibleRect) {
-        this.texture.drawAs9Grid(context, this.frame, this.grid, this.size.width, this.size.height);
+        this.texture && this.texture.drawAs9Grid(context, this.frame, this.grid, this.size.width, this.size.height);
     };
 
     return Ninepatch;
@@ -114,7 +122,13 @@ define('wozllajs/component/renderer/Texture',[
     $Resource({ property: 'texture' });
     p.texture = undefined;
 
-    $Property({ property: 'frame', type: 'texture_frame' });
+    $Property({
+        property: 'frame',
+        type: 'texture_frame',
+        config: {
+            sourceProperty: 'texture'
+        }
+    });
     p.frame = undefined;
 
     p.draw = function(context, visibleRect) {

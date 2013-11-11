@@ -20,7 +20,13 @@ define([
     $Resource({ property: 'texture' });
     p.texture = undefined;
 
-    $Property({ property: 'frame', type: 'texture_frame' });
+    $Property({
+        property: 'frame',
+        type: 'texture_frame',
+        config: {
+            sourceProperty: 'texture'
+        }
+    });
     p.frame = undefined;
 
     $Property({ property: 'grid', type: 'position' });
