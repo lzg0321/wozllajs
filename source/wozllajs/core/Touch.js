@@ -8,19 +8,23 @@ define([
 
     var touchstartTarget;
     var touchendTarget;
+    var canvasOffsetCache;
 
     function getCanvasOffset() {
+        if(canvasOffsetCache) return canvasOffsetCache;
         var obj = stage.stageCanvas;
         var offset = { x : obj.offsetLeft, y : obj.offsetTop };
         while ( obj = obj.offsetParent ) {
             offset.x += obj.offsetLeft;
             offset.y += obj.offsetTop;
         }
+        canvasOffsetCache = offset;
         return offset;
     }
 
     function onEvent(e) {
         if(!enabled) return;
+        var doDispatch = false;
         var target, touchEvent, canvasOffset, x, y, t;
         var type = e.type;
         canvasOffset = getCanvasOffset();
@@ -41,31 +45,36 @@ define([
         if(type === 'mousedown') {
             type = TouchEvent.TOUCH_START;
             touchstartTarget = target;
+            touchendTarget = null;
+            doDispatch = true;
         }
-        else if(type === 'mouseup') {
+        else if(type === 'mouseup' && touchstartTarget === target) {
             type = TouchEvent.TOUCH_END;
             touchendTarget = target;
+            doDispatch = true;
         }
-        else if(type === 'mousemove') {
+        else if(type === 'mousemove' && touchstartTarget === target) {
             type = TouchEvent.TOUCH_MOVE;
+            doDispatch = true;
         }
-        touchEvent = new TouchEvent({
-            type : type,
-            x : x,
-            y : y
-        });
 
-        target && target.dispatchEvent(touchEvent);
-
-        if(type === TouchEvent.TOUCH_END) {
-            if(touchendTarget && touchstartTarget === touchendTarget) {
-                touchstartTarget = null;
-                touchendTarget = null;
-                touchendTarget.dispatchEvent(new TouchEvent({
-                    type : TouchEvent.CLICK,
-                    x : x,
-                    y : y
-                }));
+        if(target && doDispatch) {
+            touchEvent = new TouchEvent({
+                type : type,
+                x : x,
+                y : y
+            });
+            target.dispatchEvent(touchEvent);
+            if(type === TouchEvent.TOUCH_END) {
+                if(touchendTarget && touchstartTarget === touchendTarget) {
+                    touchstartTarget = null;
+                    touchendTarget = null;
+                    touchendTarget.dispatchEvent(new TouchEvent({
+                        type : TouchEvent.CLICK,
+                        x : x,
+                        y : y
+                    }));
+                }
             }
         }
     }
