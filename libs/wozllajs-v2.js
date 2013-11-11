@@ -1614,7 +1614,18 @@ define('wozllajs/preload/LoadQueue',[
     var loadingMap = {}, cancelMap = {};
 
     function createLoader(item) {
-        var loaderConstructor = loaderMap[item.type] || StringLoader;
+        var type = item.type;
+        var loaderConstructor = loaderMap[type];
+        if(!loaderConstructor) {
+            while(!loaderConstructor && type.indexOf('.') !== -1) {
+                type = type.substr(type.indexOf('.')+1);
+                loaderConstructor = loaderMap[type];
+            }
+            if(!loaderConstructor) {
+                loaderConstructor = StringLoader;
+            }
+        }
+
         return new loaderConstructor(item);
     }
 
@@ -1684,7 +1695,7 @@ define('wozllajs/preload/LoadQueue',[
                     };
                 }
                 if(!item.type) {
-                    item.type = src.substr(src.lastIndexOf('.') + 1);
+                    item.type = src.substr(src.indexOf('.') + 1);
                 }
                 if(!repeatTestFlag[item.id]) {
                     loads.push(item);
@@ -1803,7 +1814,7 @@ define('wozllajs/assets/TextureLoader',[
         });
     };
 
-    LoadQueue.registerLoader('tt', TextureLoader);
+    LoadQueue.registerLoader('tt.json', TextureLoader);
 
     return TextureLoader;
 });

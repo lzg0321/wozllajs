@@ -22,7 +22,7 @@ define([
         });
     };
 
-    LoadQueue.registerLoader('tt', TextureLoader);
+    LoadQueue.registerLoader('tt.json', TextureLoader);
 
     return TextureLoader;
 });
