@@ -23,12 +23,14 @@ define([
     $Property({ property: 'frame', type: 'texture_frame' });
     p.frame = undefined;
 
+    $Property({ property: 'grid', type: 'position' });
     p.grid = undefined;
 
+    $Property({ property: 'size', type: 'size' });
     p.size = undefined;
 
     p.draw = function(context, visibleRect) {
-        this.texture.drawAs9Grid(context, this.frame, this.grid, this.size.width, this.size.height);
+        this.texture && this.texture.drawAs9Grid(context, this.frame, this.grid, this.size.width, this.size.height);
     };
 
     return Ninepatch;

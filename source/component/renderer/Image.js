@@ -17,7 +17,7 @@ define([
 
     p.alias = 'c-image';
 
-    $Property({ property: 'image', type: 'image'});
+    $Property({ property: 'image', type: 'image' });
     $Resource({ property: 'image' });
     p.image = undefined;
 
