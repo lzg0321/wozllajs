@@ -1,11 +1,12 @@
 define([
     'wozllajs',
     'wozllajs/core/Renderer',
+    'wozllajs/assets/Texture',
     'wozllajs/build/annotation/$Resource',
     'wozllajs/build/annotation/$Component',
     'wozllajs/build/annotation/$Query',
     './../annotation/$Property'
-], function(W, Renderer, $Resource, $Component, $Query, $Property) {
+], function(W, Renderer, Texture, $Resource, $Component, $Query, $Property) {
 
     $Component({ id: 'renderer.Ninepatch', constructor: Ninepatch });
     function Ninepatch() {
@@ -34,6 +35,14 @@ define([
 
     $Property({ property: 'size', type: 'size' });
     p.size = undefined;
+
+    p.applyProperties = function(properties) {
+        var texture = properties.texture;
+        if(texture instanceof Texture) {
+            this.texture = texture;
+        }
+        this.frame = properties.frame;
+    };
 
     p.draw = function(context, visibleRect) {
         this.texture && this.texture.drawAs9Grid(context, this.frame, this.grid, this.size.width, this.size.height);

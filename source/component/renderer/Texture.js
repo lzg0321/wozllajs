@@ -1,11 +1,12 @@
 define([
     'wozllajs',
     'wozllajs/core/Renderer',
+    'wozllajs/assets/Texture',
     'wozllajs/build/annotation/$Resource',
     'wozllajs/build/annotation/$Component',
     'wozllajs/build/annotation/$Query',
     './../annotation/$Property'
-], function(W, Renderer, $Resource, $Component, $Query, $Property) {
+], function(W, Renderer, TextureAsset, $Resource, $Component, $Query, $Property) {
 
     $Component({ id: 'renderer.Texture', constructor: Texture });
     function Texture() {
@@ -30,7 +31,15 @@ define([
     p.frame = undefined;
 
     p.draw = function(context, visibleRect) {
-        this.texture.drawFrame(context, this.frame);
+        this.texture && this.texture.drawFrame(context, this.frame);
+    };
+
+    p.applyProperties = function(properties) {
+        var texture = properties.texture;
+        if(texture instanceof TextureAsset) {
+            this.texture = texture;
+        }
+        this.frame = properties.frame;
     };
 
     return Texture;
