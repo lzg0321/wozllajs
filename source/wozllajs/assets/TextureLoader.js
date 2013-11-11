@@ -16,9 +16,8 @@ define([
 
     p.load = function() {
         var src = this._item['src'];
-        var jsonSrc = src.replace('.tt', '.json');
-        var imageSrc = src.replace('.tt', '.png');
-        return Promise.wait(ajax.getJSON(jsonSrc), ImageLoader.loadSrc(imageSrc)).then(function(ajaxResult, image) {
+        var imageSrc = src.replace('.json', '.png');
+        return Promise.wait(ajax.getJSON(src), ImageLoader.loadSrc(imageSrc)).then(function(ajaxResult, image) {
             return new Texture(image, ajaxResult[0].frames);
         });
     };

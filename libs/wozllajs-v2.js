@@ -1797,9 +1797,8 @@ define('wozllajs/assets/TextureLoader',[
 
     p.load = function() {
         var src = this._item['src'];
-        var jsonSrc = src.replace('.tt', '.json');
-        var imageSrc = src.replace('.tt', '.png');
-        return Promise.wait(ajax.getJSON(jsonSrc), ImageLoader.loadSrc(imageSrc)).then(function(ajaxResult, image) {
+        var imageSrc = src.replace('.json', '.png');
+        return Promise.wait(ajax.getJSON(src), ImageLoader.loadSrc(imageSrc)).then(function(ajaxResult, image) {
             return new Texture(image, ajaxResult[0].frames);
         });
     };
@@ -2949,19 +2948,23 @@ define('wozllajs/core/Touch',[
 
     var touchstartTarget;
     var touchendTarget;
+    var canvasOffsetCache;
 
     function getCanvasOffset() {
+        if(canvasOffsetCache) return canvasOffsetCache;
         var obj = stage.stageCanvas;
         var offset = { x : obj.offsetLeft, y : obj.offsetTop };
         while ( obj = obj.offsetParent ) {
             offset.x += obj.offsetLeft;
             offset.y += obj.offsetTop;
         }
+        canvasOffsetCache = offset;
         return offset;
     }
 
     function onEvent(e) {
         if(!enabled) return;
+        var doDispatch = false;
         var target, touchEvent, canvasOffset, x, y, t;
         var type = e.type;
         canvasOffset = getCanvasOffset();
@@ -2982,31 +2985,36 @@ define('wozllajs/core/Touch',[
         if(type === 'mousedown') {
             type = TouchEvent.TOUCH_START;
             touchstartTarget = target;
+            touchendTarget = null;
+            doDispatch = true;
         }
-        else if(type === 'mouseup') {
+        else if(type === 'mouseup' && touchstartTarget === target) {
             type = TouchEvent.TOUCH_END;
             touchendTarget = target;
+            doDispatch = true;
         }
-        else if(type === 'mousemove') {
+        else if(type === 'mousemove' && touchstartTarget === target) {
             type = TouchEvent.TOUCH_MOVE;
+            doDispatch = true;
         }
-        touchEvent = new TouchEvent({
-            type : type,
-            x : x,
-            y : y
-        });
 
-        target && target.dispatchEvent(touchEvent);
-
-        if(type === TouchEvent.TOUCH_END) {
-            if(touchendTarget && touchstartTarget === touchendTarget) {
-                touchstartTarget = null;
-                touchendTarget = null;
-                touchendTarget.dispatchEvent(new TouchEvent({
-                    type : TouchEvent.CLICK,
-                    x : x,
-                    y : y
-                }));
+        if(target && doDispatch) {
+            touchEvent = new TouchEvent({
+                type : type,
+                x : x,
+                y : y
+            });
+            target.dispatchEvent(touchEvent);
+            if(type === TouchEvent.TOUCH_END) {
+                if(touchendTarget && touchstartTarget === touchendTarget) {
+                    touchstartTarget = null;
+                    touchendTarget = null;
+                    touchendTarget.dispatchEvent(new TouchEvent({
+                        type : TouchEvent.CLICK,
+                        x : x,
+                        y : y
+                    }));
+                }
             }
         }
     }
