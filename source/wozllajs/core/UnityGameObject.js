@@ -18,6 +18,7 @@ define([
         AbstractGameObject.apply(this, arguments);
         this._active = true;
         this._visible = true;
+        this._interactive = false;
         this._initialized = false;
         this._components = [];
         this._delayRemoves = [];
@@ -63,6 +64,14 @@ define([
 
     p.setVisible = function(visible) {
         this._visible = visible;
+    };
+
+    p.isInteractive = function() {
+        return this._children.length > 0 || this._interactive;
+    };
+
+    p.setInteractive = function(interactive) {
+        this._interactive = interactive;
     };
 
     p.addComponent = function(component) {
@@ -244,8 +253,8 @@ define([
         this._doDelayRemove();
     };
 
-    p.testHit = function(x, y, onlyRenderSelf) {
-        var hit = false, hitDelegate, renderer;
+    p.testHit = function(x, y) {
+        var hit = false, hitDelegate;
         if(!this.isActive(true) || !this.isVisible(true)) {
             return false;
         }
@@ -253,21 +262,9 @@ define([
         if(hitDelegate) {
             hit = hitDelegate.testHit(x, y);
         }
-        else if(this._cacheCanvas && this._cached) {
-            hit = this._cacheContext.getImageData(-this._cacheOffsetX+x, -this._cacheOffsetY+y, 1, 1).data[3] > 1;
-        }
         else {
             testHitContext.setTransform(1, 0, 0, 1, -x, -y);
-            if(onlyRenderSelf) {
-                renderer = this.getComponent(Renderer);
-                if(!renderer) {
-                    hit = false;
-                } else {
-                    renderer.draw(testHitContext, this.getStage().getVisibleRect());
-                }
-            } else {
-                this._draw(testHitContext, this.getStage().getVisibleRect());
-            }
+            this._draw(testHitContext, this.getStage().getVisibleRect());
             hit = testHitContext.getImageData(0, 0, 1, 1).data[3] > 1;
             testHitContext.setTransform(1, 0, 0, 1, 0, 0);
             testHitContext.clearRect(0, 0, 2, 2);
@@ -275,10 +272,14 @@ define([
         return hit;
     };
 
-    p.getTopObjectUnderPoint = function(x, y) {
+    p.getTopObjectUnderPoint = function(x, y, useInteractive) {
         var i, child, obj, localPoint;
-        for(i=this._children.length-1; i>=0 ; i--) {
-            child = this._children[i];
+        var children = this._children;
+        if(useInteractive && !this.isInteractive()) {
+            return null;
+        }
+        for(i=children.length-1; i>=0 ; i--) {
+            child = children[i];
             obj = child.getTopObjectUnderPoint(x, y);
             if(obj) {
                 return obj;
@@ -310,10 +311,13 @@ define([
     p._draw = function(context, visibleRect) {
         var i, len, child;
         var children = this._children;
-        this.sendMessage(G.METHOD_DRAW, arguments, Renderer);
-        for(i=0,len=children.length; i<len; i++) {
-            child = children[i];
-            child.draw(context, visibleRect);
+        if(children.length <= 0) {
+            this.sendMessage(G.METHOD_DRAW, arguments, Renderer);
+        } else {
+            for(i=0,len=children.length; i<len; i++) {
+                child = children[i];
+                child.draw(context, visibleRect);
+            }
         }
     };
 
