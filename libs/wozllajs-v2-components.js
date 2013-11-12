@@ -105,7 +105,7 @@ define('wozllajs/component/renderer/Ninepatch',[
     };
 
     p.draw = function(context, visibleRect) {
-        this.texture && this.texture.drawAs9Grid(context, this.frame, this.grid, this.size.width, this.size.height);
+        this.texture && this.texture.drawFrameAs9Grid(context, this.frame, this.grid, this.size.width, this.size.height);
     };
 
     return Ninepatch;
