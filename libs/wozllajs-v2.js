@@ -1438,6 +1438,7 @@ define('wozllajs/preload/AsyncImage',[
     };
 
     p.drawAs9Grid = function(context, region, grid, width, height) {
+        if(!region || !grid || !width || !height) return;
         var rx = region.x;
         var ry = region.y;
         var ow = region.w;
