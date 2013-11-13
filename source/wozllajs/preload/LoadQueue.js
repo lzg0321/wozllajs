@@ -60,7 +60,7 @@ define([
                     var p = loader.load().then(function(result) {
                         item.result = result;
                         cache[id] = item;
-                        loadedResult[id] = result;
+                        loadedResult[id] = true;
                         if(typeof result === 'object' && result.hasOwnProperty('resourceId')) {
                             result.resourceId = id;
                         }
@@ -70,18 +70,18 @@ define([
                     promises.push(p);
                 })(id, loader, item);
             } else {
-                loadedResult[id] = cachedItem.result;
+                loadedResult[id] = true;
             }
         }
         if(promises.length === 0) {
             setTimeout(function() {
-                promise.done(null);
+                promise.done(loadedResult);
                 loading = false;
                 loadNext();
             }, 1);
         } else {
             Promise.wait(promises).then(function() {
-                promise.done(null);
+                promise.done(loadedResult);
                 loading = false;
                 loadNext();
             });
@@ -139,7 +139,7 @@ define([
                 usingReferenceCounter[id] --;
             }
             if(resource) {
-                if(!usingReferenceCounter[id] || usingReferenceCounter[id] === 0) {
+                if(!usingReferenceCounter[id] || usingReferenceCounter[id] <= 0) {
                     delete cache[id];
                     if(resource.dispose && typeof resource.dispose === 'function') {
                         resource.dispose();

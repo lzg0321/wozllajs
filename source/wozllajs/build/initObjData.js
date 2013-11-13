@@ -51,7 +51,7 @@ define([
        LoadQueue.load(resources).then(function(result) {
            var id, i, len, comps, c, r;
            for(id in result) {
-               r = result[id];
+               r = LoadQueue.get(id);
                comps = resourceInjectComponentMap[id];
                if(comps) {
                    for(i=0,len=comps.length; i<len; i++) {
@@ -64,8 +64,9 @@ define([
                }
            }
            for(id in resourceInjectComponentMap) {
+               console.log(resourceInjectComponentMap);
                console.log('[Warn] Unable to inject property "' + resourceInjectComponentMap[id].property +
-                   '" in component alias=' + resourceInjectComponentMap[id].component.alias);
+                   '" in component ', resourceInjectComponentMap[id]);
 
            }
            console.log('annotation inject cost ' + (Date.now()-start) + 'ms');

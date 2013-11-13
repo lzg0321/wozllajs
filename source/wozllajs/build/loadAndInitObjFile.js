@@ -12,9 +12,10 @@ define([
     return function(filePath, cached) {
         var p = new Promise();
         //TODO promise join
-        LoadQueue.load({ id: filePath, src: filePath, type: 'json' }).then(function(result) {
+        LoadQueue.load({ id: filePath, src: filePath, type: 'json' }).then(function() {
+            var result = LoadQueue.get(filePath);
             !cached && LoadQueue.remove(filePath);
-            initObjData(result[filePath]).then(function(obj) {
+            initObjData(result).then(function(obj) {
                 p.done(obj);
             });
         });
