@@ -26,13 +26,13 @@ define([
     $Resource({ property: 'texture' });
     p.texture = undefined;
 
-    $Property({ property: 'name', type: 'int' });
+    $Property({ property: 'currentFrame', type: 'int' });
     p.currentFrame = 0;
 
-    $Property({ property: 'name', type: 'int' });
+    $Property({ property: 'frameTime', type: 'int' });
     p.frameTime = 33;
 
-    $Property({ property: 'name', type: 'boolean' });
+    $Property({ property: 'paused', type: 'boolean' });
     p.paused = false;
 
     p._currentFrameStartTime = null;
