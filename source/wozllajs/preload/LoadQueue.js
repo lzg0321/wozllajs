@@ -17,6 +17,8 @@ define([
         loadQueue = [],
         loading = false;
 
+    var usingReferenceCounter = {};
+
     // TODO cancel operation
     var loadingMap = {}, cancelMap = {};
 
@@ -59,6 +61,9 @@ define([
                         item.result = result;
                         cache[id] = item;
                         loadedResult[id] = result;
+                        if(typeof result === 'object' && result.hasOwnProperty('resourceId')) {
+                            result.resourceId = id;
+                        }
                     }).catchError(function(error) {
                         console.log(error);
                     });
@@ -70,13 +75,13 @@ define([
         }
         if(promises.length === 0) {
             setTimeout(function() {
-                promise.done(loadedResult);
+                promise.done(null);
                 loading = false;
                 loadNext();
             }, 1);
         } else {
             Promise.wait(promises).then(function() {
-                promise.done(loadedResult);
+                promise.done(null);
                 loading = false;
                 loadNext();
             });
@@ -121,15 +126,25 @@ define([
             if(!cached) {
                 return null;
             }
+            usingReferenceCounter[id] = usingReferenceCounter[id] || 0;
+            usingReferenceCounter[id] ++;
             return cached.result;
         },
         remove : function(id) {
-            var resource = cache[id].result;
+            var cached = cache[id];
+            var resource;
+            if(!cached) return;
+            resource = cached.result;
+            if(usingReferenceCounter[id]) {
+                usingReferenceCounter[id] --;
+            }
             if(resource) {
-                if(W.isImage(resource)) {
-                    resource.dispose && resource.dispose();
+                if(!usingReferenceCounter[id] || usingReferenceCounter[id] === 0) {
+                    delete cache[id];
+                    if(resource.dispose && typeof resource.dispose === 'function') {
+                        resource.dispose();
+                    }
                 }
-                delete cache[id];
             }
         },
         registerLoader : function(fileExtension, loaderConstructor) {
