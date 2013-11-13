@@ -1,10 +1,12 @@
 define([
     './math/Matrix2D',
-    './../wozllajs/math/Point'
-], function(Matrix2D, Point) {
+    './math/Rectangle',
+    './math/Point'
+], function(Matrix2D, Rectangle, Point) {
 
     return {
         Matrix2D : Matrix2D,
+        Rectangle : Rectangle,
         Point : Point
     }
 });

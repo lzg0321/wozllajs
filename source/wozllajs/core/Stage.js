@@ -1,20 +1,16 @@
 define([
     './../var',
+    './../math/Rectangle',
     './CachableGameObject'
-], function(W, CachableGameObject) {
+], function(W, Rectangle, CachableGameObject) {
 
-    var visibleRect = {
-        x : 0,
-        y : 0,
-        width : 0,
-        height : 0
-    };
+    var visibleRect = new Rectangle();
 
     var Stage = function(param) {
         CachableGameObject.apply(this, arguments);
         this.autoClear = param.autoClear;
-        this.width = param.width;
-        this.height = param.height;
+        this._width = param.width;
+        this._height = param.height;
         this.stageCanvas = param.canvas;
         this.stageContext = this.stageCanvas.getContext('2d');
     };
@@ -30,22 +26,22 @@ define([
     };
 
     p.draw = function() {
-        this.autoClear && this.stageContext.clearRect(0, 0, this.width, this.height);
+        this.autoClear && this.stageContext.clearRect(0, 0, this._width, this._height);
         CachableGameObject.prototype.draw.apply(this, [this.stageContext, this.getVisibleRect()]);
     };
 
     p.resize = function(width, height) {
         this.stageCanvas.width = width;
         this.stageCanvas.height = height;
-        this.width = width;
-        this.height = height;
+        this._width = width;
+        this._height = height;
     };
 
     p.getVisibleRect = function() {
         visibleRect.x = -this.transform.x;
         visibleRect.y = -this.transform.y;
-        visibleRect.width = this.width;
-        visibleRect.height = this.height;
+        visibleRect.width = this._width;
+        visibleRect.height = this._height;
         return visibleRect;
     };
 

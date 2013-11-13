@@ -38,8 +38,14 @@ define([
          * @param y
          * @return {*}
          */
-        localToGlobal : function(x, y) {
-            var mtx = this.getConcatenatedMatrix();
+        localToGlobal : function(x, y, concatenatedMatrix) {
+            var mtx;
+            if(concatenatedMatrix) {
+                matrix.copy(concatenatedMatrix);
+                mtx = matrix;
+            } else {
+                this.getConcatenatedMatrix();
+            }
             if (mtx == null) { return null; }
             mtx.append(1, 0, 0, 1, x, y);
             return { x : mtx.tx, y : mtx.ty };
@@ -51,8 +57,14 @@ define([
          * @param y
          * @return {*}
          */
-        globalToLocal : function(x, y) {
-            var mtx = this.getConcatenatedMatrix();
+        globalToLocal : function(x, y, concatenatedMatrix) {
+            var mtx;
+            if(concatenatedMatrix) {
+                matrix.copy(concatenatedMatrix);
+                mtx = matrix;
+            } else {
+                this.getConcatenatedMatrix();
+            }
             if (mtx == null) { return null; }
             mtx.invert();
             mtx.append(1, 0, 0, 1, x, y);
@@ -63,15 +75,16 @@ define([
          * 获取一个Matrix2D, 及联了所有它的parentTransform的属性, 通常很方便的用于转换坐标点
          * @return {createjs.Matrix2D}
          */
-        getConcatenatedMatrix : function() {
+        getConcatenatedMatrix : function(resultMatrix) {
             var o = this;
-            matrix.identity();
+            var mtx = resultMatrix || matrix;
+            mtx.identity();
             while (o != null) {
-                matrix.prependTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY)
+                mtx.prependTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY)
                     .prependProperties(o.alpha);
                 o = o.parent;
             }
-            return matrix;
+            return mtx;
         },
 
         /**

@@ -1,6 +1,8 @@
 define([
     './../var',
     './../globals',
+    './../math/Rectangle',
+    './../math/Matrix2D',
     './AbstractGameObject',
     './Component',
     './Behaviour',
@@ -9,15 +11,19 @@ define([
     './HitDelegate',
     './Query',
     './events/GameObjectEvent'
-], function(W, G, AbstractGameObject, Component, Behaviour, Renderer, Layout, HitDelegate, Query, GameObjectEvent) {
+], function(W, G, Rectangle, Matrix2D, AbstractGameObject, Component, Behaviour, Renderer, Layout, HitDelegate, Query, GameObjectEvent) {
 
     var testHitCanvas = W.createCanvas(1, 1);
     var testHitContext = testHitCanvas.getContext('2d');
+    var helpRect = new Rectangle();
+    var helpMatrix = new Matrix2D();
 
     var UnityGameObject = function(param) {
         AbstractGameObject.apply(this, arguments);
         this._active = true;
         this._visible = true;
+        this._width = 0;
+        this._height = 0;
         this._interactive = false;
         this._initialized = false;
         this._components = [];
@@ -72,6 +78,40 @@ define([
 
     p.setInteractive = function(interactive) {
         this._interactive = interactive;
+    };
+
+    p.getWidth = function() {
+        return this._width;
+    };
+
+    p.setWidth = function(w) {
+        this._width = w;
+    };
+
+    p.getHeight = function() {
+        return this._height;
+    };
+
+    p.setHeight = function(h) {
+        this._height = h;
+    };
+
+    p.getGlobalBounds = function(resultRect, print) {
+        if(!resultRect) {
+            resultRect = new Rectangle();
+        }
+        var t = this.transform;
+        var concatenatedMatrix = this.transform.getConcatenatedMatrix(helpMatrix);
+        var localA = t.localToGlobal(0, 0, concatenatedMatrix);
+        var localB = t.localToGlobal(this._width, 0, concatenatedMatrix);
+        var localC = t.localToGlobal(0, this._height, concatenatedMatrix);
+        var localD = t.localToGlobal(this._width, this._height, concatenatedMatrix);
+        print && console.log(localA, localB, localC, localD);
+        resultRect.x = Math.min(localA.x, localB.x, localC.x, localD.x);
+        resultRect.y = Math.min(localA.y, localB.y, localC.y, localD.y);
+        resultRect.width = Math.max(localA.x, localB.x, localC.x, localD.x) - resultRect.x;
+        resultRect.height = Math.max(localA.y, localB.y, localC.y, localD.y) - resultRect.y;
+        return resultRect;
     };
 
     p.addComponent = function(component) {
@@ -191,7 +231,7 @@ define([
         this.dispatchEvent(new GameObjectEvent({
             type : GameObjectEvent.INIT,
             bubbles : true
-        }))
+        }));
     };
 
     p.destroy = function() {
@@ -280,7 +320,7 @@ define([
         }
         for(i=children.length-1; i>=0 ; i--) {
             child = children[i];
-            obj = child.getTopObjectUnderPoint(x, y);
+            obj = child.getTopObjectUnderPoint(x, y, useInteractive);
             if(obj) {
                 return obj;
             }
@@ -309,10 +349,13 @@ define([
     };
 
     p._draw = function(context, visibleRect) {
-        var i, len, child;
+        var i, len, child, gBounds;
         var children = this._children;
         if(children.length <= 0) {
-            this.sendMessage(G.METHOD_DRAW, arguments, Renderer);
+            gBounds = this.getGlobalBounds(helpRect);
+            if(gBounds.intersects(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height)) {
+                this.sendMessage(G.METHOD_DRAW, arguments, Renderer);
+            }
         } else {
             for(i=0,len=children.length; i<len; i++) {
                 child = children[i];

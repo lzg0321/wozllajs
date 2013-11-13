@@ -12,6 +12,9 @@ define([
         var obj = new GameObject({ id : objData.name });
         obj.setActive(objData.active);
         obj.setActive(objData.visible);
+        obj.setWidth(objData.width || 0);
+        obj.setHeight(objData.height || 0);
+        obj.setInteractive(objData.interactive);
         for(i=0,len=children.length; i<len; i++) {
             obj.addObject(buildObject(children[i]));
         }

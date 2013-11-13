@@ -18,6 +18,8 @@
         "name" : "obj2",
         "active" : true,
         "visible" : true,
+        "width": 100,
+        "height": 100,
         "transform": {
             "x": 100,
             "y": 89,

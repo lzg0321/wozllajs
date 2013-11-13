@@ -748,6 +748,54 @@ define('wozllajs/math/Matrix2D',[],function() {
     return Matrix2D;
 
 });
+define('wozllajs/math/Rectangle',[],function() {
+
+    var Rectangle = function(x, y, w, h) {
+        this.x = x || 0;
+        this.y = y || 0;
+        this.width = w || 0;
+        this.height = h || 0;
+    };
+
+    var p = Rectangle.prototype;
+
+    p.top = function() {
+        return this.y;
+    };
+
+    p.left = function() {
+        return this.x;
+    };
+
+    p.right = function() {
+        return this.x + this.width;
+    };
+
+    p.bottom = function() {
+        return this.y + this.height;
+    };
+
+    p.contains = function(x, y) {
+        return this.x <= x && this.y <= y && this.x + this.width > x && this.y + this.height > y;
+    };
+
+    p.containsPoint = function(point) {
+        return this.contains(point.x, point.y);
+    };
+
+    p.intersects = function(x, y, w, h) {
+        return this.x < x+w && this.x+this.width > x && this.y < y+h && this.y+this.height > y;
+    };
+
+    p.intersectRect = function(r) {
+        return this.intersects(r.x, r.y, r.width, r.height);
+    };
+
+    Rectangle.MAX_RECT = new Rectangle(Number.MIN_VALUE, Number.MIN_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+
+    return Rectangle;
+
+});
 define('wozllajs/math/Point',[],function() {
 
     function Point(x, y) {
@@ -762,11 +810,13 @@ define('wozllajs/math/Point',[],function() {
 
 define('wozllajs/math',[
     './math/Matrix2D',
-    './../wozllajs/math/Point'
-], function(Matrix2D, Point) {
+    './math/Rectangle',
+    './math/Point'
+], function(Matrix2D, Rectangle, Point) {
 
     return {
         Matrix2D : Matrix2D,
+        Rectangle : Rectangle,
         Point : Point
     }
 });
@@ -1890,8 +1940,14 @@ define('wozllajs/core/Transform',[
          * @param y
          * @return {*}
          */
-        localToGlobal : function(x, y) {
-            var mtx = this.getConcatenatedMatrix();
+        localToGlobal : function(x, y, concatenatedMatrix) {
+            var mtx;
+            if(concatenatedMatrix) {
+                matrix.copy(concatenatedMatrix);
+                mtx = matrix;
+            } else {
+                this.getConcatenatedMatrix();
+            }
             if (mtx == null) { return null; }
             mtx.append(1, 0, 0, 1, x, y);
             return { x : mtx.tx, y : mtx.ty };
@@ -1903,8 +1959,14 @@ define('wozllajs/core/Transform',[
          * @param y
          * @return {*}
          */
-        globalToLocal : function(x, y) {
-            var mtx = this.getConcatenatedMatrix();
+        globalToLocal : function(x, y, concatenatedMatrix) {
+            var mtx;
+            if(concatenatedMatrix) {
+                matrix.copy(concatenatedMatrix);
+                mtx = matrix;
+            } else {
+                this.getConcatenatedMatrix();
+            }
             if (mtx == null) { return null; }
             mtx.invert();
             mtx.append(1, 0, 0, 1, x, y);
@@ -1915,15 +1977,16 @@ define('wozllajs/core/Transform',[
          * 获取一个Matrix2D, 及联了所有它的parentTransform的属性, 通常很方便的用于转换坐标点
          * @return {createjs.Matrix2D}
          */
-        getConcatenatedMatrix : function() {
+        getConcatenatedMatrix : function(resultMatrix) {
             var o = this;
-            matrix.identity();
+            var mtx = resultMatrix || matrix;
+            mtx.identity();
             while (o != null) {
-                matrix.prependTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY)
+                mtx.prependTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY)
                     .prependProperties(o.alpha);
                 o = o.parent;
             }
-            return matrix;
+            return mtx;
         },
 
         /**
@@ -2318,6 +2381,8 @@ define('wozllajs/core/events/GameObjectEvent',[
 define('wozllajs/core/UnityGameObject',[
     './../var',
     './../globals',
+    './../math/Rectangle',
+    './../math/Matrix2D',
     './AbstractGameObject',
     './Component',
     './Behaviour',
@@ -2326,15 +2391,20 @@ define('wozllajs/core/UnityGameObject',[
     './HitDelegate',
     './Query',
     './events/GameObjectEvent'
-], function(W, G, AbstractGameObject, Component, Behaviour, Renderer, Layout, HitDelegate, Query, GameObjectEvent) {
+], function(W, G, Rectangle, Matrix2D, AbstractGameObject, Component, Behaviour, Renderer, Layout, HitDelegate, Query, GameObjectEvent) {
 
     var testHitCanvas = W.createCanvas(1, 1);
     var testHitContext = testHitCanvas.getContext('2d');
+    var helpRect = new Rectangle();
+    var helpMatrix = new Matrix2D();
 
     var UnityGameObject = function(param) {
         AbstractGameObject.apply(this, arguments);
         this._active = true;
         this._visible = true;
+        this._width = 0;
+        this._height = 0;
+        this._interactive = false;
         this._initialized = false;
         this._components = [];
         this._delayRemoves = [];
@@ -2380,6 +2450,48 @@ define('wozllajs/core/UnityGameObject',[
 
     p.setVisible = function(visible) {
         this._visible = visible;
+    };
+
+    p.isInteractive = function() {
+        return this._children.length > 0 || this._interactive;
+    };
+
+    p.setInteractive = function(interactive) {
+        this._interactive = interactive;
+    };
+
+    p.getWidth = function() {
+        return this._width;
+    };
+
+    p.setWidth = function(w) {
+        this._width = w;
+    };
+
+    p.getHeight = function() {
+        return this._height;
+    };
+
+    p.setHeight = function(h) {
+        this._height = h;
+    };
+
+    p.getGlobalBounds = function(resultRect, print) {
+        if(!resultRect) {
+            resultRect = new Rectangle();
+        }
+        var t = this.transform;
+        var concatenatedMatrix = this.transform.getConcatenatedMatrix(helpMatrix);
+        var localA = t.localToGlobal(0, 0, concatenatedMatrix);
+        var localB = t.localToGlobal(this._width, 0, concatenatedMatrix);
+        var localC = t.localToGlobal(0, this._height, concatenatedMatrix);
+        var localD = t.localToGlobal(this._width, this._height, concatenatedMatrix);
+        print && console.log(localA, localB, localC, localD);
+        resultRect.x = Math.min(localA.x, localB.x, localC.x, localD.x);
+        resultRect.y = Math.min(localA.y, localB.y, localC.y, localD.y);
+        resultRect.width = Math.max(localA.x, localB.x, localC.x, localD.x) - resultRect.x;
+        resultRect.height = Math.max(localA.y, localB.y, localC.y, localD.y) - resultRect.y;
+        return resultRect;
     };
 
     p.addComponent = function(component) {
@@ -2499,7 +2611,7 @@ define('wozllajs/core/UnityGameObject',[
         this.dispatchEvent(new GameObjectEvent({
             type : GameObjectEvent.INIT,
             bubbles : true
-        }))
+        }));
     };
 
     p.destroy = function() {
@@ -2561,8 +2673,8 @@ define('wozllajs/core/UnityGameObject',[
         this._doDelayRemove();
     };
 
-    p.testHit = function(x, y, onlyRenderSelf) {
-        var hit = false, hitDelegate, renderer;
+    p.testHit = function(x, y) {
+        var hit = false, hitDelegate;
         if(!this.isActive(true) || !this.isVisible(true)) {
             return false;
         }
@@ -2570,21 +2682,9 @@ define('wozllajs/core/UnityGameObject',[
         if(hitDelegate) {
             hit = hitDelegate.testHit(x, y);
         }
-        else if(this._cacheCanvas && this._cached) {
-            hit = this._cacheContext.getImageData(-this._cacheOffsetX+x, -this._cacheOffsetY+y, 1, 1).data[3] > 1;
-        }
         else {
             testHitContext.setTransform(1, 0, 0, 1, -x, -y);
-            if(onlyRenderSelf) {
-                renderer = this.getComponent(Renderer);
-                if(!renderer) {
-                    hit = false;
-                } else {
-                    renderer.draw(testHitContext, this.getStage().getVisibleRect());
-                }
-            } else {
-                this._draw(testHitContext, this.getStage().getVisibleRect());
-            }
+            this._draw(testHitContext, this.getStage().getVisibleRect());
             hit = testHitContext.getImageData(0, 0, 1, 1).data[3] > 1;
             testHitContext.setTransform(1, 0, 0, 1, 0, 0);
             testHitContext.clearRect(0, 0, 2, 2);
@@ -2592,11 +2692,15 @@ define('wozllajs/core/UnityGameObject',[
         return hit;
     };
 
-    p.getTopObjectUnderPoint = function(x, y) {
+    p.getTopObjectUnderPoint = function(x, y, useInteractive) {
         var i, child, obj, localPoint;
-        for(i=this._children.length-1; i>=0 ; i--) {
-            child = this._children[i];
-            obj = child.getTopObjectUnderPoint(x, y);
+        var children = this._children;
+        if(useInteractive && !this.isInteractive()) {
+            return null;
+        }
+        for(i=children.length-1; i>=0 ; i--) {
+            child = children[i];
+            obj = child.getTopObjectUnderPoint(x, y, useInteractive);
             if(obj) {
                 return obj;
             }
@@ -2625,12 +2729,18 @@ define('wozllajs/core/UnityGameObject',[
     };
 
     p._draw = function(context, visibleRect) {
-        var i, len, child;
+        var i, len, child, gBounds;
         var children = this._children;
-        this.sendMessage(G.METHOD_DRAW, arguments, Renderer);
-        for(i=0,len=children.length; i<len; i++) {
-            child = children[i];
-            child.draw(context, visibleRect);
+        if(children.length <= 0) {
+            gBounds = this.getGlobalBounds(helpRect);
+            if(gBounds.intersects(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height)) {
+                this.sendMessage(G.METHOD_DRAW, arguments, Renderer);
+            }
+        } else {
+            for(i=0,len=children.length; i<len; i++) {
+                child = children[i];
+                child.draw(context, visibleRect);
+            }
         }
     };
 
@@ -2743,21 +2853,17 @@ define('wozllajs/core/CachableGameObject',[
 });
 define('wozllajs/core/Stage',[
     './../var',
+    './../math/Rectangle',
     './CachableGameObject'
-], function(W, CachableGameObject) {
+], function(W, Rectangle, CachableGameObject) {
 
-    var visibleRect = {
-        x : 0,
-        y : 0,
-        width : 0,
-        height : 0
-    };
+    var visibleRect = new Rectangle();
 
     var Stage = function(param) {
         CachableGameObject.apply(this, arguments);
         this.autoClear = param.autoClear;
-        this.width = param.width;
-        this.height = param.height;
+        this._width = param.width;
+        this._height = param.height;
         this.stageCanvas = param.canvas;
         this.stageContext = this.stageCanvas.getContext('2d');
     };
@@ -2773,22 +2879,22 @@ define('wozllajs/core/Stage',[
     };
 
     p.draw = function() {
-        this.autoClear && this.stageContext.clearRect(0, 0, this.width, this.height);
+        this.autoClear && this.stageContext.clearRect(0, 0, this._width, this._height);
         CachableGameObject.prototype.draw.apply(this, [this.stageContext, this.getVisibleRect()]);
     };
 
     p.resize = function(width, height) {
         this.stageCanvas.width = width;
         this.stageCanvas.height = height;
-        this.width = width;
-        this.height = height;
+        this._width = width;
+        this._height = height;
     };
 
     p.getVisibleRect = function() {
         visibleRect.x = -this.transform.x;
         visibleRect.y = -this.transform.y;
-        visibleRect.width = this.width;
-        visibleRect.height = this.height;
+        visibleRect.width = this._width;
+        visibleRect.height = this._height;
         return visibleRect;
     };
 
@@ -3209,6 +3315,9 @@ define('wozllajs/build/buildObject',[
         var obj = new GameObject({ id : objData.name });
         obj.setActive(objData.active);
         obj.setActive(objData.visible);
+        obj.setWidth(objData.width || 0);
+        obj.setHeight(objData.height || 0);
+        obj.setInteractive(objData.interactive);
         for(i=0,len=children.length; i<len; i++) {
             obj.addObject(buildObject(children[i]));
         }
