@@ -28,6 +28,15 @@ define([
         }
     };
 
+    p.setSrc = function(src) {
+        var me = this;
+        me.unloadResource(this.image.resourceId);
+        me.image = null;
+        me.loadResource(src).then(function() {
+            me.image = me.getResource(src);
+        });
+    };
+
     p.draw = function(context, visibleRect) {
         this.image && this.image.draw(context, 0, 0);
     };
