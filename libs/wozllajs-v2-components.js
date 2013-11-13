@@ -213,6 +213,7 @@ define('wozllajs/component/renderer/FrameAnimation',[
     };
 
     p.update = function() {
+        if(!this.texture) return;
         if(!this._currentFrameStartTime) {
             this._currentFrameStartTime = Time.now;
             this.currentFrame = 0;
@@ -224,7 +225,7 @@ define('wozllajs/component/renderer/FrameAnimation',[
         if(Time.now - this._currentFrameStartTime >= this.frameTime) {
             this._currentFrameStartTime = Time.now;
             this.currentFrame ++;
-            if(!this.getFrame(this.currentFrame)) {
+            if(!this.texture.getFrame(this.currentFrame)) {
                 this.currentFrame = 0;
             }
         }
