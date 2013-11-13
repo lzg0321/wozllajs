@@ -6,6 +6,7 @@ define([
     var AsyncImage = function(image) {
         this.image = image;
         this.src = this.image.src;
+        this.resourceId = null;
     };
 
     var p = AsyncImage.prototype;
