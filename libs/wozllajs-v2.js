@@ -3311,6 +3311,7 @@ define('wozllajs/core',[
     './../wozllajs/core/Component',
     './../wozllajs/core/Behaviour',
     './../wozllajs/core/Animation',
+    './../wozllajs/core/Layout',
     './../wozllajs/core/Collider',
     './../wozllajs/core/Filter',
     './../wozllajs/core/HitDelegate',
@@ -3322,7 +3323,7 @@ define('wozllajs/core',[
     './../wozllajs/core/events/GameObjectEvent',
     './../wozllajs/core/events/TouchEvent'
 ], function(Time, Engine, AbstractGameObject, UnityGameObject, CachableGameObject, GameObject, Transform, Component,
-    Behaviour, Animation, Collider, Filter, HitDelegate, Mask, Renderer, Stage, Touch, Query, GameObjectEvent, TouchEvent) {
+    Behaviour, Animation, Layout, Collider, Filter, HitDelegate, Mask, Renderer, Stage, Touch, Query, GameObjectEvent, TouchEvent) {
 
     var cfg;
 
@@ -3367,6 +3368,7 @@ define('wozllajs/core',[
         Component : Component,
         Behaviour : Behaviour,
         Animation : Animation,
+        Layout : Layout,
         Filter : Filter,
         HitDelegate : HitDelegate,
         Mask : Mask,
