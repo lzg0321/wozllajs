@@ -26,9 +26,6 @@ define([
     $Resource({ property: 'texture' });
     p.texture = undefined;
 
-    $Property({ property: 'currentFrame', type: 'int' });
-    p.currentFrame = 0;
-
     $Property({ property: 'frameTime', type: 'int' });
     p.frameTime = 33;
 
@@ -37,6 +34,14 @@ define([
 
     p._currentFrameStartTime = null;
     p._pauseFrameTime = 0;
+
+    p.applyProperties = function(properties) {
+        if(properties.texture instanceof Texture) {
+            this.texture = properties.texture;
+        }
+        this.frameTime = properties.frameTime;
+        this.paused = properties.paused;
+    };
 
     p.update = function() {
         if(!this._currentFrameStartTime) {
