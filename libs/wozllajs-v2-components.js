@@ -245,7 +245,12 @@ define('wozllajs/component/renderer/FrameAnimation',[
     };
 
     p.draw = function(context, visibleRect) {
-        this.texture && this.texture.drawFrame(context, this.currentFrame);
+        if(this.texture) {
+            var sourceSize = this.texture.getSpriteSourceSize(this.currentFrame);
+            if(sourceSize) {
+                this.texture.drawFrame(context, this.currentFrame, sourceSize.x, sourceSize.y);
+            }
+        }
     };
 
     p.isInstanceof = function(type) {

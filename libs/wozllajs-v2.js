@@ -1836,8 +1836,19 @@ define('wozllajs/assets/Texture',[
     var p = W.inherits(Texture, AsyncImage);
 
     p.getFrame = function(name) {
-        var frame;
-        return (frame = this.frames[name]) && frame.frame || frame;
+        var frameData = this.frames[name];
+        if(frameData) {
+            return frameData.frame;
+        }
+        return null;
+    };
+
+    p.getSpriteSourceSize = function(name) {
+        var frameData = this.frames[name];
+        if(frameData) {
+            return frameData.spriteSourceSize;
+        }
+        return null;
     };
 
     p.drawFrame = function(context, name, x, y, w, h) {
