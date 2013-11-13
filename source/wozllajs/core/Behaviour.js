@@ -5,7 +5,6 @@ define([
 
     function Behaviour() {
         Component.apply(this, arguments);
-        this.enabled = false;
     }
 
     var p = W.inherits(Behaviour, Component);

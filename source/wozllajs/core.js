@@ -8,6 +8,7 @@ define([
     './../wozllajs/core/Transform',
     './../wozllajs/core/Component',
     './../wozllajs/core/Behaviour',
+    './../wozllajs/core/Animation',
     './../wozllajs/core/Collider',
     './../wozllajs/core/Filter',
     './../wozllajs/core/HitDelegate',
@@ -18,7 +19,7 @@ define([
     './../wozllajs/core/events/GameObjectEvent',
     './../wozllajs/core/events/TouchEvent'
 ], function(Time, Engine, AbstractGameObject, UnityGameObject, CachableGameObject, GameObject, Transform, Component,
-    Behaviour, Collider, Filter, HitDelegate, Renderer, Stage, Touch, Query, GameObjectEvent, TouchEvent) {
+    Behaviour, Animation, Collider, Filter, HitDelegate, Renderer, Stage, Touch, Query, GameObjectEvent, TouchEvent) {
 
     var cfg;
 
@@ -62,6 +63,7 @@ define([
         Transform : Transform,
         Component : Component,
         Behaviour : Behaviour,
+        Animation : Animation,
         Filter : Filter,
         HitDelegate : HitDelegate,
         Renderer : Renderer,

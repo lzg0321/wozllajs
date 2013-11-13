@@ -3,15 +3,18 @@ define([
     './../globals',
     './../math/Rectangle',
     './../math/Matrix2D',
+    './../promise',
     './AbstractGameObject',
     './Component',
     './Behaviour',
+    './Animation',
     './Renderer',
     './Layout',
     './HitDelegate',
     './Query',
     './events/GameObjectEvent'
-], function(W, G, Rectangle, Matrix2D, AbstractGameObject, Component, Behaviour, Renderer, Layout, HitDelegate, Query, GameObjectEvent) {
+], function(W, G, Rectangle, Matrix2D, Promise, AbstractGameObject, Component, Behaviour, Animation,
+            Renderer, Layout, HitDelegate, Query, GameObjectEvent) {
 
     var testHitCanvas = W.createCanvas(1, 1);
     var testHitContext = testHitCanvas.getContext('2d');
@@ -330,6 +333,21 @@ define([
             return this;
         }
         return null;
+    };
+
+    p.animate = function(name, callback) {
+        var animations = this.getComponents(Animation);
+        var i, len, ani;
+        for(i=0,len=animations.length; i<len; i++) {
+            ani = animations[i];
+            if(ani.name === name) {
+                ani.play(callback);
+            }
+        }
+    };
+
+    p.playEffect = function(effects) {
+
     };
 
     p._doDelayRemove = function() {

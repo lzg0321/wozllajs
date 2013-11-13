@@ -1705,7 +1705,7 @@ define('wozllajs/preload/LoadQueue',[
                     var p = loader.load().then(function(result) {
                         item.result = result;
                         cache[id] = item;
-                        loadedResult[id] = result;
+                        loadedResult[id] = true;
                         if(typeof result === 'object' && result.hasOwnProperty('resourceId')) {
                             result.resourceId = id;
                         }
@@ -1715,18 +1715,18 @@ define('wozllajs/preload/LoadQueue',[
                     promises.push(p);
                 })(id, loader, item);
             } else {
-                loadedResult[id] = cachedItem.result;
+                loadedResult[id] = true;
             }
         }
         if(promises.length === 0) {
             setTimeout(function() {
-                promise.done(null);
+                promise.done(loadedResult);
                 loading = false;
                 loadNext();
             }, 1);
         } else {
             Promise.wait(promises).then(function() {
-                promise.done(null);
+                promise.done(loadedResult);
                 loading = false;
                 loadNext();
             });
@@ -1784,7 +1784,7 @@ define('wozllajs/preload/LoadQueue',[
                 usingReferenceCounter[id] --;
             }
             if(resource) {
-                if(!usingReferenceCounter[id] || usingReferenceCounter[id] === 0) {
+                if(!usingReferenceCounter[id] || usingReferenceCounter[id] <= 0) {
                     delete cache[id];
                     if(resource.dispose && typeof resource.dispose === 'function') {
                         resource.dispose();
@@ -2285,7 +2285,6 @@ define('wozllajs/core/Behaviour',[
 
     function Behaviour() {
         Component.apply(this, arguments);
-        this.enabled = false;
     }
 
     var p = W.inherits(Behaviour, Component);
@@ -2294,6 +2293,49 @@ define('wozllajs/core/Behaviour',[
     p.lateUpdate = function() {};
 
     return Behaviour;
+
+});
+define('wozllajs/core/Animation',[
+    './../var',
+    './../promise',
+    './Time',
+    './Behaviour'
+], function(W, Promise, Time, Behaviour) {
+
+    function Animation() {
+        Behaviour.apply(this, arguments);
+        this.name = null;
+        this.enabled = false;
+        this.callbacks = [];
+    }
+
+    var p = W.inherits(Animation, Behaviour);
+
+    p.update = function() {
+        this.enabled && this.tick(Time.delta);
+    };
+
+    p.play = function(callback) {
+        this.enabled = true;
+        this.callbacks.push(callback);
+    };
+
+    p.stop = function() {
+        this.enabled = false;
+    };
+
+    p.tick = function(delta) {
+        throw new Error('abstract method');
+    };
+
+    p.done = function() {
+        var cbs = this.callbacks;
+        for(var i= 0,len=cbs.length; i<len; i++) {
+            cbs[i]();
+        }
+    };
+
+    return Animation;
 
 });
 define('wozllajs/core/Renderer',[
@@ -2418,15 +2460,18 @@ define('wozllajs/core/UnityGameObject',[
     './../globals',
     './../math/Rectangle',
     './../math/Matrix2D',
+    './../promise',
     './AbstractGameObject',
     './Component',
     './Behaviour',
+    './Animation',
     './Renderer',
     './Layout',
     './HitDelegate',
     './Query',
     './events/GameObjectEvent'
-], function(W, G, Rectangle, Matrix2D, AbstractGameObject, Component, Behaviour, Renderer, Layout, HitDelegate, Query, GameObjectEvent) {
+], function(W, G, Rectangle, Matrix2D, Promise, AbstractGameObject, Component, Behaviour, Animation,
+            Renderer, Layout, HitDelegate, Query, GameObjectEvent) {
 
     var testHitCanvas = W.createCanvas(1, 1);
     var testHitContext = testHitCanvas.getContext('2d');
@@ -2745,6 +2790,21 @@ define('wozllajs/core/UnityGameObject',[
             return this;
         }
         return null;
+    };
+
+    p.animate = function(name, callback) {
+        var animations = this.getComponents(Animation);
+        var i, len, ani;
+        for(i=0,len=animations.length; i<len; i++) {
+            ani = animations[i];
+            if(ani.name === name) {
+                ani.play(callback);
+            }
+        }
+    };
+
+    p.playEffect = function(effects) {
+
     };
 
     p._doDelayRemove = function() {
@@ -3217,6 +3277,7 @@ define('wozllajs/core',[
     './../wozllajs/core/Transform',
     './../wozllajs/core/Component',
     './../wozllajs/core/Behaviour',
+    './../wozllajs/core/Animation',
     './../wozllajs/core/Collider',
     './../wozllajs/core/Filter',
     './../wozllajs/core/HitDelegate',
@@ -3227,7 +3288,7 @@ define('wozllajs/core',[
     './../wozllajs/core/events/GameObjectEvent',
     './../wozllajs/core/events/TouchEvent'
 ], function(Time, Engine, AbstractGameObject, UnityGameObject, CachableGameObject, GameObject, Transform, Component,
-    Behaviour, Collider, Filter, HitDelegate, Renderer, Stage, Touch, Query, GameObjectEvent, TouchEvent) {
+    Behaviour, Animation, Collider, Filter, HitDelegate, Renderer, Stage, Touch, Query, GameObjectEvent, TouchEvent) {
 
     var cfg;
 
@@ -3271,6 +3332,7 @@ define('wozllajs/core',[
         Transform : Transform,
         Component : Component,
         Behaviour : Behaviour,
+        Animation : Animation,
         Filter : Filter,
         HitDelegate : HitDelegate,
         Renderer : Renderer,
@@ -3461,7 +3523,7 @@ define('wozllajs/build/initObjData',[
        LoadQueue.load(resources).then(function(result) {
            var id, i, len, comps, c, r;
            for(id in result) {
-               r = result[id];
+               r = LoadQueue.get(id);
                comps = resourceInjectComponentMap[id];
                if(comps) {
                    for(i=0,len=comps.length; i<len; i++) {
@@ -3474,8 +3536,9 @@ define('wozllajs/build/initObjData',[
                }
            }
            for(id in resourceInjectComponentMap) {
+               console.log(resourceInjectComponentMap);
                console.log('[Warn] Unable to inject property "' + resourceInjectComponentMap[id].property +
-                   '" in component alias=' + resourceInjectComponentMap[id].component.alias);
+                   '" in component ', resourceInjectComponentMap[id]);
 
            }
            console.log('annotation inject cost ' + (Date.now()-start) + 'ms');
@@ -3500,9 +3563,10 @@ define('wozllajs/build/loadAndInitObjFile',[
     return function(filePath, cached) {
         var p = new Promise();
         //TODO promise join
-        LoadQueue.load({ id: filePath, src: filePath, type: 'json' }).then(function(result) {
+        LoadQueue.load({ id: filePath, src: filePath, type: 'json' }).then(function() {
+            var result = LoadQueue.get(filePath);
             !cached && LoadQueue.remove(filePath);
-            initObjData(result[filePath]).then(function(obj) {
+            initObjData(result).then(function(obj) {
                 p.done(obj);
             });
         });
