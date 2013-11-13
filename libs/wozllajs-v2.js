@@ -2397,6 +2397,24 @@ define('wozllajs/core/HitDelegate',[
     return HitDelegate;
 
 });
+define('wozllajs/core/Mask',[
+    './../var',
+    './Component'
+], function(W, Component) {
+
+    function Mask() {
+        Component.apply(this, arguments);
+    }
+
+    var p = W.inherits(Mask, Component);
+
+    p.clip = function(context) {
+        throw new Error('abstract method');
+    };
+
+    return Mask;
+
+});
 define('wozllajs/core/Query',[
     'require',
     './Component'
@@ -2479,10 +2497,11 @@ define('wozllajs/core/UnityGameObject',[
     './Renderer',
     './Layout',
     './HitDelegate',
+    './Mask',
     './Query',
     './events/GameObjectEvent'
 ], function(W, G, Rectangle, Matrix2D, Promise, AbstractGameObject, Component, Behaviour, Animation,
-            Renderer, Layout, HitDelegate, Query, GameObjectEvent) {
+            Renderer, Layout, HitDelegate, Mask, Query, GameObjectEvent) {
 
     var testHitCanvas = W.createCanvas(1, 1);
     var testHitContext = testHitCanvas.getContext('2d');
@@ -2756,9 +2775,12 @@ define('wozllajs/core/UnityGameObject',[
     };
 
     p.draw = function(context, visibleRect) {
+        var mask;
         if(!this._initialized || !this._active || !this._visible) return;
         context.save();
         this.transform.updateContext(context);
+        mask = this.getComponent(Mask);
+        mask && mask.clip(context);
         this._draw(context, visibleRect);
         context.restore();
         this._doDelayRemove();
