@@ -1473,6 +1473,7 @@ define('wozllajs/preload/AsyncImage',[
     var AsyncImage = function(image) {
         this.image = image;
         this.src = this.image.src;
+        this.resourceId = null;
     };
 
     var p = AsyncImage.prototype;
@@ -1661,6 +1662,8 @@ define('wozllajs/preload/LoadQueue',[
         loadQueue = [],
         loading = false;
 
+    var usingReferenceCounter = {};
+
     // TODO cancel operation
     var loadingMap = {}, cancelMap = {};
 
@@ -1703,6 +1706,9 @@ define('wozllajs/preload/LoadQueue',[
                         item.result = result;
                         cache[id] = item;
                         loadedResult[id] = result;
+                        if(typeof result === 'object' && result.hasOwnProperty('resourceId')) {
+                            result.resourceId = id;
+                        }
                     }).catchError(function(error) {
                         console.log(error);
                     });
@@ -1714,13 +1720,13 @@ define('wozllajs/preload/LoadQueue',[
         }
         if(promises.length === 0) {
             setTimeout(function() {
-                promise.done(loadedResult);
+                promise.done(null);
                 loading = false;
                 loadNext();
             }, 1);
         } else {
             Promise.wait(promises).then(function() {
-                promise.done(loadedResult);
+                promise.done(null);
                 loading = false;
                 loadNext();
             });
@@ -1765,15 +1771,25 @@ define('wozllajs/preload/LoadQueue',[
             if(!cached) {
                 return null;
             }
+            usingReferenceCounter[id] = usingReferenceCounter[id] || 0;
+            usingReferenceCounter[id] ++;
             return cached.result;
         },
         remove : function(id) {
-            var resource = cache[id].result;
+            var cached = cache[id];
+            var resource;
+            if(!cached) return;
+            resource = cached.result;
+            if(usingReferenceCounter[id]) {
+                usingReferenceCounter[id] --;
+            }
             if(resource) {
-                if(W.isImage(resource)) {
-                    resource.dispose && resource.dispose();
+                if(!usingReferenceCounter[id] || usingReferenceCounter[id] === 0) {
+                    delete cache[id];
+                    if(resource.dispose && typeof resource.dispose === 'function') {
+                        resource.dispose();
+                    }
                 }
-                delete cache[id];
             }
         },
         registerLoader : function(fileExtension, loaderConstructor) {
@@ -2194,8 +2210,9 @@ define('wozllajs/core/AbstractGameObject',[
 
 });
 define('wozllajs/core/Component',[
-    './../var'
-], function(W) {
+    './../var',
+    './../preload/LoadQueue'
+], function(W, LoadQueue) {
 
     function Component() {
         this.UID = W.uniqueKey();
@@ -2233,6 +2250,24 @@ define('wozllajs/core/Component',[
     p.applyProperties = function(properties) {
         for(var p in properties) {
             this[p] = properties[p];
+        }
+    };
+
+    p.getResource = function(id) {
+        return LoadQueue.get(id);
+    };
+
+    p.loadResource = function(params, base) {
+        return LoadQueue.load(params, base);
+    };
+
+    p.unloadResource = function(ids) {
+        if(typeof ids === 'string') {
+            ids = [ids];
+        }
+        var i, len;
+        for(i=0,len=ids.length; i<len; i++) {
+            LoadQueue.remove(ids[i]);
         }
     };
 
