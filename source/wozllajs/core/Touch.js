@@ -24,8 +24,7 @@ define([
 
     function onEvent(e) {
         if(!enabled) return;
-        var doDispatch = false;
-        var target, touchEvent, canvasOffset, x, y, t;
+        var canvasOffset, x, y, t;
         var type = e.type;
         canvasOffset = getCanvasOffset();
         // mouse event
@@ -40,31 +39,24 @@ define([
             y = t.pageY - canvasOffset.y;
         }
 
-        target = stage.getTopObjectUnderPoint(x, y);
-
         if(type === 'mousedown') {
             type = TouchEvent.TOUCH_START;
-            touchstartTarget = target;
+            touchstartTarget = stage.getTopObjectUnderPoint(x, y);
             touchendTarget = null;
-            doDispatch = true;
         }
-        else if(type === 'mouseup' && touchstartTarget === target) {
+        else if(type === 'mouseup' && touchstartTarget) {
             type = TouchEvent.TOUCH_END;
-            touchendTarget = target;
-            doDispatch = true;
         }
-        else if(type === 'mousemove' && touchstartTarget === target) {
+        else if(type === 'mousemove' && touchstartTarget) {
             type = TouchEvent.TOUCH_MOVE;
-            doDispatch = true;
         }
 
-        if(target && doDispatch) {
-            touchEvent = new TouchEvent({
+        if(touchstartTarget) {
+            touchstartTarget.dispatchEvent(new TouchEvent({
                 type : type,
                 x : x,
                 y : y
-            });
-            target.dispatchEvent(touchEvent);
+            }));
             if(type === TouchEvent.TOUCH_END) {
                 if(touchendTarget && touchstartTarget === touchendTarget) {
                     touchendTarget.dispatchEvent(new TouchEvent({
