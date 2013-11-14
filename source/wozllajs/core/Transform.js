@@ -82,7 +82,7 @@ define([
             while (o != null) {
                 mtx.prependTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY)
                     .prependProperties(o.alpha);
-                o = o.parent;
+                o = o.gameObject._parent.transform;
             }
             return mtx;
         },
