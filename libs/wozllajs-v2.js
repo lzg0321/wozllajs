@@ -3411,13 +3411,14 @@ define('wozllajs/build/findComponentConstructor',[
             $componentAnno = all[i];
             construct = $componentAnno.constructor;
             if($componentAnno.id === id) {
-                break;
+                return construct;
             }
             if(construct.prototype.alias === id) {
-                break;
+                return construct;
             }
         }
-        return construct;
+        console.log('[Warn] Unkow component "' + id + '", please import it first');
+        return null;
     };
 });
 define('wozllajs/build/buildComponent',[
