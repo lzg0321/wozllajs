@@ -3471,23 +3471,53 @@ define('wozllajs/build/buildComponent',[
 });
 define('wozllajs/build/buildObject',[
     './buildComponent',
-    './../core/GameObject'
-], function(buildComponent, GameObject) {
+    './../preload/LoadQueue',
+    './../core/GameObject',
+    './../var/isArray'
+], function(buildComponent, LoadQueue, GameObject, isArray) {
+
+    var refRegex = /\[(.*?)\]/;
 
     function buildObject(objData) {
         if(buildObject.proxy) {
             return buildObject.proxy(objData);
         }
+
         var comp;
-        var i, len, children = objData.children, components = objData.components;
-        var obj = new GameObject({ id : objData.name });
+        var i, len, j, len2, obj, children, components, builded;
+        var matches;
+        if(matches = refRegex.exec(objData.name)) {
+            var arr = [];
+            var refObjData = LoadQueue.get(matches[i]);
+            if(!refObjData) {
+                console.log('[Warn] unloaded ref ' + matches[i]);
+                return;
+            }
+            children = refObjData.children;
+            for(i=0,len=children.length; i<len; i++) {
+                arr.push(buildObject(children[i]));
+            }
+            return;
+        }
+
+        children = objData.children;
+        components = objData.components;
+
+        obj = new GameObject({ id : objData.name });
         obj.setActive(objData.active);
         obj.setActive(objData.visible);
         obj.setWidth(objData.width || 0);
         obj.setHeight(objData.height || 0);
         obj.setInteractive(objData.interactive);
         for(i=0,len=children.length; i<len; i++) {
-            obj.addObject(buildObject(children[i]));
+            builded = buildObject(children[i]);
+            if(isArray(builded)) {
+                for(j=0, len2=builded.length; j<len2; j++) {
+                    obj.addObject(builded[i]);
+                }
+            } else {
+                obj.addObject(builded);
+            }
         }
         for(i=0,len=components.length; i<len; i++) {
             comp = buildComponent(components[i]);
@@ -3634,14 +3664,48 @@ define('wozllajs/build/loadAndInitObjFile',[
     './initObjData'
 ], function(Promise, Component, LoadQueue, buildObject, traverseObject, $Resource, $Query, initObjData) {
 
+    var refRegex = /"\[(.*?)\]"/ig;
+
+    function traverse(objData, callback) {
+        var child;
+        var children = objData.children;
+        for(var i= 0, len=children.length; i<len; i++) {
+            child = children[i];
+            callback(child);
+            traverse(child, callback);
+        }
+    }
+
     return function(filePath, cached) {
         var p = new Promise();
         //TODO promise join
         LoadQueue.load({ id: filePath, src: filePath, type: 'json' }).then(function() {
+            var refs = [];
             var result = LoadQueue.get(filePath);
             !cached && LoadQueue.remove(filePath);
-            initObjData(result).then(function(obj) {
-                p.done(obj);
+
+            traverse(result, function(objData) {
+                var matches;
+                while(matches = refRegex.exec(objData.name)) {
+                    refs.push({
+                        id: matches[1],
+                        src : matches[1],
+                        type: 'json'
+                    });
+                }
+            });
+
+            if(refs.length === 0) {
+                initObjData(result).then(function(obj) {
+                    p.done(obj);
+                });
+                return;
+            }
+
+            LoadQueue.load(refs).then(function() {
+                initObjData(result).then(function(obj) {
+                    p.done(obj);
+                });
             });
         });
         return p;
