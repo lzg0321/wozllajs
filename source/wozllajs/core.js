@@ -68,6 +68,7 @@ define([
         Animation : Animation,
         Layout : Layout,
         Filter : Filter,
+        Collider : Collider,
         HitDelegate : HitDelegate,
         Mask : Mask,
         Renderer : Renderer,
