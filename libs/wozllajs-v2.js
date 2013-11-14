@@ -3691,8 +3691,8 @@ define('wozllajs/build/loadAndInitObjFile',[
 
             traverse(result, function(objData) {
                 var matches;
-                var refRegex = /"\[(.*?)\]"/ig;
-                while(matches = refRegex.exec(objData.name)) {
+                var refRegex = /\[(.*?)\]/ig;
+                if(matches = refRegex.exec(objData.name)) {
                     refs.push({
                         id: matches[1],
                         src : matches[1],
