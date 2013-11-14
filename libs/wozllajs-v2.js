@@ -3465,7 +3465,12 @@ define('wozllajs/build/buildComponent',[
         properties = componentData.properties;
         if(compCtor) {
             comp = new compCtor();
-            comp.properties = properties || {};
+            comp.properties = {};
+            if(properties) {
+                for(var i in properties) {
+                    comp.properties = properties[i];
+                }
+            }
         }
         return comp;
     };
