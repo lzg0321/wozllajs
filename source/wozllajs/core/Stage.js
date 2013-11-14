@@ -19,7 +19,7 @@ define([
 
     var p = W.inherits(Stage, CachableGameObject);
 
-    p.isStage = false;
+    p.isStage = true;
 
     p.tick = function() {
         this.update();
