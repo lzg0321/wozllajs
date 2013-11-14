@@ -44,7 +44,7 @@ define([
                 matrix.copy(concatenatedMatrix);
                 mtx = matrix;
             } else {
-                this.getConcatenatedMatrix();
+                mtx = this.getConcatenatedMatrix();
             }
             if (mtx == null) { return null; }
             mtx.append(1, 0, 0, 1, x, y);
@@ -63,7 +63,7 @@ define([
                 matrix.copy(concatenatedMatrix);
                 mtx = matrix;
             } else {
-                this.getConcatenatedMatrix();
+                mtx = this.getConcatenatedMatrix();
             }
             if (mtx == null) { return null; }
             mtx.invert();

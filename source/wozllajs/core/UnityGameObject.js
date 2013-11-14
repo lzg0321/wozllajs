@@ -325,16 +325,19 @@ define([
         if(useInteractive && !this.isInteractive()) {
             return null;
         }
-        for(i=children.length-1; i>=0 ; i--) {
-            child = children[i];
-            obj = child.getTopObjectUnderPoint(x, y, useInteractive);
-            if(obj) {
-                return obj;
+        if(children.length > 0) {
+            for(i=children.length-1; i>=0 ; i--) {
+                child = children[i];
+                obj = child.getTopObjectUnderPoint(x, y, useInteractive);
+                if(obj) {
+                    return obj;
+                }
             }
-        }
-        localPoint = this.transform.globalToLocal(x, y);
-        if(this.testHit(localPoint.x, localPoint.y, true)) {
-            return this;
+        } else {
+            localPoint = this.transform.globalToLocal(x, y);
+            if(this.testHit(localPoint.x, localPoint.y, true)) {
+                return this;
+            }
         }
         return null;
     };

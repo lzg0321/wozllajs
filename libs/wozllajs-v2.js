@@ -1973,7 +1973,7 @@ define('wozllajs/core/Transform',[
                 matrix.copy(concatenatedMatrix);
                 mtx = matrix;
             } else {
-                this.getConcatenatedMatrix();
+                mtx = this.getConcatenatedMatrix();
             }
             if (mtx == null) { return null; }
             mtx.append(1, 0, 0, 1, x, y);
@@ -1992,7 +1992,7 @@ define('wozllajs/core/Transform',[
                 matrix.copy(concatenatedMatrix);
                 mtx = matrix;
             } else {
-                this.getConcatenatedMatrix();
+                mtx = this.getConcatenatedMatrix();
             }
             if (mtx == null) { return null; }
             mtx.invert();
@@ -2811,16 +2811,19 @@ define('wozllajs/core/UnityGameObject',[
         if(useInteractive && !this.isInteractive()) {
             return null;
         }
-        for(i=children.length-1; i>=0 ; i--) {
-            child = children[i];
-            obj = child.getTopObjectUnderPoint(x, y, useInteractive);
-            if(obj) {
-                return obj;
+        if(children.length > 0) {
+            for(i=children.length-1; i>=0 ; i--) {
+                child = children[i];
+                obj = child.getTopObjectUnderPoint(x, y, useInteractive);
+                if(obj) {
+                    return obj;
+                }
             }
-        }
-        localPoint = this.transform.globalToLocal(x, y);
-        if(this.testHit(localPoint.x, localPoint.y, true)) {
-            return this;
+        } else {
+            localPoint = this.transform.globalToLocal(x, y);
+            if(this.testHit(localPoint.x, localPoint.y, true)) {
+                return this;
+            }
         }
         return null;
     };
@@ -3253,13 +3256,13 @@ define('wozllajs/core/Touch',[
             target.dispatchEvent(touchEvent);
             if(type === TouchEvent.TOUCH_END) {
                 if(touchendTarget && touchstartTarget === touchendTarget) {
-                    touchstartTarget = null;
-                    touchendTarget = null;
                     touchendTarget.dispatchEvent(new TouchEvent({
                         type : TouchEvent.CLICK,
                         x : x,
                         y : y
                     }));
+                    touchstartTarget = null;
+                    touchendTarget = null;
                 }
             }
         }
@@ -3370,6 +3373,7 @@ define('wozllajs/core',[
         Animation : Animation,
         Layout : Layout,
         Filter : Filter,
+        Collider : Collider,
         HitDelegate : HitDelegate,
         Mask : Mask,
         Renderer : Renderer,

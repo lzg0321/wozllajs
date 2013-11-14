@@ -67,13 +67,13 @@ define([
             target.dispatchEvent(touchEvent);
             if(type === TouchEvent.TOUCH_END) {
                 if(touchendTarget && touchstartTarget === touchendTarget) {
-                    touchstartTarget = null;
-                    touchendTarget = null;
                     touchendTarget.dispatchEvent(new TouchEvent({
                         type : TouchEvent.CLICK,
                         x : x,
                         y : y
                     }));
+                    touchstartTarget = null;
+                    touchendTarget = null;
                 }
             }
         }
