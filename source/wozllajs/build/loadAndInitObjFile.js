@@ -9,8 +9,6 @@ define([
     './initObjData'
 ], function(Promise, Component, LoadQueue, buildObject, traverseObject, $Resource, $Query, initObjData) {
 
-    var refRegex = /"\[(.*?)\]"/ig;
-
     function traverse(objData, callback) {
         var child;
         var children = objData.children;
@@ -31,6 +29,7 @@ define([
 
             traverse(result, function(objData) {
                 var matches;
+                var refRegex = /"\[(.*?)\]"/ig;
                 while(matches = refRegex.exec(objData.name)) {
                     refs.push({
                         id: matches[1],
