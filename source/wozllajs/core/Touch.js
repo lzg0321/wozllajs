@@ -41,7 +41,7 @@ define([
 
         if(type === 'mousedown') {
             type = TouchEvent.TOUCH_START;
-            touchstartTarget = stage.getTopObjectUnderPoint(x, y);
+            touchstartTarget = stage.getTopObjectUnderPoint(x, y, true);
             touchendTarget = null;
         }
         else if(type === 'mouseup' && touchstartTarget) {

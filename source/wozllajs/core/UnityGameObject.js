@@ -293,8 +293,6 @@ define([
         if(!this._initialized || !this._active || !this._visible) return;
         context.save();
         this.transform.updateContext(context);
-        mask = this.getComponent(Mask);
-        mask && mask.clip(context);
         this._draw(context, visibleRect);
         context.restore();
         this._doDelayRemove();
@@ -374,14 +372,18 @@ define([
     };
 
     p._draw = function(context, visibleRect) {
-        var i, len, child, gBounds;
+        var i, len, child, gBounds, mask;
         var children = this._children;
         if(children.length <= 0) {
             gBounds = this.getGlobalBounds(helpRect);
             if(gBounds.intersects(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height)) {
+                mask = this.getComponent(Mask);
+                mask && mask.clip(context);
                 this.sendMessage(G.METHOD_DRAW, arguments, Renderer);
             }
         } else {
+            mask = this.getComponent(Mask);
+            mask && mask.clip(context);
             for(i=0,len=children.length; i<len; i++) {
                 child = children[i];
                 child.draw(context, visibleRect);

@@ -67,7 +67,7 @@ define([
         cacheContext.clearRect(0, 0, this._cacheCanvas.width, this._cacheCanvas.height);
         cacheContext = this._cacheContext;
         cacheContext.translate(-this._cacheOffsetX, -this._cacheOffsetY);
-        this._draw(cacheContext, visibleRect);
+        UnityGameObject.prototype._draw.apply(this, [cacheContext, visibleRect]);
         cacheContext.translate(this._cacheOffsetX, this._cacheOffsetY);
         this._applyFilters(cacheContext, 0, 0, this._cacheCanvas.width, this._cacheCanvas.height);
     };
