@@ -47,7 +47,7 @@ define([
         }
 
         xhr = createXHR();
-        xhr.overrideMimeType(mimeType);
+        xhr.overrideMimeType && xhr.overrideMimeType(mimeType);
 
         try {
             switch(method.toUpperCase()) {
