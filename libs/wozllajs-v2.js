@@ -3430,8 +3430,10 @@ define('wozllajs/build/buildComponent',[
         var compCtor, properties, comp;
         compCtor = findComponentConstructor(componentData.id);
         properties = componentData.properties;
-        comp = new compCtor();
-        comp.properties = properties || {};
+        if(compCtor) {
+            comp = new compCtor();
+            comp.properties = properties || {};
+        }
         return comp;
     };
 
@@ -3445,7 +3447,7 @@ define('wozllajs/build/buildObject',[
         if(buildObject.proxy) {
             return buildObject.proxy(objData);
         }
-
+        var comp;
         var i, len, children = objData.children, components = objData.components;
         var obj = new GameObject({ id : objData.name });
         obj.setActive(objData.active);
@@ -3457,7 +3459,10 @@ define('wozllajs/build/buildObject',[
             obj.addObject(buildObject(children[i]));
         }
         for(i=0,len=components.length; i<len; i++) {
-            obj.addComponent(buildComponent(components[i]));
+            comp = buildComponent(components[i]);
+            if(comp) {
+                obj.addComponent(comp);
+            }
         }
         obj.transform.applyTransform(objData.transform);
         return obj;

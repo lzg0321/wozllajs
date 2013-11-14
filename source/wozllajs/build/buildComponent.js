@@ -7,8 +7,10 @@ define([
         var compCtor, properties, comp;
         compCtor = findComponentConstructor(componentData.id);
         properties = componentData.properties;
-        comp = new compCtor();
-        comp.properties = properties || {};
+        if(compCtor) {
+            comp = new compCtor();
+            comp.properties = properties || {};
+        }
         return comp;
     };
 

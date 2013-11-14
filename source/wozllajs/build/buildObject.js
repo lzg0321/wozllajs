@@ -7,7 +7,7 @@ define([
         if(buildObject.proxy) {
             return buildObject.proxy(objData);
         }
-
+        var comp;
         var i, len, children = objData.children, components = objData.components;
         var obj = new GameObject({ id : objData.name });
         obj.setActive(objData.active);
@@ -19,7 +19,10 @@ define([
             obj.addObject(buildObject(children[i]));
         }
         for(i=0,len=components.length; i<len; i++) {
-            obj.addComponent(buildComponent(components[i]));
+            comp = buildComponent(components[i]);
+            if(comp) {
+                obj.addComponent(comp);
+            }
         }
         obj.transform.applyTransform(objData.transform);
         return obj;
