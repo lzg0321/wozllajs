@@ -331,11 +331,10 @@ define([
                     return obj;
                 }
             }
-        } else {
-            localPoint = this.transform.globalToLocal(x, y);
-            if(this.testHit(localPoint.x, localPoint.y, true)) {
-                return this;
-            }
+        }
+        localPoint = this.transform.globalToLocal(x, y);
+        if(this.testHit(localPoint.x, localPoint.y)) {
+            return this;
         }
         return null;
     };
