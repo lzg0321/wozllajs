@@ -1750,6 +1750,8 @@ define('wozllajs/preload/LoadQueue',[
                         id : src,
                         src : (base || baseUrl) + src
                     };
+                } else {
+                    item.src = (base || baseUrl) + item.src
                 }
                 if(!item.type) {
                     item.type = src.substr(src.indexOf('.') + 1);
@@ -3476,7 +3478,6 @@ define('wozllajs/build/buildObject',[
     './../var/isArray'
 ], function(buildComponent, LoadQueue, GameObject, isArray) {
 
-    var refRegex = /\[(.*?)\]/;
 
     function buildObject(objData) {
         if(buildObject.proxy) {
@@ -3486,6 +3487,7 @@ define('wozllajs/build/buildObject',[
         var comp;
         var i, len, j, len2, obj, children, components, builded;
         var matches;
+        var refRegex = /\[(.*?)\]/g;
         if(matches = refRegex.exec(objData.name)) {
             var arr = [];
             var refObjData = LoadQueue.get(matches[i]);

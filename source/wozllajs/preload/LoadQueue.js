@@ -105,6 +105,8 @@ define([
                         id : src,
                         src : (base || baseUrl) + src
                     };
+                } else {
+                    item.src = (base || baseUrl) + item.src
                 }
                 if(!item.type) {
                     item.type = src.substr(src.indexOf('.') + 1);
