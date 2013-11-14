@@ -2011,7 +2011,10 @@ define('wozllajs/core/Transform',[
             while (o != null) {
                 mtx.prependTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY)
                     .prependProperties(o.alpha);
-                o = o.gameObject._parent.transform;
+                o = o.gameObject._parent;
+                if(o) {
+                    o = o.transform;
+                }
             }
             return mtx;
         },
