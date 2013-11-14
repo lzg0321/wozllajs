@@ -26,7 +26,7 @@ define([
             for(i=0,len=children.length; i<len; i++) {
                 arr.push(buildObject(children[i]));
             }
-            return children;
+            return arr;
         }
 
         children = objData.children;
