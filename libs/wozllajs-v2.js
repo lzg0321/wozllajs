@@ -3468,7 +3468,7 @@ define('wozllajs/build/buildComponent',[
             comp.properties = {};
             if(properties) {
                 for(var i in properties) {
-                    comp.properties = properties[i];
+                    comp.properties[i] = properties[i];
                 }
             }
         }
