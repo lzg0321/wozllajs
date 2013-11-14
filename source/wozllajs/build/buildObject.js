@@ -20,13 +20,13 @@ define([
             var refObjData = LoadQueue.get(matches[i]);
             if(!refObjData) {
                 console.log('[Warn] unloaded ref ' + matches[i]);
-                return;
+                return null;
             }
             children = refObjData.children;
             for(i=0,len=children.length; i<len; i++) {
                 arr.push(buildObject(children[i]));
             }
-            return;
+            return children;
         }
 
         children = objData.children;
@@ -44,7 +44,7 @@ define([
                 for(j=0, len2=builded.length; j<len2; j++) {
                     obj.addObject(builded[i]);
                 }
-            } else {
+            } else if(builded) {
                 obj.addObject(builded);
             }
         }
