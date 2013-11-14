@@ -19,6 +19,8 @@ define([
 
     var p = W.inherits(Stage, CachableGameObject);
 
+    p.isStage = false;
+
     p.tick = function() {
         this.update();
         this.lateUpdate();

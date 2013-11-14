@@ -2100,7 +2100,7 @@ define('wozllajs/core/AbstractGameObject',[
     p.getPath = function(seperator) {
         var o = this;
         var path = [];
-        while(o) {
+        while(o && !o.isStage) {
             path.unshift(o.id);
             o = o._parent;
         }
@@ -3002,6 +3002,8 @@ define('wozllajs/core/Stage',[
     Stage.root = null;
 
     var p = W.inherits(Stage, CachableGameObject);
+
+    p.isStage = false;
 
     p.tick = function() {
         this.update();
