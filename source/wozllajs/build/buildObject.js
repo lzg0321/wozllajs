@@ -17,9 +17,9 @@ define([
         var refRegex = /\[(.*?)\]/g;
         if(matches = refRegex.exec(objData.name)) {
             var arr = [];
-            var refObjData = LoadQueue.get(matches[i]);
+            var refObjData = LoadQueue.get(matches[1]);
             if(!refObjData) {
-                console.log('[Warn] unloaded ref ' + matches[i]);
+                console.log('[Warn] unloaded ref ' + matches[1]);
                 return null;
             }
             children = refObjData.children;
