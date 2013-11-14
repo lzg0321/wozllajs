@@ -1927,6 +1927,32 @@ define('wozllajs/core/Time',[],function() {
         }
     };
 });
+define('wozllajs/core/events/GameObjectEvent',[
+    './../../var',
+    './../../events/Event'
+], function(W, Event) {
+
+    var GameObjectEvent = function(param) {
+        Event.apply(this, arguments);
+    };
+
+    GameObjectEvent.INIT = 'init';
+    GameObjectEvent.DESTROY = 'destroy';
+    GameObjectEvent.CHANGED = 'changed';
+    /**
+     * fire when child game object added , removed
+     * @type {string}
+     */
+    GameObjectEvent.ADDED = 'added';
+    GameObjectEvent.REMOVED = 'removed';
+
+    var p = W.inherits(GameObjectEvent, Event);
+
+    p.child = null;
+
+    return GameObjectEvent;
+
+});
 define('wozllajs/core/Transform',[
     './../math/Matrix2D'
 ], function(Matrix2D) {
@@ -2062,8 +2088,9 @@ define('wozllajs/core/AbstractGameObject',[
     'require',
     './../var',
     './../events/EventTarget',
+    './events/GameObjectEvent',
     './Transform'
-], function(require, W, EventTarget, Transform) {
+], function(require, W, EventTarget, GameObjectEvent, Transform) {
 
     /**
      *
@@ -2120,6 +2147,10 @@ define('wozllajs/core/AbstractGameObject',[
 
     p.sortChildren = function(func) {
         this._children.sort(func);
+        this.dispatchEvent(new GameObjectEvent({
+            type : GameObjectEvent.CHANGED,
+            bubbles : false
+        }));
     };
 
     p.getObjectById = function(id) {
@@ -2130,12 +2161,22 @@ define('wozllajs/core/AbstractGameObject',[
         this._childrenMap[obj.id] = obj;
         this._children.push(obj);
         obj._parent = this;
+        this.dispatchEvent(new GameObjectEvent({
+            type : GameObjectEvent.ADDED,
+            bubbles : false,
+            child : obj
+        }));
     };
 
     p.insertObject = function(obj, index) {
         this._childrenMap[obj.id] = obj;
         this._children.splice(index, 0, obj);
         obj._parent = this;
+        this.dispatchEvent(new GameObjectEvent({
+            type : GameObjectEvent.ADDED,
+            bubbles : false,
+            child : obj
+        }));
     };
 
     p.insertBefore = function(obj, objOrId) {
@@ -2179,7 +2220,11 @@ define('wozllajs/core/AbstractGameObject',[
         if(idx !== -1) {
             delete this._childrenMap[obj.id];
             obj._parent = null;
-            obj.transform.parent = null;
+            this.dispatchEvent(new GameObjectEvent({
+                type : GameObjectEvent.REMOVED,
+                bubbles : false,
+                child : obj
+            }));
         }
         return idx;
     };
@@ -2190,6 +2235,7 @@ define('wozllajs/core/AbstractGameObject',[
     };
 
     p.removeAll = function(params) {
+        // event ?
         this._children = [];
         this._childrenMap = {};
     };
@@ -2469,23 +2515,6 @@ define('wozllajs/core/Query',[
     };
 
     return Query;
-});
-define('wozllajs/core/events/GameObjectEvent',[
-    './../../var',
-    './../../events/Event'
-], function(W, Event) {
-
-    var GameObjectEvent = function(param) {
-        Event.apply(this, arguments);
-    };
-
-    GameObjectEvent.INIT = 'init';
-    GameObjectEvent.DESTROY = 'destroy';
-
-    W.inherits(GameObjectEvent, Event);
-
-    return GameObjectEvent;
-
 });
 define('wozllajs/core/UnityGameObject',[
     './../var',

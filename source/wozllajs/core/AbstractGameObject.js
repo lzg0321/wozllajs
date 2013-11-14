@@ -2,8 +2,9 @@ define([
     'require',
     './../var',
     './../events/EventTarget',
+    './events/GameObjectEvent',
     './Transform'
-], function(require, W, EventTarget, Transform) {
+], function(require, W, EventTarget, GameObjectEvent, Transform) {
 
     /**
      *
@@ -60,6 +61,10 @@ define([
 
     p.sortChildren = function(func) {
         this._children.sort(func);
+        this.dispatchEvent(new GameObjectEvent({
+            type : GameObjectEvent.CHANGED,
+            bubbles : false
+        }));
     };
 
     p.getObjectById = function(id) {
@@ -70,12 +75,22 @@ define([
         this._childrenMap[obj.id] = obj;
         this._children.push(obj);
         obj._parent = this;
+        this.dispatchEvent(new GameObjectEvent({
+            type : GameObjectEvent.ADDED,
+            bubbles : false,
+            child : obj
+        }));
     };
 
     p.insertObject = function(obj, index) {
         this._childrenMap[obj.id] = obj;
         this._children.splice(index, 0, obj);
         obj._parent = this;
+        this.dispatchEvent(new GameObjectEvent({
+            type : GameObjectEvent.ADDED,
+            bubbles : false,
+            child : obj
+        }));
     };
 
     p.insertBefore = function(obj, objOrId) {
@@ -119,7 +134,11 @@ define([
         if(idx !== -1) {
             delete this._childrenMap[obj.id];
             obj._parent = null;
-            obj.transform.parent = null;
+            this.dispatchEvent(new GameObjectEvent({
+                type : GameObjectEvent.REMOVED,
+                bubbles : false,
+                child : obj
+            }));
         }
         return idx;
     };
@@ -130,6 +149,7 @@ define([
     };
 
     p.removeAll = function(params) {
+        // event ?
         this._children = [];
         this._childrenMap = {};
     };
