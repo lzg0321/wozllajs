@@ -3515,7 +3515,7 @@ define('wozllajs/build/buildObject',[
             builded = buildObject(children[i]);
             if(isArray(builded)) {
                 for(j=0, len2=builded.length; j<len2; j++) {
-                    obj.addObject(builded[i]);
+                    obj.addObject(builded[j]);
                 }
             } else if(builded) {
                 obj.addObject(builded);
@@ -3706,6 +3706,10 @@ define('wozllajs/build/loadAndInitObjFile',[
 
             LoadQueue.load(refs).then(function() {
                 initObjData(result).then(function(obj) {
+                    var i, len;
+                    for(i=0,len=refs.length; i<len; i++) {
+                        LoadQueue.remove(refs[i]);
+                    }
                     p.done(obj);
                 });
             });

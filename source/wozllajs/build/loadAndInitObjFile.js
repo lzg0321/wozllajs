@@ -49,6 +49,10 @@ define([
 
             LoadQueue.load(refs).then(function() {
                 initObjData(result).then(function(obj) {
+                    var i, len;
+                    for(i=0,len=refs.length; i<len; i++) {
+                        LoadQueue.remove(refs[i]);
+                    }
                     p.done(obj);
                 });
             });

@@ -42,7 +42,7 @@ define([
             builded = buildObject(children[i]);
             if(isArray(builded)) {
                 for(j=0, len2=builded.length; j<len2; j++) {
-                    obj.addObject(builded[i]);
+                    obj.addObject(builded[j]);
                 }
             } else if(builded) {
                 obj.addObject(builded);
