@@ -2851,10 +2851,11 @@ define('wozllajs/core/UnityGameObject',[
                     return obj;
                 }
             }
-        }
-        localPoint = this.transform.globalToLocal(x, y);
-        if(this.testHit(localPoint.x, localPoint.y)) {
-            return this;
+        } else {
+            localPoint = this.transform.globalToLocal(x, y);
+            if(this.testHit(localPoint.x, localPoint.y)) {
+                return this;
+            }
         }
         return null;
     };
