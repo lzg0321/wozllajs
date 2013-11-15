@@ -55,14 +55,16 @@ define([
             touchstartTarget.dispatchEvent(new TouchEvent({
                 type : type,
                 x : x,
-                y : y
+                y : y,
+                bubbles: true
             }));
             if(type === TouchEvent.TOUCH_END) {
                 if(touchendTarget && touchstartTarget === touchendTarget) {
                     touchendTarget.dispatchEvent(new TouchEvent({
                         type : TouchEvent.CLICK,
                         x : x,
-                        y : y
+                        y : y,
+                        bubbles: true
                     }));
                     touchstartTarget = null;
                     touchendTarget = null;
