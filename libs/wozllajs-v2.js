@@ -2867,6 +2867,7 @@ define('wozllajs/core/UnityGameObject',[
             ani = animations[i];
             if(ani.name === name) {
                 ani.play(callback);
+                break;
             }
         }
     };
@@ -3213,6 +3214,7 @@ define('wozllajs/core/events/TouchEvent',[
         Event.apply(this, arguments);
         this.x = param.x;
         this.y = param.y;
+        this.touch = params.touch;
     };
 
     TouchEvent.TOUCH_START = 'touchstart';
@@ -3253,6 +3255,7 @@ define('wozllajs/core/Touch',[
         if(!enabled) return;
         var canvasOffset, x, y, t;
         var type = e.type;
+        var target;
         canvasOffset = getCanvasOffset();
         // mouse event
         if (!e.touches) {
@@ -3266,9 +3269,11 @@ define('wozllajs/core/Touch',[
             y = t.pageY - canvasOffset.y;
         }
 
+        target = stage.getTopObjectUnderPoint(x, y, true);
+
         if(type === 'mousedown' || type === TouchEvent.TOUCH_START) {
             type = TouchEvent.TOUCH_START;
-            touchstartTarget = stage.getTopObjectUnderPoint(x, y, true);
+            touchstartTarget = target;
             touchendTarget = null;
         }
         else if((type === 'mouseup' || type === TouchEvent.TOUCH_END) && touchstartTarget) {
@@ -3283,15 +3288,17 @@ define('wozllajs/core/Touch',[
                 type : type,
                 x : x,
                 y : y,
-                bubbles: true
+                bubbles: true,
+                touch: target
             }));
             if(type === TouchEvent.TOUCH_END) {
-                if(touchendTarget && touchstartTarget === touchendTarget) {
+                if(touchstartTarget && touchstartTarget === target) {
                     touchendTarget.dispatchEvent(new TouchEvent({
                         type : TouchEvent.CLICK,
                         x : x,
                         y : y,
-                        bubbles: true
+                        bubbles: true,
+                        touch : target
                     }));
                     touchstartTarget = null;
                     touchendTarget = null;

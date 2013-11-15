@@ -7,6 +7,7 @@ define([
         Event.apply(this, arguments);
         this.x = param.x;
         this.y = param.y;
+        this.touch = params.touch;
     };
 
     TouchEvent.TOUCH_START = 'touchstart';

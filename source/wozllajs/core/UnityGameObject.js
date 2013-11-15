@@ -347,6 +347,7 @@ define([
             ani = animations[i];
             if(ani.name === name) {
                 ani.play(callback);
+                break;
             }
         }
     };
