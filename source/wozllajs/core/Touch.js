@@ -39,15 +39,15 @@ define([
             y = t.pageY - canvasOffset.y;
         }
 
-        if(type === 'mousedown') {
+        if(type === 'mousedown' || type === TouchEvent.TOUCH_START) {
             type = TouchEvent.TOUCH_START;
             touchstartTarget = stage.getTopObjectUnderPoint(x, y, true);
             touchendTarget = null;
         }
-        else if(type === 'mouseup' && touchstartTarget) {
+        else if((type === 'mouseup' || type === TouchEvent.TOUCH_END) && touchstartTarget) {
             type = TouchEvent.TOUCH_END;
         }
-        else if(type === 'mousemove' && touchstartTarget) {
+        else if((type === 'mousemove' || type === TouchEvent.TOUCH_MOVE) && touchstartTarget) {
             type = TouchEvent.TOUCH_MOVE;
         }
 
