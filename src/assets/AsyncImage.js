@@ -2,7 +2,8 @@ define(function (require, exports, module) {
 
     var Arrays = require('../utils/Arrays');
 
-    var AsyncImage = function(image) {
+    var AsyncImage = function(resourceId, image) {
+		this.resourceId = resourceId;
         this.image = image;
         this.src = image && image.src;
     };

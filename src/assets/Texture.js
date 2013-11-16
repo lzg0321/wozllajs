@@ -3,7 +3,7 @@ define(function (require, exports, module) {
     var Objects = require('../utils/Objects');
     var AsyncImage = require('./AsyncImage');
 
-    var Texture = function(image, frames) {
+    var Texture = function(resourceId, image, frames) {
         AsyncImage.apply(this, arguments);
         this.frames = frames;
     };

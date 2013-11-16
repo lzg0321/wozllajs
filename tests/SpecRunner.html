@@ -17,10 +17,13 @@
 <script type="text/javascript" src="../sea-modules/seajs/seajs/2.1.1/sea.js"></script>
 <script>
     seajs.config({
-        base: "../sea-modules/",
+        base: "../sea-modules",
         debug: true,
         alias : {
-            wozllajs : 'wozlla/wozllajs/1.0.0/wozlla'
+            wozllajs : 'wozlla/wozllajs/1.0.0/wozlla.js'
+        },
+        paths : {
+            wozlla : 'http://localhost/wozlla/WozllaJS/sea-modules/wozlla'
         }
     });
     seajs.use('./main');

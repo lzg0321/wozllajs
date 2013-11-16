@@ -4,7 +4,8 @@ define(function(require) {
         assets : {
             AsyncImage : require('./assets/AsyncImage'),
             Texture : require('./assets/Texture'),
-            loader : require('./assets/loader')
+            loader : require('./assets/loader'),
+			objLoader : require('./assets/objLoader')
         },
         core : {
             events : {

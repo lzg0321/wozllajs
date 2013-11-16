@@ -1,9 +1,10 @@
-define("wozlla/wozllajs/1.0.0/wozlla-debug", [ "./assets/AsyncImage-debug", "./utils/Arrays-debug", "./assets/Texture-debug", "./utils/Objects-debug", "./assets/loader-debug", "./utils/Strings-debug", "./utils/Promise-debug", "./utils/Ajax-debug", "./core/events/GameObjectEvent-debug", "./events/Event-debug", "./core/events/TouchEvent-debug", "./core/AbstractGameObject-debug", "./utils/uniqueKey-debug", "./events/EventTarget-debug", "./core/Transform-debug", "./math/Matrix2D-debug", "./core/Animation-debug", "./core/Time-debug", "./core/Behaviour-debug", "./core/Component-debug", "./core/CachableGameObject-debug", "./core/UnityGameObject-debug", "./math/Rectangle-debug", "./core/Renderer-debug", "./core/Layout-debug", "./core/HitDelegate-debug", "./core/Mask-debug", "./utils/createCanvas-debug", "./core/Filter-debug", "./core/Collider-debug", "./core/Engine-debug", "./utils/Tuple-debug", "./core/Stage-debug", "./core/Touch-debug", "./core/GameObject-debug" ], function(require) {
+define("wozlla/wozllajs/1.0.0/wozlla-debug", [ "./assets/AsyncImage-debug", "./utils/Arrays-debug", "./assets/Texture-debug", "./utils/Objects-debug", "./assets/loader-debug", "./utils/Strings-debug", "./utils/Promise-debug", "./utils/Ajax-debug", "./assets/objLoader-debug", "./core/Component-debug", "./utils/uniqueKey-debug", "./core/GameObject-debug", "./core/CachableGameObject-debug", "./core/UnityGameObject-debug", "./math/Rectangle-debug", "./math/Matrix2D-debug", "./core/AbstractGameObject-debug", "./events/EventTarget-debug", "./events/Event-debug", "./core/events/GameObjectEvent-debug", "./core/Transform-debug", "./core/Behaviour-debug", "./core/Animation-debug", "./core/Time-debug", "./core/Renderer-debug", "./core/Layout-debug", "./core/HitDelegate-debug", "./core/Mask-debug", "./utils/createCanvas-debug", "./core/Filter-debug", "./core/events/TouchEvent-debug", "./core/Collider-debug", "./core/Engine-debug", "./utils/Tuple-debug", "./core/Stage-debug", "./core/Touch-debug" ], function(require) {
     return {
         assets: {
             AsyncImage: require("./assets/AsyncImage-debug"),
             Texture: require("./assets/Texture-debug"),
-            loader: require("./assets/loader-debug")
+            loader: require("./assets/loader-debug"),
+            objLoader: require("./assets/objLoader-debug")
         },
         core: {
             events: {
@@ -52,7 +53,8 @@ define("wozlla/wozllajs/1.0.0/wozlla-debug", [ "./assets/AsyncImage-debug", "./u
 
 define("wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", [ "wozlla/wozllajs/1.0.0/utils/Arrays-debug" ], function(require, exports, module) {
     var Arrays = require("wozlla/wozllajs/1.0.0/utils/Arrays-debug");
-    var AsyncImage = function(image) {
+    var AsyncImage = function(resourceId, image) {
+        this.resourceId = resourceId;
         this.image = image;
         this.src = image && image.src;
     };
@@ -120,7 +122,7 @@ define("wozlla/wozllajs/1.0.0/utils/Arrays-debug", [], function(require, exports
 define("wozlla/wozllajs/1.0.0/assets/Texture-debug", [ "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", "wozlla/wozllajs/1.0.0/utils/Arrays-debug" ], function(require, exports, module) {
     var Objects = require("wozlla/wozllajs/1.0.0/utils/Objects-debug");
     var AsyncImage = require("wozlla/wozllajs/1.0.0/assets/AsyncImage-debug");
-    var Texture = function(image, frames) {
+    var Texture = function(resourceId, image, frames) {
         AsyncImage.apply(this, arguments);
         this.frames = frames;
     };
@@ -212,16 +214,21 @@ define("wozlla/wozllajs/1.0.0/assets/loader-debug", [ "wozlla/wozllajs/1.0.0/uti
             if (err) {
                 callback(err);
             } else {
-                callback(new AsyncImage(image));
+                callback(null, new AsyncImage(item.id, image));
             }
         });
     };
     loaderMap["texture"] = function(item, callback) {
-        loadImage(item.src, function(err, image) {
+        var imgSrc = item.src.replace(".tt.json", ".tt.png");
+        loadImage(imgSrc, function(err, image) {
             if (err) {
                 callback(err);
             } else {
-                callback(new Texture(image));
+                Ajax.getJSON(item.src).then(function(data) {
+                    callback(null, new Texture(item.id, image, data.frames));
+                }).catchError(function(err) {
+                    callback(err);
+                });
             }
         });
     };
@@ -248,6 +255,7 @@ define("wozlla/wozllajs/1.0.0/assets/loader-debug", [ "wozlla/wozllajs/1.0.0/uti
     function loadNext() {
         var i, len, item, itemId, items, promise, loadUnit, loadedCount, loadResult;
         if (loading || loadQueue.length === 0) return;
+        loading = true;
         loadUnit = loadQueue.shift();
         promise = loadUnit.promise;
         items = loadUnit.items;
@@ -255,10 +263,16 @@ define("wozlla/wozllajs/1.0.0/assets/loader-debug", [ "wozlla/wozllajs/1.0.0/uti
         loadedCount = 0;
         for (i = 0, len = items.length; i < len; i++) {
             item = items[i];
+            if (!item) continue;
             itemId = item.id;
             if (assetsMap[itemId]) {
                 loadResult[itemId] = true;
                 loadedCount++;
+                if (loadedCount === items.length) {
+                    promise.done(loadResult);
+                    loading = false;
+                    loadNext();
+                }
             } else {
                 (function(item) {
                     item.loader(item, function(err, result) {
@@ -269,6 +283,7 @@ define("wozlla/wozllajs/1.0.0/assets/loader-debug", [ "wozlla/wozllajs/1.0.0/uti
                         loadedCount++;
                         if (loadedCount === items.length) {
                             promise.done(loadResult);
+                            loading = false;
                             loadNext();
                         }
                     });
@@ -277,6 +292,9 @@ define("wozlla/wozllajs/1.0.0/assets/loader-debug", [ "wozlla/wozllajs/1.0.0/uti
         }
     }
     exports.baseURL = "";
+    exports.printAssets = function() {
+        console.log(assetsMap);
+    };
     exports.load = function(items, base) {
         var i, len, promise, item, loadItems;
         if (!Arrays.is(items)) {
@@ -566,288 +584,134 @@ define("wozlla/wozllajs/1.0.0/utils/Ajax-debug", [ "wozlla/wozllajs/1.0.0/utils/
     };
 });
 
-define("wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug", [ "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/events/Event-debug" ], function(require) {
-    var Objects = require("wozlla/wozllajs/1.0.0/utils/Objects-debug");
-    var Event = require("wozlla/wozllajs/1.0.0/events/Event-debug");
-    var GameObjectEvent = function(param) {
-        Event.apply(this, arguments);
-    };
-    GameObjectEvent.INIT = "init";
-    GameObjectEvent.DESTROY = "destroy";
-    GameObjectEvent.CHANGED = "changed";
-    /**
-     * fire when child game object added , removed
-     * @type {string}
-     */
-    GameObjectEvent.ADDED = "added";
-    GameObjectEvent.REMOVED = "removed";
-    var p = Objects.inherits(GameObjectEvent, Event);
-    return GameObjectEvent;
-});
-
-define("wozlla/wozllajs/1.0.0/events/Event-debug", [], function(require, exports, module) {
-    /**
-     * @name Event
-     * @class Event 类作为创建 Event 对象的基类，当发生事件时，Event 对象将作为参数传递给事件侦听器。
-     * @constructor
-     * @param {Object} params
-     * @param {String} params.type 指定事件类型
-     * @param {Boolean} params.bubbles 指定事件是否冒泡
-     */
-    var Event = function(params) {
-        /**
-         * [readonly] 事件类型
-         * @type {String}
-         */
-        this.type = params.type;
-        /**
-         * [readonly] 事件目标
-         * @type {EventTarget}
-         */
-        this.target = null;
-        /**
-         * [readonly] 当前正在使用某个事件侦听器处理 Event 对象的对象。
-         * @type {EventTarget}
-         */
-        this.currentTarget = null;
-        /**
-         * [readonly] 事件流中的当前阶段。
-         * @type {int}
-         */
-        this.eventPhase = null;
-        /**
-         * [只读] 表示事件是否为冒泡事件。
-         * @type {Boolean}
-         */
-        this.bubbles = params.bubbles;
-        this._immediatePropagationStoped = false;
-        this._propagationStoped = false;
-        this._defaultPrevented = false;
-        this._listenerRemoved = false;
-    };
-    Event.CAPTURING_PHASE = 1;
-    Event.BUBBLING_PHASE = 2;
-    Event.TARGET_PHASE = 3;
-    /**
-     * @lends Event.prototype
-     */
-    var p = Event.prototype;
-    /**
-     * 防止对事件流中当前节点中和所有后续节点中的事件侦听器进行处理。
-     */
-    p.stopImmediatePropagation = function() {
-        this._immediatePropagationStoped = true;
-        this._propagationStoped = true;
-    };
-    /**
-     * 防止对事件流中当前节点的后续节点中的所有事件侦听器进行处理。
-     */
-    p.stopPropagation = function() {
-        this._propagationStoped = true;
-    };
-    /**
-     * 如果可以取消事件的默认行为，则取消该行为。
-     */
-    p.preventDefault = function() {
-        this._defaultPrevented = true;
-    };
-    /**
-     * 移除当前正在处理事件的侦听器。
-     */
-    p.removeListener = function() {
-        this._listenerRemoved = true;
-    };
-    module.exports = Event;
-});
-
-define("wozlla/wozllajs/1.0.0/core/events/TouchEvent-debug", [ "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/events/Event-debug" ], function(require) {
-    var Objects = require("wozlla/wozllajs/1.0.0/utils/Objects-debug");
-    var Event = require("wozlla/wozllajs/1.0.0/events/Event-debug");
-    var TouchEvent = function(param) {
-        Event.apply(this, arguments);
-        this.x = param.x;
-        this.y = param.y;
-        this.touch = param.touch;
-    };
-    TouchEvent.TOUCH_START = "touchstart";
-    TouchEvent.TOUCH_END = "touchend";
-    TouchEvent.TOUCH_MOVE = "touchmove";
-    TouchEvent.CLICK = "click";
-    Objects.inherits(TouchEvent, Event);
-    return TouchEvent;
-});
-
-define("wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", [ "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/utils/uniqueKey-debug", "wozlla/wozllajs/1.0.0/events/EventTarget-debug", "wozlla/wozllajs/1.0.0/events/Event-debug", "wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug", "wozlla/wozllajs/1.0.0/core/Transform-debug", "wozlla/wozllajs/1.0.0/math/Matrix2D-debug" ], function(require) {
-    var Objects = require("wozlla/wozllajs/1.0.0/utils/Objects-debug");
-    var uniqueKey = require("wozlla/wozllajs/1.0.0/utils/uniqueKey-debug");
-    var EventTarget = require("wozlla/wozllajs/1.0.0/events/EventTarget-debug");
-    var GameObjectEvent = require("wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug");
-    var Transform = require("wozlla/wozllajs/1.0.0/core/Transform-debug");
-    /**
-     *
-     * @name AbstractGameObject
-     * @class AbstractGameObject 类是所以游戏对象的基类，其定义了树形结构，并继承 EventTarget 以实现游戏中的事件调度
-     * @constructor
-     * @abstract
-     * @extends EventTarget
-     * @param {Object} params
-     * @param {String} params.id
-     */
-    var AbstractGameObject = function(params) {
-        EventTarget.apply(this, arguments);
-        this.id = params.id;
-        this.UID = uniqueKey();
-        this.transform = new Transform({
-            gameObject: this
+define("wozlla/wozllajs/1.0.0/assets/objLoader-debug", [ "wozlla/wozllajs/1.0.0/assets/loader-debug", "wozlla/wozllajs/1.0.0/utils/Strings-debug", "wozlla/wozllajs/1.0.0/utils/Arrays-debug", "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/utils/Promise-debug", "wozlla/wozllajs/1.0.0/utils/Ajax-debug", "wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", "wozlla/wozllajs/1.0.0/assets/Texture-debug", "wozlla/wozllajs/1.0.0/core/Component-debug", "wozlla/wozllajs/1.0.0/utils/uniqueKey-debug", "wozlla/wozllajs/1.0.0/core/GameObject-debug", "wozlla/wozllajs/1.0.0/core/CachableGameObject-debug", "wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", "wozlla/wozllajs/1.0.0/math/Rectangle-debug", "wozlla/wozllajs/1.0.0/math/Matrix2D-debug", "wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", "wozlla/wozllajs/1.0.0/events/EventTarget-debug", "wozlla/wozllajs/1.0.0/events/Event-debug", "wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug", "wozlla/wozllajs/1.0.0/core/Transform-debug", "wozlla/wozllajs/1.0.0/core/Behaviour-debug", "wozlla/wozllajs/1.0.0/core/Animation-debug", "wozlla/wozllajs/1.0.0/core/Time-debug", "wozlla/wozllajs/1.0.0/core/Renderer-debug", "wozlla/wozllajs/1.0.0/core/Layout-debug", "wozlla/wozllajs/1.0.0/core/HitDelegate-debug", "wozlla/wozllajs/1.0.0/core/Mask-debug", "wozlla/wozllajs/1.0.0/utils/createCanvas-debug", "wozlla/wozllajs/1.0.0/core/Filter-debug" ], function(require, exports) {
+    var loader = require("wozlla/wozllajs/1.0.0/assets/loader-debug");
+    var Component = require("wozlla/wozllajs/1.0.0/core/Component-debug");
+    var GameObject = require("wozlla/wozllajs/1.0.0/core/GameObject-debug");
+    exports.buildGameObject = function(objData) {
+        var i, len, comp;
+        var gameObject, children, components;
+        gameObject = new GameObject({
+            name: objData.name
         });
-        this._parent = null;
-        this._children = [];
-        this._childrenMap = {};
-    };
-    var p = Objects.inherits(AbstractGameObject, EventTarget);
-    p.setId = function(id) {
-        if (this._parent) {
-            delete this._parent._childrenMap[this.id];
-            this._parent._childrenMap[id] = this;
-        }
-        this.id = id;
-    };
-    p.getParent = function() {
-        return this._parent;
-    };
-    p.getPath = function(seperator) {
-        var o = this;
-        var path = [];
-        while (o && !o.isStage) {
-            path.unshift(o.id);
-            o = o._parent;
-        }
-        return path.join(seperator || "/");
-    };
-    p.getStage = function() {
-        var o = this;
-        while (o._parent) {
-            o = o._parent;
-        }
-        if (o.isStage) {
-            return o;
-        }
-        return null;
-    };
-    p.getChildren = function() {
-        return this._children.slice();
-    };
-    p.sortChildren = function(func) {
-        this._children.sort(func);
-        this.dispatchEvent(new GameObjectEvent({
-            type: GameObjectEvent.CHANGED,
-            bubbles: false
-        }));
-    };
-    p.getObjectById = function(id) {
-        return this._childrenMap[id];
-    };
-    p.addObject = function(obj) {
-        this._childrenMap[obj.id] = obj;
-        this._children.push(obj);
-        obj._parent = this;
-        this.dispatchEvent(new GameObjectEvent({
-            type: GameObjectEvent.ADDED,
-            bubbles: false,
-            child: obj
-        }));
-    };
-    p.insertObject = function(obj, index) {
-        this._childrenMap[obj.id] = obj;
-        this._children.splice(index, 0, obj);
-        obj._parent = this;
-        this.dispatchEvent(new GameObjectEvent({
-            type: GameObjectEvent.ADDED,
-            bubbles: false,
-            child: obj
-        }));
-    };
-    p.insertBefore = function(obj, objOrId) {
-        var i, len, child;
-        var index = 0;
-        for (i = 0, len = this._children.length; i < len; i++) {
-            child = this._children[i];
-            if (child === objOrId || child.id === objOrId) {
-                index = i;
-                break;
-            }
-        }
-        this.insertObject(obj, index);
-    };
-    p.insertAfter = function(obj, objOrId) {
-        var i, len, child;
-        var index = this._children.length;
-        for (i = 0, len = this._children.length; i < len; i++) {
-            child = this._children[i];
-            if (child === objOrId || child.id === objOrId) {
-                index = i;
-                break;
-            }
-        }
-        this.insertObject(obj, index + 1);
-    };
-    p.removeObject = function(idOrObj) {
-        var children = this._children;
-        var obj = typeof idOrObj === "string" ? this._childrenMap[idOrObj] : idOrObj;
-        var idx = -1;
-        var i, len;
+        gameObject.setActive(objData.active);
+        gameObject.setActive(objData.visible);
+        gameObject.setWidth(objData.width || 0);
+        gameObject.setHeight(objData.height || 0);
+        gameObject.setInteractive(objData.interactive);
+        gameObject.transform.applyTransform(objData.transform);
+        children = objData.children;
+        components = objData.components;
         for (i = 0, len = children.length; i < len; i++) {
-            if (obj === children[i]) {
-                idx = i;
-                children.splice(idx, 1);
-                break;
+            gameObject.addObject(exports.buildGameObject(children[i]));
+        }
+        for (i = 0, len = components.length; i < len; i++) {
+            comp = exports.buildComponent(components[i]);
+            if (comp) {
+                gameObject.addComponent(comp);
             }
         }
-        if (idx !== -1) {
-            delete this._childrenMap[obj.id];
-            obj._parent = null;
-            this.dispatchEvent(new GameObjectEvent({
-                type: GameObjectEvent.REMOVED,
-                bubbles: false,
-                child: obj
-            }));
-        }
-        return idx;
+        return gameObject;
     };
-    p.remove = function(params) {
-        this._parent && this._parent.removeObject(this);
-        this._parent = null;
-    };
-    p.removeAll = function(params) {
-        // event ?
-        this._children = [];
-        this._childrenMap = {};
-    };
-    p.findObjectById = function(id) {
-        var i, len, children;
-        var obj = this.getObjectById(id);
-        if (!obj) {
-            children = this._children;
-            for (i = 0, len = children.length; i < len; i++) {
-                obj = children[i].findObjectById(id);
-                if (obj) break;
+    exports.buildComponent = function(componentData) {
+        var compCtor, properties, comp;
+        compCtor = Component.getConstructor(componentData.id);
+        properties = componentData.properties;
+        if (compCtor) {
+            comp = new compCtor();
+            comp.properties = {};
+            if (properties) {
+                for (var i in properties) {
+                    comp.properties[i] = properties[i];
+                }
             }
         }
-        return obj;
+        return comp;
     };
-    p.findObjectByPath = function(path, seperator) {
+    exports.initObjectData = function(objData) {};
+    exports.loadObjFile = function(filePath) {
+        return loader.load({
+            id: filePath,
+            src: filePath,
+            type: "json"
+        });
+    };
+    exports.loadAndInitObjFile = function(filePath) {
+        return exports.loadObjFile(filePath).then(function() {
+            var objData = loader.get(filePath);
+            var obj = exports.buildGameObject(objData);
+            loader.remove(filePath);
+            return obj;
+        });
+    };
+});
+
+define("wozlla/wozllajs/1.0.0/core/Component-debug", [ "wozlla/wozllajs/1.0.0/assets/loader-debug", "wozlla/wozllajs/1.0.0/utils/Strings-debug", "wozlla/wozllajs/1.0.0/utils/Arrays-debug", "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/utils/Promise-debug", "wozlla/wozllajs/1.0.0/utils/Ajax-debug", "wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", "wozlla/wozllajs/1.0.0/assets/Texture-debug", "wozlla/wozllajs/1.0.0/utils/uniqueKey-debug" ], function(require) {
+    var loader = require("wozlla/wozllajs/1.0.0/assets/loader-debug");
+    var uniqueKey = require("wozlla/wozllajs/1.0.0/utils/uniqueKey-debug");
+    var registry = {};
+    function Component(properties) {
+        this.UID = uniqueKey();
+        this.gameObject = null;
+        this.properties = properties || {};
+    }
+    Component.getConstructor = function(idOrAlias) {
+        return registry[idOrAlias];
+    };
+    Component.getRegistry = function() {
+        return registry;
+    };
+    Component.register = function(compCtor) {
+        var id = compCtor.prototype.id;
+        var alias = compCtor.prototype.alias;
+        if (!id || !alias) {
+            throw new Error("component must define id and alias.");
+        }
+        if (registry[id]) {
+            throw new Error('component id "' + id + '" has been registered.');
+        }
+        if (registry[alias]) {
+            throw new Error('component alias "' + alias + '" has been registered.');
+        }
+        registry[id] = compCtor;
+        registry[alias] = compCtor;
+    };
+    var p = Component.prototype;
+    p.id = undefined;
+    p.alias = undefined;
+    p.setGameObject = function(gameObject) {
+        this.gameObject = gameObject;
+    };
+    p.initComponent = function() {};
+    p.destroyComponent = function() {};
+    p.on = function() {
+        this.gameObject.addEventListener.apply(this.gameObject, arguments);
+    };
+    p.off = function() {
+        this.gameObject.removeEventListener.apply(this.gameObject, arguments);
+    };
+    p.dispatchEvent = function(event) {
+        this.gameObject.dispatchEvent(event);
+    };
+    p.getResource = function(id) {
+        return loader.get(id);
+    };
+    p.loadResource = function(params, base) {
+        return loader.load(params, base);
+    };
+    p.unloadResource = function(ids) {
+        if (typeof ids === "string") {
+            ids = [ ids ];
+        }
         var i, len;
-        var paths = path.split(seperator || "/");
-        var obj = this.findObjectById(paths[0]);
-        if (obj) {
-            for (i = 1, len = paths.length; i < len; i++) {
-                obj = obj.getObjectById(paths[i]);
-                if (!obj) return null;
-            }
+        for (i = 0, len = ids.length; i < len; i++) {
+            loader.remove(ids[i]);
         }
-        return obj;
     };
-    return AbstractGameObject;
+    p.isInstanceof = function(type) {
+        return this instanceof type;
+    };
+    return Component;
 });
 
 define("wozlla/wozllajs/1.0.0/utils/uniqueKey-debug", [], function() {
@@ -857,272 +721,468 @@ define("wozlla/wozllajs/1.0.0/utils/uniqueKey-debug", [], function() {
     };
 });
 
-define("wozlla/wozllajs/1.0.0/events/EventTarget-debug", [ "wozlla/wozllajs/1.0.0/events/Event-debug" ], function(require, exports, module) {
-    var Event = require("wozlla/wozllajs/1.0.0/events/Event-debug");
-    /**
-     *
-     * @name EventTarget
-     * @class EventTarget 类是可调度事件的所有类的基类。
-     * @constructor
-     */
-    var EventTarget = function() {
-        this._captureListeners = {};
-        this._listeners = {};
+define("wozlla/wozllajs/1.0.0/core/GameObject-debug", [ "wozlla/wozllajs/1.0.0/core/CachableGameObject-debug", "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", "wozlla/wozllajs/1.0.0/math/Rectangle-debug", "wozlla/wozllajs/1.0.0/math/Matrix2D-debug", "wozlla/wozllajs/1.0.0/utils/Promise-debug", "wozlla/wozllajs/1.0.0/utils/Arrays-debug", "wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", "wozlla/wozllajs/1.0.0/utils/uniqueKey-debug", "wozlla/wozllajs/1.0.0/events/EventTarget-debug", "wozlla/wozllajs/1.0.0/events/Event-debug", "wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug", "wozlla/wozllajs/1.0.0/core/Transform-debug", "wozlla/wozllajs/1.0.0/core/Component-debug", "wozlla/wozllajs/1.0.0/assets/loader-debug", "wozlla/wozllajs/1.0.0/utils/Strings-debug", "wozlla/wozllajs/1.0.0/utils/Ajax-debug", "wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", "wozlla/wozllajs/1.0.0/assets/Texture-debug", "wozlla/wozllajs/1.0.0/core/Behaviour-debug", "wozlla/wozllajs/1.0.0/core/Animation-debug", "wozlla/wozllajs/1.0.0/core/Time-debug", "wozlla/wozllajs/1.0.0/core/Renderer-debug", "wozlla/wozllajs/1.0.0/core/Layout-debug", "wozlla/wozllajs/1.0.0/core/HitDelegate-debug", "wozlla/wozllajs/1.0.0/core/Mask-debug", "wozlla/wozllajs/1.0.0/utils/createCanvas-debug", "wozlla/wozllajs/1.0.0/core/Filter-debug" ], function(require) {
+    return require("wozlla/wozllajs/1.0.0/core/CachableGameObject-debug");
+});
+
+define("wozlla/wozllajs/1.0.0/core/CachableGameObject-debug", [ "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", "wozlla/wozllajs/1.0.0/math/Rectangle-debug", "wozlla/wozllajs/1.0.0/math/Matrix2D-debug", "wozlla/wozllajs/1.0.0/utils/Promise-debug", "wozlla/wozllajs/1.0.0/utils/Arrays-debug", "wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", "wozlla/wozllajs/1.0.0/utils/uniqueKey-debug", "wozlla/wozllajs/1.0.0/events/EventTarget-debug", "wozlla/wozllajs/1.0.0/events/Event-debug", "wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug", "wozlla/wozllajs/1.0.0/core/Transform-debug", "wozlla/wozllajs/1.0.0/core/Component-debug", "wozlla/wozllajs/1.0.0/assets/loader-debug", "wozlla/wozllajs/1.0.0/utils/Strings-debug", "wozlla/wozllajs/1.0.0/utils/Ajax-debug", "wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", "wozlla/wozllajs/1.0.0/assets/Texture-debug", "wozlla/wozllajs/1.0.0/core/Behaviour-debug", "wozlla/wozllajs/1.0.0/core/Animation-debug", "wozlla/wozllajs/1.0.0/core/Time-debug", "wozlla/wozllajs/1.0.0/core/Renderer-debug", "wozlla/wozllajs/1.0.0/core/Layout-debug", "wozlla/wozllajs/1.0.0/core/HitDelegate-debug", "wozlla/wozllajs/1.0.0/core/Mask-debug", "wozlla/wozllajs/1.0.0/utils/createCanvas-debug", "wozlla/wozllajs/1.0.0/core/Filter-debug" ], function(require) {
+    var Objects = require("wozlla/wozllajs/1.0.0/utils/Objects-debug");
+    var UnityGameObject = require("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug");
+    var Filter = require("wozlla/wozllajs/1.0.0/core/Filter-debug");
+    var createCanvas = require("wozlla/wozllajs/1.0.0/utils/createCanvas-debug");
+    var CachableGameObject = function(param) {
+        UnityGameObject.apply(this, arguments);
+        this._cacheCanvas = null;
+        this._cacheContext = null;
+        this._cached = false;
+        this._cacheOffsetX = 0;
+        this._cacheOffsetY = 0;
     };
-    EventTarget.DEFAULT_ACTION_MAP = {
-        touchstart: "onTouchStart",
-        touchmove: "onTouchMove",
-        touchend: "onTouchEnd",
-        click: "onClick"
-    };
-    /**
-     * @lends EventTarget.prototype
-     */
-    var p = EventTarget.prototype;
-    /**
-     *
-     */
-    p.addEventListener = function(eventType, listener, useCapture) {
-        var listeners = useCapture ? this._captureListeners : this._listeners;
-        var arr = listeners[eventType];
-        if (arr) {
-            this.removeEventListener(eventType, listener, useCapture);
+    var p = Objects.inherits(CachableGameObject, UnityGameObject);
+    p.cache = function(x, y, width, height) {
+        if (this._cacheCanvas) {
+            this.uncache();
         }
-        arr = listeners[eventType];
-        if (!arr) {
-            listeners[eventType] = [ listener ];
+        this._cacheOffsetX = x;
+        this._cacheOffsetY = y;
+        this._cacheCanvas = createCanvas(width, height);
+        this._cacheContext = this._cacheCanvas.getContext("2d");
+        this._cached = false;
+    };
+    p.updateCache = function(offsetX, offsetY) {
+        this._cached = false;
+        this._cacheOffsetX = offsetX || this._cacheOffsetX;
+        this._cacheOffsetY = offsetY || this._cacheOffsetY;
+    };
+    p.translateCache = function(deltaX, deltaY) {
+        this._cached = false;
+        this._cacheOffsetX += deltaX;
+        this._cacheOffsetY += deltaY;
+    };
+    p.uncache = function() {
+        if (this._cacheCanvas) {
+            this._cacheContext.dispose && this._cacheContext.dispose();
+            this._cacheCanvas.dispose && this._cacheCanvas.dispose();
+            this._cacheCanvas = null;
+        }
+        this._cached = false;
+    };
+    p._draw = function(context, visibleRect) {
+        if (this._cacheCanvas) {
+            if (!this._cached) {
+                this._drawCache();
+                this._cached = true;
+            }
+            context.drawImage(this._cacheCanvas, 0, 0);
         } else {
-            arr.push(listener);
+            UnityGameObject.prototype._draw.apply(this, arguments);
         }
-        return listener;
     };
-    p.removeEventListener = function(eventType, listener, useCapture) {
-        var listeners = useCapture ? this._captureListeners : this._listeners;
-        if (!listeners) {
-            return;
+    p._drawCache = function(context, visibleRect) {
+        var cacheContext = this._cacheContext;
+        cacheContext.clearRect(0, 0, this._cacheCanvas.width, this._cacheCanvas.height);
+        cacheContext = this._cacheContext;
+        cacheContext.translate(-this._cacheOffsetX, -this._cacheOffsetY);
+        UnityGameObject.prototype._draw.apply(this, [ cacheContext, visibleRect ]);
+        cacheContext.translate(this._cacheOffsetX, this._cacheOffsetY);
+        this._applyFilters(cacheContext, 0, 0, this._cacheCanvas.width, this._cacheCanvas.height);
+    };
+    p._applyFilters = function(cacheContext, x, y, width, height) {
+        var id, filter;
+        var filters = this.getComponents(Filter);
+        for (id in filters) {
+            cacheContext.save();
+            filter = filters[id];
+            filter.applyFilter(cacheContext, x, y, width, height);
+            cacheContext.restore();
         }
-        var arr = listeners[eventType];
-        if (!arr) {
-            return;
+    };
+    return CachableGameObject;
+});
+
+define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/math/Rectangle-debug", "wozlla/wozllajs/1.0.0/math/Matrix2D-debug", "wozlla/wozllajs/1.0.0/utils/Promise-debug", "wozlla/wozllajs/1.0.0/utils/Arrays-debug", "wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", "wozlla/wozllajs/1.0.0/utils/uniqueKey-debug", "wozlla/wozllajs/1.0.0/events/EventTarget-debug", "wozlla/wozllajs/1.0.0/events/Event-debug", "wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug", "wozlla/wozllajs/1.0.0/core/Transform-debug", "wozlla/wozllajs/1.0.0/core/Component-debug", "wozlla/wozllajs/1.0.0/assets/loader-debug", "wozlla/wozllajs/1.0.0/utils/Strings-debug", "wozlla/wozllajs/1.0.0/utils/Ajax-debug", "wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", "wozlla/wozllajs/1.0.0/assets/Texture-debug", "wozlla/wozllajs/1.0.0/core/Behaviour-debug", "wozlla/wozllajs/1.0.0/core/Animation-debug", "wozlla/wozllajs/1.0.0/core/Time-debug", "wozlla/wozllajs/1.0.0/core/Renderer-debug", "wozlla/wozllajs/1.0.0/core/Layout-debug", "wozlla/wozllajs/1.0.0/core/HitDelegate-debug", "wozlla/wozllajs/1.0.0/core/Mask-debug", "wozlla/wozllajs/1.0.0/utils/createCanvas-debug" ], function(require) {
+    var Objects = require("wozlla/wozllajs/1.0.0/utils/Objects-debug");
+    var Rectangle = require("wozlla/wozllajs/1.0.0/math/Rectangle-debug");
+    var Matrix2D = require("wozlla/wozllajs/1.0.0/math/Matrix2D-debug");
+    var Promise = require("wozlla/wozllajs/1.0.0/utils/Promise-debug");
+    var AbstractGameObject = require("wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug");
+    var Component = require("wozlla/wozllajs/1.0.0/core/Component-debug");
+    var Behaviour = require("wozlla/wozllajs/1.0.0/core/Behaviour-debug");
+    var Animation = require("wozlla/wozllajs/1.0.0/core/Animation-debug");
+    var Renderer = require("wozlla/wozllajs/1.0.0/core/Renderer-debug");
+    var Layout = require("wozlla/wozllajs/1.0.0/core/Layout-debug");
+    var HitDelegate = require("wozlla/wozllajs/1.0.0/core/HitDelegate-debug");
+    var Mask = require("wozlla/wozllajs/1.0.0/core/Mask-debug");
+    var GameObjectEvent = require("wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug");
+    var createCanvas = require("wozlla/wozllajs/1.0.0/utils/createCanvas-debug");
+    var testHitCanvas = createCanvas(1, 1);
+    var testHitContext = testHitCanvas.getContext("2d");
+    var helpRect = new Rectangle();
+    var helpMatrix = new Matrix2D();
+    var UnityGameObject = function(param) {
+        AbstractGameObject.apply(this, arguments);
+        this._active = true;
+        this._visible = true;
+        this._width = 0;
+        this._height = 0;
+        this._interactive = false;
+        this._initialized = false;
+        this._components = [];
+        this._delayRemoves = [];
+    };
+    var p = Objects.inherits(UnityGameObject, AbstractGameObject);
+    p.isActive = function(upWards) {
+        if (upWards === false) {
+            return this._active;
         }
-        for (var i = 0, l = arr.length; i < l; i++) {
-            if (arr[i] == listener) {
-                if (l == 1) {
-                    delete listeners[eventType];
-                } else {
-                    arr.splice(i, 1);
+        var active = true;
+        var o = this;
+        while (o) {
+            active = active && o._active;
+            if (!active) {
+                return false;
+            }
+            o = o._parent;
+        }
+        return active;
+    };
+    p.setActive = function(active) {
+        this._active = active;
+    };
+    p.isVisible = function(upWards) {
+        if (upWards === false) {
+            return this._visible;
+        }
+        var visible = true;
+        var o = this;
+        while (o) {
+            visible = visible && o._visible;
+            if (!visible) {
+                return false;
+            }
+            o = o._parent;
+        }
+        return visible;
+    };
+    p.setVisible = function(visible) {
+        this._visible = visible;
+    };
+    p.isInteractive = function() {
+        return this._children.length > 0 || this._interactive;
+    };
+    p.setInteractive = function(interactive) {
+        this._interactive = interactive;
+    };
+    p.getWidth = function() {
+        return this._width;
+    };
+    p.setWidth = function(w) {
+        this._width = w;
+    };
+    p.getHeight = function() {
+        return this._height;
+    };
+    p.setHeight = function(h) {
+        this._height = h;
+    };
+    p.getGlobalBounds = function(resultRect, print) {
+        if (!resultRect) {
+            resultRect = new Rectangle();
+        }
+        var t = this.transform;
+        var concatenatedMatrix = this.transform.getConcatenatedMatrix(helpMatrix);
+        var localA = t.localToGlobal(0, 0, concatenatedMatrix);
+        var localB = t.localToGlobal(this._width, 0, concatenatedMatrix);
+        var localC = t.localToGlobal(0, this._height, concatenatedMatrix);
+        var localD = t.localToGlobal(this._width, this._height, concatenatedMatrix);
+        print && console.log(localA, localB, localC, localD);
+        resultRect.x = Math.min(localA.x, localB.x, localC.x, localD.x);
+        resultRect.y = Math.min(localA.y, localB.y, localC.y, localD.y);
+        resultRect.width = Math.max(localA.x, localB.x, localC.x, localD.x) - resultRect.x;
+        resultRect.height = Math.max(localA.y, localB.y, localC.y, localD.y) - resultRect.y;
+        return resultRect;
+    };
+    p.addComponent = function(component) {
+        this._components.push(component);
+        component.setGameObject(this);
+    };
+    p.getComponent = function(type) {
+        var i, len, comp;
+        var components = this._components;
+        var alias;
+        if (typeof type === "string") {
+            alias = type;
+            for (i = 0, len = components.length; i < len; i++) {
+                comp = components[i];
+                if (comp.alias === alias) {
+                    return comp;
                 }
+            }
+        } else {
+            for (i = 0, len = components.length; i < len; i++) {
+                comp = components[i];
+                if (comp.isInstanceof(type)) {
+                    return comp;
+                }
+            }
+        }
+        return null;
+    };
+    p.getComponents = function(type) {
+        var i, len, comp, alias;
+        var components = this._components;
+        var found = [];
+        if (typeof type === "string") {
+            alias = type;
+            for (i = 0, len = components.length; i < len; i++) {
+                comp = components[i];
+                if (comp.alias === alias) {
+                    found.push(comp);
+                }
+            }
+        } else {
+            for (i = 0, len = components.length; i < len; i++) {
+                comp = components[i];
+                if (comp.isInstanceof(type)) {
+                    found.push(comp);
+                }
+            }
+        }
+        return found;
+    };
+    p.removeComponent = function(component) {
+        var i, len, comp;
+        var components = this._components;
+        for (i = 0, len = components.length; i < len; i++) {
+            comp = components[i];
+            if (comp === component) {
+                components.splice(i, 1);
+                comp.setGameObject(null);
                 break;
             }
         }
     };
-    p.hasEventListener = function(eventType) {
-        var listeners = this._listeners, captureListeners = this._captureListeners;
-        return !!(listeners && listeners[eventType] || captureListeners && captureListeners[eventType]);
+    p.delayRemoveComponent = function(component) {
+        this._delayRemoves.push(component);
     };
-    p.dispatchEvent = function(event) {
-        var i, len, list, object, defaultAction;
-        event.target = this;
-        if (false === event.bubbles) {
-            event.eventPhase = Event.TARGET_PHASE;
-            if (!this._dispatchEvent(event)) {
-                defaultAction = this[EventTarget.DEFAULT_ACTION_MAP[event.type]];
-                defaultAction && defaultAction(event);
-            }
-            return;
-        }
-        list = this._getAncients();
-        event.eventPhase = Event.CAPTURING_PHASE;
-        for (i = list.length - 1; i >= 0; i--) {
-            object = list[i];
-            if (!object._dispatchEvent(event)) {
-                defaultAction = object[EventTarget.DEFAULT_ACTION_MAP[event.type]];
-                defaultAction && defaultAction(event);
-            }
-            if (event._propagationStoped) {
-                return;
-            }
-        }
-        event.eventPhase = Event.TARGET_PHASE;
-        if (!this._dispatchEvent(event)) {
-            defaultAction = this[EventTarget.DEFAULT_ACTION_MAP[event.type]];
-            defaultAction && defaultAction(event);
-        }
-        if (event._propagationStoped) {
-            return;
-        }
-        event.eventPhase = Event.BUBBLING_PHASE;
-        for (i = 0, len = list.length; i < len; i++) {
-            object = list[i];
-            if (!object._dispatchEvent(event)) {
-                defaultAction = object[EventTarget.DEFAULT_ACTION_MAP[event.type]];
-                defaultAction && defaultAction(event);
-            }
-            if (event._propagationStoped) {
-                return;
+    p.delayRemoveObject = function(gameObject) {
+        this._delayRemoves.push(gameObject);
+    };
+    p.delayRemove = function() {
+        this._parent.delayRemoveObject(this);
+    };
+    p.sendMessage = function(methodName, args, type) {
+        var i, len, comp, method;
+        var components = this._components;
+        for (i = 0, len = components.length; i < len; i++) {
+            comp = components[i];
+            if (!type || type && comp.isInstanceof(type)) {
+                method = comp[methodName];
+                method && method.apply(comp, args);
             }
         }
     };
-    p._getAncients = function() {
-        var list = [];
-        var parent = this;
-        while (parent._parent) {
-            parent = parent._parent;
-            list.push(parent);
+    p.broadcastMessage = function(methodName, args) {
+        var i, len, child;
+        var children = this._children;
+        for (i = 0, len = children.length; i < len; i++) {
+            child = children[i];
+            child.broadcastMessage(methodName, args);
         }
-        return list;
+        this.sendMessage(methodName, args);
     };
-    p._dispatchEvent = function(event) {
-        var i, len, arr, listeners, handler;
-        event.currentTarget = this;
-        event._listenerRemoved = false;
-        listeners = event.eventPhase === Event.CAPTURING_PHASE ? this._captureListeners : this._listeners;
-        if (listeners) {
-            arr = listeners[event.type];
-            if (!arr || arr.length === 0) return event._defaultPrevented;
-            arr = arr.slice();
-            for (i = 0, len = arr.length; i < len; i++) {
-                event._listenerRemoved = false;
-                handler = arr[i];
-                handler(event);
-                if (event._listenerRemoved) {
-                    this.removeEventListener(event.type, handler, event.eventPhase === Event.CAPTURING_PHASE);
+    p.init = function() {
+        var i, len, child;
+        var children = this._children;
+        this.sendMessage("initComponent");
+        for (i = 0, len = children.length; i < len; i++) {
+            child = children[i];
+            child.init();
+        }
+        this.layout();
+        this._doDelayRemove();
+        this._initialized = true;
+        this.dispatchEvent(new GameObjectEvent({
+            type: GameObjectEvent.INIT,
+            bubbles: true
+        }));
+    };
+    p.destroy = function() {
+        var i, len, child;
+        var children = this._children;
+        for (i = 0, len = children.length; i < len; i++) {
+            child = children[i];
+            child.destroy();
+        }
+        this._doDelayRemove();
+        this.sendMessage("destroyComponent");
+        this.dispatchEvent(new GameObjectEvent({
+            type: GameObjectEvent.DESTROY,
+            bubbles: true
+        }));
+    };
+    p.layout = function() {
+        var layout = this.getComponent(Layout);
+        var children = this._children;
+        var i, len, child;
+        for (i = 0, len = children.length; i < len; i++) {
+            child = children[i];
+            child.layout();
+        }
+        layout && layout.doLayout();
+    };
+    p.update = function() {
+        if (!this._initialized || !this._active) return;
+        var i, len, child;
+        var children = this._children;
+        for (i = 0, len = children.length; i < len; i++) {
+            child = children[i];
+            child.update();
+        }
+        this.sendMessage("update", null, Behaviour);
+        this._doDelayRemove();
+    };
+    p.lateUpdate = function() {
+        if (!this._initialized || !this._active) return;
+        var i, len, child;
+        var children = this._children;
+        for (i = 0, len = children.length; i < len; i++) {
+            child = children[i];
+            child.lateUpdate();
+        }
+        this.sendMessage("lateUpdate", null, Behaviour);
+        this._doDelayRemove();
+    };
+    p.draw = function(context, visibleRect) {
+        var mask;
+        if (!this._initialized || !this._active || !this._visible) return;
+        context.save();
+        this.transform.updateContext(context);
+        this._draw(context, visibleRect);
+        context.restore();
+        this._doDelayRemove();
+    };
+    p.testHit = function(x, y) {
+        var hit = false, hitDelegate;
+        if (!this.isActive(true) || !this.isVisible(true)) {
+            return false;
+        }
+        hitDelegate = this.getComponent(HitDelegate);
+        if (hitDelegate) {
+            hit = hitDelegate.testHit(x, y);
+        } else {
+            testHitContext.setTransform(1, 0, 0, 1, -x, -y);
+            this._draw(testHitContext, this.getStage().getVisibleRect());
+            hit = testHitContext.getImageData(0, 0, 1, 1).data[3] > 1;
+            testHitContext.setTransform(1, 0, 0, 1, 0, 0);
+            testHitContext.clearRect(0, 0, 2, 2);
+        }
+        return hit;
+    };
+    p.getTopObjectUnderPoint = function(x, y, useInteractive) {
+        var i, child, obj, localPoint;
+        var children = this._children;
+        if (useInteractive && !this.isInteractive()) {
+            return null;
+        }
+        if (children.length > 0) {
+            for (i = children.length - 1; i >= 0; i--) {
+                child = children[i];
+                obj = child.getTopObjectUnderPoint(x, y, useInteractive);
+                if (obj) {
+                    return obj;
                 }
-                if (event._immediatePropagationStoped) {
-                    break;
-                }
+            }
+        } else {
+            localPoint = this.transform.globalToLocal(x, y);
+            if (this.testHit(localPoint.x, localPoint.y)) {
+                return this;
             }
         }
-        return event._defaultPrevented;
+        return null;
     };
-    module.exports = EventTarget;
+    p.animate = function(name, callback) {
+        var animations = this.getComponents(Animation);
+        var i, len, ani;
+        for (i = 0, len = animations.length; i < len; i++) {
+            ani = animations[i];
+            if (ani.name === name) {
+                ani.play(callback);
+                break;
+            }
+        }
+    };
+    p.playEffect = function(effects) {};
+    p._doDelayRemove = function() {
+        var i, len, target;
+        if (this._delayRemoves.length > 0) {
+            for (i = 0, len = this._delayRemoves.length; i < len; i++) {
+                target = this._delayRemoves[i];
+                if (target instanceof AbstractGameObject) {
+                    this.removeObject(target);
+                } else if (target instanceof Component) {
+                    this.removeComponent(target);
+                }
+            }
+            this._delayRemoves.length = 0;
+        }
+    };
+    p._draw = function(context, visibleRect) {
+        var i, len, child, gBounds, mask;
+        var children = this._children;
+        if (children.length <= 0) {
+            gBounds = this.getGlobalBounds(helpRect);
+            if (gBounds.intersects(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height)) {
+                mask = this.getComponent(Mask);
+                mask && mask.clip(context);
+                this.sendMessage("draw", arguments, Renderer);
+            }
+        } else {
+            mask = this.getComponent(Mask);
+            mask && mask.clip(context);
+            for (i = 0, len = children.length; i < len; i++) {
+                child = children[i];
+                child.draw(context, visibleRect);
+            }
+        }
+    };
+    return UnityGameObject;
 });
 
-define("wozlla/wozllajs/1.0.0/core/Transform-debug", [ "wozlla/wozllajs/1.0.0/math/Matrix2D-debug" ], function(require) {
-    var Matrix2D = require("wozlla/wozllajs/1.0.0/math/Matrix2D-debug");
-    // 一个createjs类用于帮助从Transform到canvas的context中的transform参数
-    var matrix = new Matrix2D();
-    var Transform = function(params) {
-        this.x = 0;
-        this.y = 0;
-        this.regX = 0;
-        this.regY = 0;
-        this.rotation = 0;
-        this.scaleX = 1;
-        this.scaleY = 1;
-        this.skewX = 0;
-        this.skewY = 0;
-        this.alpha = 1;
-        this.gameObject = params.gameObject;
+define("wozlla/wozllajs/1.0.0/math/Rectangle-debug", [], function() {
+    var Rectangle = function(x, y, w, h) {
+        this.x = x || 0;
+        this.y = y || 0;
+        this.width = w || 0;
+        this.height = h || 0;
     };
-    Transform.prototype = {
-        /**
-         * Get the top parent of Transform
-         * @return {*}
-         */
-        getRoot: function() {
-            var o = this.gameObject;
-            while (o && o._parent) {
-                o = o._parent;
-            }
-            return o.transform;
-        },
-        /**
-         * 将一个坐标点从相对于当前Transform转换成全局的坐标点
-         * @param x
-         * @param y
-         * @return {*}
-         */
-        localToGlobal: function(x, y, concatenatedMatrix) {
-            var mtx;
-            if (concatenatedMatrix) {
-                matrix.copy(concatenatedMatrix);
-                mtx = matrix;
-            } else {
-                mtx = this.getConcatenatedMatrix();
-            }
-            if (mtx == null) {
-                return null;
-            }
-            mtx.append(1, 0, 0, 1, x, y);
-            return {
-                x: mtx.tx,
-                y: mtx.ty
-            };
-        },
-        /**
-         * 与localToGlobal相反
-         * @param x
-         * @param y
-         * @return {*}
-         */
-        globalToLocal: function(x, y, concatenatedMatrix) {
-            var mtx;
-            if (concatenatedMatrix) {
-                matrix.copy(concatenatedMatrix);
-                mtx = matrix;
-            } else {
-                mtx = this.getConcatenatedMatrix();
-            }
-            if (mtx == null) {
-                return null;
-            }
-            mtx.invert();
-            mtx.append(1, 0, 0, 1, x, y);
-            return {
-                x: mtx.tx,
-                y: mtx.ty
-            };
-        },
-        /**
-         * 获取一个Matrix2D, 及联了所有它的parentTransform的属性, 通常很方便的用于转换坐标点
-         * @return {createjs.Matrix2D}
-         */
-        getConcatenatedMatrix: function(resultMatrix) {
-            var o = this;
-            var mtx = resultMatrix || matrix;
-            mtx.identity();
-            while (o != null) {
-                mtx.prependTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY).prependProperties(o.alpha);
-                o = o.gameObject._parent;
-                if (o) {
-                    o = o.transform;
-                }
-            }
-            return mtx;
-        },
-        /**
-         * 获取当前Transform转换的Matrix2D
-         * @return {Matrix2D}
-         */
-        getMatrix: function() {
-            var o = this;
-            return matrix.identity().appendTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY).appendProperties(o.alpha);
-        },
-        /**
-         * 将当前的Transform应用到canvas的context上
-         * @param context CanvasContextRenderer2d
-         */
-        updateContext: function(context) {
-            var mtx, o = this;
-            mtx = matrix.identity().appendTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY);
-            context.transform(mtx.a, mtx.b, mtx.c, mtx.d, mtx.tx, mtx.ty);
-            context.globalAlpha *= o.alpha;
-        },
-        applyTransform: function(transform) {
-            this.x = transform.x;
-            this.y = transform.y;
-            this.regX = transform.regX;
-            this.regY = transform.regY;
-            this.scaleX = transform.scaleX;
-            this.scaleY = transform.scaleY;
-            this.rotation = transform.rotation;
-            this.alpha = transform.alpha;
-            this.skewX = transform.skewX;
-            this.skewY = transform.skewY;
-        }
+    var p = Rectangle.prototype;
+    p.top = function() {
+        return this.y;
     };
-    return Transform;
+    p.left = function() {
+        return this.x;
+    };
+    p.right = function() {
+        return this.x + this.width;
+    };
+    p.bottom = function() {
+        return this.y + this.height;
+    };
+    p.contains = function(x, y) {
+        return this.x <= x && this.y <= y && this.x + this.width > x && this.y + this.height > y;
+    };
+    p.containsPoint = function(point) {
+        return this.contains(point.x, point.y);
+    };
+    p.intersects = function(x, y, w, h) {
+        return this.x < x + w && this.x + this.width > x && this.y < y + h && this.y + this.height > y;
+    };
+    p.intersectRect = function(r) {
+        return this.intersects(r.x, r.y, r.width, r.height);
+    };
+    Rectangle.MAX_RECT = new Rectangle(Number.MIN_VALUE, Number.MIN_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+    return Rectangle;
 });
 
 /**
@@ -1622,6 +1682,550 @@ define("wozlla/wozllajs/1.0.0/math/Matrix2D-debug", [], function() {
     return Matrix2D;
 });
 
+define("wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", [ "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/utils/uniqueKey-debug", "wozlla/wozllajs/1.0.0/events/EventTarget-debug", "wozlla/wozllajs/1.0.0/events/Event-debug", "wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug", "wozlla/wozllajs/1.0.0/core/Transform-debug", "wozlla/wozllajs/1.0.0/math/Matrix2D-debug" ], function(require) {
+    var Objects = require("wozlla/wozllajs/1.0.0/utils/Objects-debug");
+    var uniqueKey = require("wozlla/wozllajs/1.0.0/utils/uniqueKey-debug");
+    var EventTarget = require("wozlla/wozllajs/1.0.0/events/EventTarget-debug");
+    var GameObjectEvent = require("wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug");
+    var Transform = require("wozlla/wozllajs/1.0.0/core/Transform-debug");
+    /**
+	 *
+	 * @name AbstractGameObject
+	 * @class AbstractGameObject 类是所以游戏对象的基类，其定义了树形结构，并继承 EventTarget 以实现游戏中的事件调度
+	 * @constructor
+	 * @abstract
+	 * @extends EventTarget
+	 * @param {Object} params
+	 * @param {String} params.id
+	 */
+    var AbstractGameObject = function(params) {
+        EventTarget.apply(this, arguments);
+        this.name = params.name;
+        this.UID = uniqueKey();
+        this.transform = new Transform({
+            gameObject: this
+        });
+        this._parent = null;
+        this._children = [];
+        this._childrenMap = {};
+    };
+    var p = Objects.inherits(AbstractGameObject, EventTarget);
+    p.setName = function(name) {
+        if (this._parent) {
+            delete this._parent._childrenMap[this.name];
+            this._parent._childrenMap[name] = this;
+        }
+        this.name = name;
+    };
+    p.getParent = function() {
+        return this._parent;
+    };
+    p.getPath = function(seperator) {
+        var o = this;
+        var path = [];
+        while (o && !o.isStage) {
+            path.unshift(o.name);
+            o = o._parent;
+        }
+        return path.join(seperator || "/");
+    };
+    p.getStage = function() {
+        var o = this;
+        while (o && !o.isStage) {
+            o = o._parent;
+        }
+        return o.isStage ? o : null;
+    };
+    p.getChildren = function() {
+        return this._children.slice();
+    };
+    p.sortChildren = function(func) {
+        this._children.sort(func);
+        this.dispatchEvent(new GameObjectEvent({
+            type: GameObjectEvent.CHANGED,
+            bubbles: false
+        }));
+    };
+    p.getObjectByName = function(name) {
+        return this._childrenMap[name];
+    };
+    p.addObject = function(obj) {
+        this._childrenMap[obj.name] = obj;
+        this._children.push(obj);
+        obj._parent = this;
+        this.dispatchEvent(new GameObjectEvent({
+            type: GameObjectEvent.ADDED,
+            bubbles: false,
+            child: obj
+        }));
+    };
+    p.insertObject = function(obj, index) {
+        this._childrenMap[obj.name] = obj;
+        this._children.splice(index, 0, obj);
+        obj._parent = this;
+        this.dispatchEvent(new GameObjectEvent({
+            type: GameObjectEvent.ADDED,
+            bubbles: false,
+            child: obj
+        }));
+    };
+    p.insertBefore = function(obj, objOrName) {
+        var i, len, child;
+        var index = 0;
+        for (i = 0, len = this._children.length; i < len; i++) {
+            child = this._children[i];
+            if (child === objOrName || child.name === objOrName) {
+                index = i;
+                break;
+            }
+        }
+        this.insertObject(obj, index);
+    };
+    p.insertAfter = function(obj, objOrName) {
+        var i, len, child;
+        var index = this._children.length;
+        for (i = 0, len = this._children.length; i < len; i++) {
+            child = this._children[i];
+            if (child === objOrName || child.name === objOrName) {
+                index = i;
+                break;
+            }
+        }
+        this.insertObject(obj, index + 1);
+    };
+    p.removeObject = function(objOrName) {
+        var children = this._children;
+        var obj = typeof objOrName === "string" ? this._childrenMap[objOrName] : objOrName;
+        var idx = -1;
+        var i, len;
+        for (i = 0, len = children.length; i < len; i++) {
+            if (obj === children[i]) {
+                idx = i;
+                children.splice(idx, 1);
+                break;
+            }
+        }
+        if (idx !== -1) {
+            delete this._childrenMap[obj.name];
+            obj._parent = null;
+            this.dispatchEvent(new GameObjectEvent({
+                type: GameObjectEvent.REMOVED,
+                bubbles: false,
+                child: obj
+            }));
+        }
+        return idx;
+    };
+    p.remove = function(params) {
+        this._parent && this._parent.removeObject(this);
+        this._parent = null;
+    };
+    p.removeAll = function(params) {
+        // event ?
+        this._children = [];
+        this._childrenMap = {};
+    };
+    p.findObjectByName = function(name) {
+        var i, len, children;
+        var obj = this.getObjectByName(name);
+        if (!obj) {
+            children = this._children;
+            for (i = 0, len = children.length; i < len; i++) {
+                obj = children[i].findObjectByName(name);
+                if (obj) break;
+            }
+        }
+        return obj;
+    };
+    p.findObjectByPath = function(path, seperator) {
+        var i, len;
+        var paths = path.split(seperator || "/");
+        var obj = this.findObjectByName(paths[0]);
+        if (obj) {
+            for (i = 1, len = paths.length; i < len; i++) {
+                obj = obj.getObjectByName(paths[i]);
+                if (!obj) return null;
+            }
+        }
+        return obj;
+    };
+    return AbstractGameObject;
+});
+
+define("wozlla/wozllajs/1.0.0/events/EventTarget-debug", [ "wozlla/wozllajs/1.0.0/events/Event-debug" ], function(require, exports, module) {
+    var Event = require("wozlla/wozllajs/1.0.0/events/Event-debug");
+    /**
+     *
+     * @name EventTarget
+     * @class EventTarget 类是可调度事件的所有类的基类。
+     * @constructor
+     */
+    var EventTarget = function() {
+        this._captureListeners = {};
+        this._listeners = {};
+    };
+    EventTarget.DEFAULT_ACTION_MAP = {
+        touchstart: "onTouchStart",
+        touchmove: "onTouchMove",
+        touchend: "onTouchEnd",
+        click: "onClick"
+    };
+    /**
+     * @lends EventTarget.prototype
+     */
+    var p = EventTarget.prototype;
+    /**
+     *
+     */
+    p.addEventListener = function(eventType, listener, useCapture) {
+        var listeners = useCapture ? this._captureListeners : this._listeners;
+        var arr = listeners[eventType];
+        if (arr) {
+            this.removeEventListener(eventType, listener, useCapture);
+        }
+        arr = listeners[eventType];
+        if (!arr) {
+            listeners[eventType] = [ listener ];
+        } else {
+            arr.push(listener);
+        }
+        return listener;
+    };
+    p.removeEventListener = function(eventType, listener, useCapture) {
+        var listeners = useCapture ? this._captureListeners : this._listeners;
+        if (!listeners) {
+            return;
+        }
+        var arr = listeners[eventType];
+        if (!arr) {
+            return;
+        }
+        for (var i = 0, l = arr.length; i < l; i++) {
+            if (arr[i] == listener) {
+                if (l == 1) {
+                    delete listeners[eventType];
+                } else {
+                    arr.splice(i, 1);
+                }
+                break;
+            }
+        }
+    };
+    p.hasEventListener = function(eventType) {
+        var listeners = this._listeners, captureListeners = this._captureListeners;
+        return !!(listeners && listeners[eventType] || captureListeners && captureListeners[eventType]);
+    };
+    p.dispatchEvent = function(event) {
+        var i, len, list, object, defaultAction;
+        event.target = this;
+        if (false === event.bubbles) {
+            event.eventPhase = Event.TARGET_PHASE;
+            if (!this._dispatchEvent(event)) {
+                defaultAction = this[EventTarget.DEFAULT_ACTION_MAP[event.type]];
+                defaultAction && defaultAction(event);
+            }
+            return;
+        }
+        list = this._getAncients();
+        event.eventPhase = Event.CAPTURING_PHASE;
+        for (i = list.length - 1; i >= 0; i--) {
+            object = list[i];
+            if (!object._dispatchEvent(event)) {
+                defaultAction = object[EventTarget.DEFAULT_ACTION_MAP[event.type]];
+                defaultAction && defaultAction(event);
+            }
+            if (event._propagationStoped) {
+                return;
+            }
+        }
+        event.eventPhase = Event.TARGET_PHASE;
+        if (!this._dispatchEvent(event)) {
+            defaultAction = this[EventTarget.DEFAULT_ACTION_MAP[event.type]];
+            defaultAction && defaultAction(event);
+        }
+        if (event._propagationStoped) {
+            return;
+        }
+        event.eventPhase = Event.BUBBLING_PHASE;
+        for (i = 0, len = list.length; i < len; i++) {
+            object = list[i];
+            if (!object._dispatchEvent(event)) {
+                defaultAction = object[EventTarget.DEFAULT_ACTION_MAP[event.type]];
+                defaultAction && defaultAction(event);
+            }
+            if (event._propagationStoped) {
+                return;
+            }
+        }
+    };
+    p._getAncients = function() {
+        var list = [];
+        var parent = this;
+        while (parent._parent) {
+            parent = parent._parent;
+            list.push(parent);
+        }
+        return list;
+    };
+    p._dispatchEvent = function(event) {
+        var i, len, arr, listeners, handler;
+        event.currentTarget = this;
+        event._listenerRemoved = false;
+        listeners = event.eventPhase === Event.CAPTURING_PHASE ? this._captureListeners : this._listeners;
+        if (listeners) {
+            arr = listeners[event.type];
+            if (!arr || arr.length === 0) return event._defaultPrevented;
+            arr = arr.slice();
+            for (i = 0, len = arr.length; i < len; i++) {
+                event._listenerRemoved = false;
+                handler = arr[i];
+                handler(event);
+                if (event._listenerRemoved) {
+                    this.removeEventListener(event.type, handler, event.eventPhase === Event.CAPTURING_PHASE);
+                }
+                if (event._immediatePropagationStoped) {
+                    break;
+                }
+            }
+        }
+        return event._defaultPrevented;
+    };
+    module.exports = EventTarget;
+});
+
+define("wozlla/wozllajs/1.0.0/events/Event-debug", [], function(require, exports, module) {
+    /**
+     * @name Event
+     * @class Event 类作为创建 Event 对象的基类，当发生事件时，Event 对象将作为参数传递给事件侦听器。
+     * @constructor
+     * @param {Object} params
+     * @param {String} params.type 指定事件类型
+     * @param {Boolean} params.bubbles 指定事件是否冒泡
+     */
+    var Event = function(params) {
+        /**
+         * [readonly] 事件类型
+         * @type {String}
+         */
+        this.type = params.type;
+        /**
+         * [readonly] 事件目标
+         * @type {EventTarget}
+         */
+        this.target = null;
+        /**
+         * [readonly] 当前正在使用某个事件侦听器处理 Event 对象的对象。
+         * @type {EventTarget}
+         */
+        this.currentTarget = null;
+        /**
+         * [readonly] 事件流中的当前阶段。
+         * @type {int}
+         */
+        this.eventPhase = null;
+        /**
+         * [只读] 表示事件是否为冒泡事件。
+         * @type {Boolean}
+         */
+        this.bubbles = params.bubbles;
+        this._immediatePropagationStoped = false;
+        this._propagationStoped = false;
+        this._defaultPrevented = false;
+        this._listenerRemoved = false;
+    };
+    Event.CAPTURING_PHASE = 1;
+    Event.BUBBLING_PHASE = 2;
+    Event.TARGET_PHASE = 3;
+    /**
+     * @lends Event.prototype
+     */
+    var p = Event.prototype;
+    /**
+     * 防止对事件流中当前节点中和所有后续节点中的事件侦听器进行处理。
+     */
+    p.stopImmediatePropagation = function() {
+        this._immediatePropagationStoped = true;
+        this._propagationStoped = true;
+    };
+    /**
+     * 防止对事件流中当前节点的后续节点中的所有事件侦听器进行处理。
+     */
+    p.stopPropagation = function() {
+        this._propagationStoped = true;
+    };
+    /**
+     * 如果可以取消事件的默认行为，则取消该行为。
+     */
+    p.preventDefault = function() {
+        this._defaultPrevented = true;
+    };
+    /**
+     * 移除当前正在处理事件的侦听器。
+     */
+    p.removeListener = function() {
+        this._listenerRemoved = true;
+    };
+    module.exports = Event;
+});
+
+define("wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug", [ "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/events/Event-debug" ], function(require) {
+    var Objects = require("wozlla/wozllajs/1.0.0/utils/Objects-debug");
+    var Event = require("wozlla/wozllajs/1.0.0/events/Event-debug");
+    var GameObjectEvent = function(param) {
+        Event.apply(this, arguments);
+    };
+    GameObjectEvent.INIT = "init";
+    GameObjectEvent.DESTROY = "destroy";
+    GameObjectEvent.CHANGED = "changed";
+    /**
+     * fire when child game object added , removed
+     * @type {string}
+     */
+    GameObjectEvent.ADDED = "added";
+    GameObjectEvent.REMOVED = "removed";
+    var p = Objects.inherits(GameObjectEvent, Event);
+    return GameObjectEvent;
+});
+
+define("wozlla/wozllajs/1.0.0/core/Transform-debug", [ "wozlla/wozllajs/1.0.0/math/Matrix2D-debug" ], function(require) {
+    var Matrix2D = require("wozlla/wozllajs/1.0.0/math/Matrix2D-debug");
+    // 一个createjs类用于帮助从Transform到canvas的context中的transform参数
+    var matrix = new Matrix2D();
+    var Transform = function(params) {
+        this.x = 0;
+        this.y = 0;
+        this.regX = 0;
+        this.regY = 0;
+        this.rotation = 0;
+        this.scaleX = 1;
+        this.scaleY = 1;
+        this.skewX = 0;
+        this.skewY = 0;
+        this.alpha = 1;
+        this.gameObject = params.gameObject;
+    };
+    Transform.prototype = {
+        /**
+         * Get the top parent of Transform
+         * @return {*}
+         */
+        getRoot: function() {
+            var o = this.gameObject;
+            while (o && o._parent) {
+                o = o._parent;
+            }
+            return o.transform;
+        },
+        /**
+         * 将一个坐标点从相对于当前Transform转换成全局的坐标点
+         * @param x
+         * @param y
+         * @return {*}
+         */
+        localToGlobal: function(x, y, concatenatedMatrix) {
+            var mtx;
+            if (concatenatedMatrix) {
+                matrix.copy(concatenatedMatrix);
+                mtx = matrix;
+            } else {
+                mtx = this.getConcatenatedMatrix();
+            }
+            if (mtx == null) {
+                return null;
+            }
+            mtx.append(1, 0, 0, 1, x, y);
+            return {
+                x: mtx.tx,
+                y: mtx.ty
+            };
+        },
+        /**
+         * 与localToGlobal相反
+         * @param x
+         * @param y
+         * @return {*}
+         */
+        globalToLocal: function(x, y, concatenatedMatrix) {
+            var mtx;
+            if (concatenatedMatrix) {
+                matrix.copy(concatenatedMatrix);
+                mtx = matrix;
+            } else {
+                mtx = this.getConcatenatedMatrix();
+            }
+            if (mtx == null) {
+                return null;
+            }
+            mtx.invert();
+            mtx.append(1, 0, 0, 1, x, y);
+            return {
+                x: mtx.tx,
+                y: mtx.ty
+            };
+        },
+        /**
+         * 获取一个Matrix2D, 及联了所有它的parentTransform的属性, 通常很方便的用于转换坐标点
+         * @return {createjs.Matrix2D}
+         */
+        getConcatenatedMatrix: function(resultMatrix) {
+            var o = this;
+            var mtx = resultMatrix || matrix;
+            mtx.identity();
+            while (o != null) {
+                mtx.prependTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY).prependProperties(o.alpha);
+                o = o.gameObject._parent;
+                if (o) {
+                    o = o.transform;
+                }
+            }
+            return mtx;
+        },
+        /**
+         * 获取当前Transform转换的Matrix2D
+         * @return {Matrix2D}
+         */
+        getMatrix: function() {
+            var o = this;
+            return matrix.identity().appendTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY).appendProperties(o.alpha);
+        },
+        /**
+         * 将当前的Transform应用到canvas的context上
+         * @param context CanvasContextRenderer2d
+         */
+        updateContext: function(context) {
+            var mtx, o = this;
+            mtx = matrix.identity().appendTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY);
+            context.transform(mtx.a, mtx.b, mtx.c, mtx.d, mtx.tx, mtx.ty);
+            context.globalAlpha *= o.alpha;
+        },
+        applyTransform: function(transform) {
+            this.x = transform.x;
+            this.y = transform.y;
+            this.regX = transform.regX;
+            this.regY = transform.regY;
+            this.scaleX = transform.scaleX;
+            this.scaleY = transform.scaleY;
+            this.rotation = transform.rotation;
+            this.alpha = transform.alpha;
+            this.skewX = transform.skewX;
+            this.skewY = transform.skewY;
+        }
+    };
+    return Transform;
+});
+
+define("wozlla/wozllajs/1.0.0/core/Behaviour-debug", [ "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/core/Component-debug", "wozlla/wozllajs/1.0.0/assets/loader-debug", "wozlla/wozllajs/1.0.0/utils/Strings-debug", "wozlla/wozllajs/1.0.0/utils/Arrays-debug", "wozlla/wozllajs/1.0.0/utils/Promise-debug", "wozlla/wozllajs/1.0.0/utils/Ajax-debug", "wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", "wozlla/wozllajs/1.0.0/assets/Texture-debug", "wozlla/wozllajs/1.0.0/utils/uniqueKey-debug" ], function(require) {
+    var Objects = require("wozlla/wozllajs/1.0.0/utils/Objects-debug");
+    var Component = require("wozlla/wozllajs/1.0.0/core/Component-debug");
+    function Behaviour() {
+        Component.apply(this, arguments);
+    }
+    var p = Objects.inherits(Behaviour, Component);
+    p.update = function() {};
+    p.lateUpdate = function() {};
+    return Behaviour;
+});
+
 define("wozlla/wozllajs/1.0.0/core/Animation-debug", [ "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/core/Time-debug", "wozlla/wozllajs/1.0.0/core/Behaviour-debug", "wozlla/wozllajs/1.0.0/core/Component-debug", "wozlla/wozllajs/1.0.0/assets/loader-debug", "wozlla/wozllajs/1.0.0/utils/Strings-debug", "wozlla/wozllajs/1.0.0/utils/Arrays-debug", "wozlla/wozllajs/1.0.0/utils/Promise-debug", "wozlla/wozllajs/1.0.0/utils/Ajax-debug", "wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", "wozlla/wozllajs/1.0.0/assets/Texture-debug", "wozlla/wozllajs/1.0.0/utils/uniqueKey-debug" ], function(require) {
     var Objects = require("wozlla/wozllajs/1.0.0/utils/Objects-debug");
     var Time = require("wozlla/wozllajs/1.0.0/core/Time-debug");
@@ -1671,531 +2275,6 @@ define("wozlla/wozllajs/1.0.0/core/Time-debug", [], function() {
             this.now = 0;
         }
     };
-});
-
-define("wozlla/wozllajs/1.0.0/core/Behaviour-debug", [ "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/core/Component-debug", "wozlla/wozllajs/1.0.0/assets/loader-debug", "wozlla/wozllajs/1.0.0/utils/Strings-debug", "wozlla/wozllajs/1.0.0/utils/Arrays-debug", "wozlla/wozllajs/1.0.0/utils/Promise-debug", "wozlla/wozllajs/1.0.0/utils/Ajax-debug", "wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", "wozlla/wozllajs/1.0.0/assets/Texture-debug", "wozlla/wozllajs/1.0.0/utils/uniqueKey-debug" ], function(require) {
-    var Objects = require("wozlla/wozllajs/1.0.0/utils/Objects-debug");
-    var Component = require("wozlla/wozllajs/1.0.0/core/Component-debug");
-    function Behaviour() {
-        Component.apply(this, arguments);
-    }
-    var p = Objects.inherits(Behaviour, Component);
-    p.update = function() {};
-    p.lateUpdate = function() {};
-    return Behaviour;
-});
-
-define("wozlla/wozllajs/1.0.0/core/Component-debug", [ "wozlla/wozllajs/1.0.0/assets/loader-debug", "wozlla/wozllajs/1.0.0/utils/Strings-debug", "wozlla/wozllajs/1.0.0/utils/Arrays-debug", "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/utils/Promise-debug", "wozlla/wozllajs/1.0.0/utils/Ajax-debug", "wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", "wozlla/wozllajs/1.0.0/assets/Texture-debug", "wozlla/wozllajs/1.0.0/utils/uniqueKey-debug" ], function(require) {
-    var loader = require("wozlla/wozllajs/1.0.0/assets/loader-debug");
-    var uniqueKey = require("wozlla/wozllajs/1.0.0/utils/uniqueKey-debug");
-    function Component() {
-        this.UID = uniqueKey();
-        this.gameObject = null;
-    }
-    var p = Component.prototype;
-    p.alias = undefined;
-    p.properties = {};
-    // for build
-    p.setGameObject = function(gameObject) {
-        this.gameObject = gameObject;
-    };
-    p.initComponent = function() {
-        this.applyProperties(this.properties);
-    };
-    p.destroyComponent = function() {};
-    p.on = function() {
-        this.gameObject.addEventListener.apply(this.gameObject, arguments);
-    };
-    p.off = function() {
-        this.gameObject.removeEventListener.apply(this.gameObject, arguments);
-    };
-    p.dispatchEvent = function(event) {
-        this.gameObject.dispatchEvent(event);
-    };
-    p.applyProperties = function(properties) {
-        for (var p in properties) {
-            this[p] = properties[p];
-        }
-    };
-    p.getResource = function(id) {
-        return loader.get(id);
-    };
-    p.loadResource = function(params, base) {
-        return loader.load(params, base);
-    };
-    p.unloadResource = function(ids) {
-        if (typeof ids === "string") {
-            ids = [ ids ];
-        }
-        var i, len;
-        for (i = 0, len = ids.length; i < len; i++) {
-            loader.remove(ids[i]);
-        }
-    };
-    p.isInstanceof = function(type) {
-        return this instanceof type;
-    };
-    return Component;
-});
-
-define("wozlla/wozllajs/1.0.0/core/CachableGameObject-debug", [ "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", "wozlla/wozllajs/1.0.0/math/Rectangle-debug", "wozlla/wozllajs/1.0.0/math/Matrix2D-debug", "wozlla/wozllajs/1.0.0/utils/Promise-debug", "wozlla/wozllajs/1.0.0/utils/Arrays-debug", "wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", "wozlla/wozllajs/1.0.0/utils/uniqueKey-debug", "wozlla/wozllajs/1.0.0/events/EventTarget-debug", "wozlla/wozllajs/1.0.0/events/Event-debug", "wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug", "wozlla/wozllajs/1.0.0/core/Transform-debug", "wozlla/wozllajs/1.0.0/core/Component-debug", "wozlla/wozllajs/1.0.0/assets/loader-debug", "wozlla/wozllajs/1.0.0/utils/Strings-debug", "wozlla/wozllajs/1.0.0/utils/Ajax-debug", "wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", "wozlla/wozllajs/1.0.0/assets/Texture-debug", "wozlla/wozllajs/1.0.0/core/Behaviour-debug", "wozlla/wozllajs/1.0.0/core/Animation-debug", "wozlla/wozllajs/1.0.0/core/Time-debug", "wozlla/wozllajs/1.0.0/core/Renderer-debug", "wozlla/wozllajs/1.0.0/core/Layout-debug", "wozlla/wozllajs/1.0.0/core/HitDelegate-debug", "wozlla/wozllajs/1.0.0/core/Mask-debug", "wozlla/wozllajs/1.0.0/utils/createCanvas-debug", "wozlla/wozllajs/1.0.0/core/Filter-debug" ], function(require) {
-    var Objects = require("wozlla/wozllajs/1.0.0/utils/Objects-debug");
-    var UnityGameObject = require("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug");
-    var Filter = require("wozlla/wozllajs/1.0.0/core/Filter-debug");
-    var createCanvas = require("wozlla/wozllajs/1.0.0/utils/createCanvas-debug");
-    var CachableGameObject = function(param) {
-        UnityGameObject.apply(this, arguments);
-        this._cacheCanvas = null;
-        this._cacheContext = null;
-        this._cached = false;
-        this._cacheOffsetX = 0;
-        this._cacheOffsetY = 0;
-    };
-    var p = Objects.inherits(CachableGameObject, UnityGameObject);
-    p.cache = function(x, y, width, height) {
-        if (this._cacheCanvas) {
-            this.uncache();
-        }
-        this._cacheOffsetX = x;
-        this._cacheOffsetY = y;
-        this._cacheCanvas = createCanvas(width, height);
-        this._cacheContext = this._cacheCanvas.getContext("2d");
-        this._cached = false;
-    };
-    p.updateCache = function(offsetX, offsetY) {
-        this._cached = false;
-        this._cacheOffsetX = offsetX || this._cacheOffsetX;
-        this._cacheOffsetY = offsetY || this._cacheOffsetY;
-    };
-    p.translateCache = function(deltaX, deltaY) {
-        this._cached = false;
-        this._cacheOffsetX += deltaX;
-        this._cacheOffsetY += deltaY;
-    };
-    p.uncache = function() {
-        if (this._cacheCanvas) {
-            this._cacheContext.dispose && this._cacheContext.dispose();
-            this._cacheCanvas.dispose && this._cacheCanvas.dispose();
-            this._cacheCanvas = null;
-        }
-        this._cached = false;
-    };
-    p._draw = function(context, visibleRect) {
-        if (this._cacheCanvas) {
-            if (!this._cached) {
-                this._drawCache();
-                this._cached = true;
-            }
-            context.drawImage(this._cacheCanvas, 0, 0);
-        } else {
-            UnityGameObject.prototype._draw.apply(this, arguments);
-        }
-    };
-    p._drawCache = function(context, visibleRect) {
-        var cacheContext = this._cacheContext;
-        cacheContext.clearRect(0, 0, this._cacheCanvas.width, this._cacheCanvas.height);
-        cacheContext = this._cacheContext;
-        cacheContext.translate(-this._cacheOffsetX, -this._cacheOffsetY);
-        UnityGameObject.prototype._draw.apply(this, [ cacheContext, visibleRect ]);
-        cacheContext.translate(this._cacheOffsetX, this._cacheOffsetY);
-        this._applyFilters(cacheContext, 0, 0, this._cacheCanvas.width, this._cacheCanvas.height);
-    };
-    p._applyFilters = function(cacheContext, x, y, width, height) {
-        var id, filter;
-        var filters = this.getComponents(Filter);
-        for (id in filters) {
-            cacheContext.save();
-            filter = filters[id];
-            filter.applyFilter(cacheContext, x, y, width, height);
-            cacheContext.restore();
-        }
-    };
-    return CachableGameObject;
-});
-
-define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/math/Rectangle-debug", "wozlla/wozllajs/1.0.0/math/Matrix2D-debug", "wozlla/wozllajs/1.0.0/utils/Promise-debug", "wozlla/wozllajs/1.0.0/utils/Arrays-debug", "wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", "wozlla/wozllajs/1.0.0/utils/uniqueKey-debug", "wozlla/wozllajs/1.0.0/events/EventTarget-debug", "wozlla/wozllajs/1.0.0/events/Event-debug", "wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug", "wozlla/wozllajs/1.0.0/core/Transform-debug", "wozlla/wozllajs/1.0.0/core/Component-debug", "wozlla/wozllajs/1.0.0/assets/loader-debug", "wozlla/wozllajs/1.0.0/utils/Strings-debug", "wozlla/wozllajs/1.0.0/utils/Ajax-debug", "wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", "wozlla/wozllajs/1.0.0/assets/Texture-debug", "wozlla/wozllajs/1.0.0/core/Behaviour-debug", "wozlla/wozllajs/1.0.0/core/Animation-debug", "wozlla/wozllajs/1.0.0/core/Time-debug", "wozlla/wozllajs/1.0.0/core/Renderer-debug", "wozlla/wozllajs/1.0.0/core/Layout-debug", "wozlla/wozllajs/1.0.0/core/HitDelegate-debug", "wozlla/wozllajs/1.0.0/core/Mask-debug", "wozlla/wozllajs/1.0.0/utils/createCanvas-debug" ], function(require) {
-    var Objects = require("wozlla/wozllajs/1.0.0/utils/Objects-debug");
-    var Rectangle = require("wozlla/wozllajs/1.0.0/math/Rectangle-debug");
-    var Matrix2D = require("wozlla/wozllajs/1.0.0/math/Matrix2D-debug");
-    var Promise = require("wozlla/wozllajs/1.0.0/utils/Promise-debug");
-    var AbstractGameObject = require("wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug");
-    var Component = require("wozlla/wozllajs/1.0.0/core/Component-debug");
-    var Behaviour = require("wozlla/wozllajs/1.0.0/core/Behaviour-debug");
-    var Animation = require("wozlla/wozllajs/1.0.0/core/Animation-debug");
-    var Renderer = require("wozlla/wozllajs/1.0.0/core/Renderer-debug");
-    var Layout = require("wozlla/wozllajs/1.0.0/core/Layout-debug");
-    var HitDelegate = require("wozlla/wozllajs/1.0.0/core/HitDelegate-debug");
-    var Mask = require("wozlla/wozllajs/1.0.0/core/Mask-debug");
-    var GameObjectEvent = require("wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug");
-    var createCanvas = require("wozlla/wozllajs/1.0.0/utils/createCanvas-debug");
-    var testHitCanvas = createCanvas(1, 1);
-    var testHitContext = testHitCanvas.getContext("2d");
-    var helpRect = new Rectangle();
-    var helpMatrix = new Matrix2D();
-    var UnityGameObject = function(param) {
-        AbstractGameObject.apply(this, arguments);
-        this._active = true;
-        this._visible = true;
-        this._width = 0;
-        this._height = 0;
-        this._interactive = false;
-        this._initialized = false;
-        this._components = [];
-        this._delayRemoves = [];
-    };
-    var p = Objects.inherits(UnityGameObject, AbstractGameObject);
-    p.isActive = function(upWards) {
-        if (upWards === false) {
-            return this._active;
-        }
-        var active = true;
-        var o = this;
-        while (o) {
-            active = active && o._active;
-            if (!active) {
-                return false;
-            }
-            o = o._parent;
-        }
-        return active;
-    };
-    p.setActive = function(active) {
-        this._active = active;
-    };
-    p.isVisible = function(upWards) {
-        if (upWards === false) {
-            return this._visible;
-        }
-        var visible = true;
-        var o = this;
-        while (o) {
-            visible = visible && o._visible;
-            if (!visible) {
-                return false;
-            }
-            o = o._parent;
-        }
-        return visible;
-    };
-    p.setVisible = function(visible) {
-        this._visible = visible;
-    };
-    p.isInteractive = function() {
-        return this._children.length > 0 || this._interactive;
-    };
-    p.setInteractive = function(interactive) {
-        this._interactive = interactive;
-    };
-    p.getWidth = function() {
-        return this._width;
-    };
-    p.setWidth = function(w) {
-        this._width = w;
-    };
-    p.getHeight = function() {
-        return this._height;
-    };
-    p.setHeight = function(h) {
-        this._height = h;
-    };
-    p.getGlobalBounds = function(resultRect, print) {
-        if (!resultRect) {
-            resultRect = new Rectangle();
-        }
-        var t = this.transform;
-        var concatenatedMatrix = this.transform.getConcatenatedMatrix(helpMatrix);
-        var localA = t.localToGlobal(0, 0, concatenatedMatrix);
-        var localB = t.localToGlobal(this._width, 0, concatenatedMatrix);
-        var localC = t.localToGlobal(0, this._height, concatenatedMatrix);
-        var localD = t.localToGlobal(this._width, this._height, concatenatedMatrix);
-        print && console.log(localA, localB, localC, localD);
-        resultRect.x = Math.min(localA.x, localB.x, localC.x, localD.x);
-        resultRect.y = Math.min(localA.y, localB.y, localC.y, localD.y);
-        resultRect.width = Math.max(localA.x, localB.x, localC.x, localD.x) - resultRect.x;
-        resultRect.height = Math.max(localA.y, localB.y, localC.y, localD.y) - resultRect.y;
-        return resultRect;
-    };
-    p.addComponent = function(component) {
-        this._components.push(component);
-        component.setGameObject(this);
-    };
-    p.getComponent = function(type) {
-        var i, len, comp;
-        var components = this._components;
-        var alias;
-        if (typeof type === "string") {
-            alias = type;
-            for (i = 0, len = components.length; i < len; i++) {
-                comp = components[i];
-                if (comp.alias === alias) {
-                    return comp;
-                }
-            }
-        } else {
-            for (i = 0, len = components.length; i < len; i++) {
-                comp = components[i];
-                if (comp.isInstanceof(type)) {
-                    return comp;
-                }
-            }
-        }
-        return null;
-    };
-    p.getComponents = function(type) {
-        var i, len, comp, alias;
-        var components = this._components;
-        var found = [];
-        if (typeof type === "string") {
-            alias = type;
-            for (i = 0, len = components.length; i < len; i++) {
-                comp = components[i];
-                if (comp.alias === alias) {
-                    found.push(comp);
-                }
-            }
-        } else {
-            for (i = 0, len = components.length; i < len; i++) {
-                comp = components[i];
-                if (comp.isInstanceof(type)) {
-                    found.push(comp);
-                }
-            }
-        }
-        return found;
-    };
-    p.removeComponent = function(component) {
-        var i, len, comp;
-        var components = this._components;
-        for (i = 0, len = components.length; i < len; i++) {
-            comp = components[i];
-            if (comp === component) {
-                components.splice(i, 1);
-                comp.setGameObject(null);
-                break;
-            }
-        }
-    };
-    p.delayRemoveComponent = function(component) {
-        this._delayRemoves.push(component);
-    };
-    p.delayRemoveObject = function(gameObject) {
-        this._delayRemoves.push(gameObject);
-    };
-    p.delayRemove = function() {
-        this._parent.delayRemoveObject(this);
-    };
-    p.sendMessage = function(methodName, args, type) {
-        var i, len, comp, method;
-        var components = this._components;
-        for (i = 0, len = components.length; i < len; i++) {
-            comp = components[i];
-            if (!type || type && comp.isInstanceof(type)) {
-                method = comp[methodName];
-                method && method.apply(comp, args);
-            }
-        }
-    };
-    p.broadcastMessage = function(methodName, args) {
-        var i, len, child;
-        var children = this._children;
-        for (i = 0, len = children.length; i < len; i++) {
-            child = children[i];
-            child.broadcastMessage(methodName, args);
-        }
-        this.sendMessage(methodName, args);
-    };
-    p.init = function() {
-        var i, len, child;
-        var children = this._children;
-        this.sendMessage("initComponent");
-        for (i = 0, len = children.length; i < len; i++) {
-            child = children[i];
-            child.init();
-        }
-        this.layout();
-        this._doDelayRemove();
-        this._initialized = true;
-        this.dispatchEvent(new GameObjectEvent({
-            type: GameObjectEvent.INIT,
-            bubbles: true
-        }));
-    };
-    p.destroy = function() {
-        var i, len, child;
-        var children = this._children;
-        for (i = 0, len = children.length; i < len; i++) {
-            child = children[i];
-            child.destroy();
-        }
-        this._doDelayRemove();
-        this.sendMessage("destroyComponent");
-        this.dispatchEvent(new GameObjectEvent({
-            type: GameObjectEvent.DESTROY,
-            bubbles: true
-        }));
-    };
-    p.layout = function() {
-        var layout = this.getComponent(Layout);
-        var children = this._children;
-        var i, len, child;
-        for (i = 0, len = children.length; i < len; i++) {
-            child = children[i];
-            child.layout();
-        }
-        layout && layout.doLayout();
-    };
-    p.update = function() {
-        if (!this._initialized || !this._active) return;
-        var i, len, child;
-        var children = this._children;
-        for (i = 0, len = children.length; i < len; i++) {
-            child = children[i];
-            child.update();
-        }
-        this.sendMessage("update", null, Behaviour);
-        this._doDelayRemove();
-    };
-    p.lateUpdate = function() {
-        if (!this._initialized || !this._active) return;
-        var i, len, child;
-        var children = this._children;
-        for (i = 0, len = children.length; i < len; i++) {
-            child = children[i];
-            child.lateUpdate();
-        }
-        this.sendMessage("lateUpdate", null, Behaviour);
-        this._doDelayRemove();
-    };
-    p.draw = function(context, visibleRect) {
-        var mask;
-        if (!this._initialized || !this._active || !this._visible) return;
-        context.save();
-        this.transform.updateContext(context);
-        this._draw(context, visibleRect);
-        context.restore();
-        this._doDelayRemove();
-    };
-    p.testHit = function(x, y) {
-        var hit = false, hitDelegate;
-        if (!this.isActive(true) || !this.isVisible(true)) {
-            return false;
-        }
-        hitDelegate = this.getComponent(HitDelegate);
-        if (hitDelegate) {
-            hit = hitDelegate.testHit(x, y);
-        } else {
-            testHitContext.setTransform(1, 0, 0, 1, -x, -y);
-            this._draw(testHitContext, this.getStage().getVisibleRect());
-            hit = testHitContext.getImageData(0, 0, 1, 1).data[3] > 1;
-            testHitContext.setTransform(1, 0, 0, 1, 0, 0);
-            testHitContext.clearRect(0, 0, 2, 2);
-        }
-        return hit;
-    };
-    p.getTopObjectUnderPoint = function(x, y, useInteractive) {
-        var i, child, obj, localPoint;
-        var children = this._children;
-        if (useInteractive && !this.isInteractive()) {
-            return null;
-        }
-        if (children.length > 0) {
-            for (i = children.length - 1; i >= 0; i--) {
-                child = children[i];
-                obj = child.getTopObjectUnderPoint(x, y, useInteractive);
-                if (obj) {
-                    return obj;
-                }
-            }
-        } else {
-            localPoint = this.transform.globalToLocal(x, y);
-            if (this.testHit(localPoint.x, localPoint.y)) {
-                return this;
-            }
-        }
-        return null;
-    };
-    p.animate = function(name, callback) {
-        var animations = this.getComponents(Animation);
-        var i, len, ani;
-        for (i = 0, len = animations.length; i < len; i++) {
-            ani = animations[i];
-            if (ani.name === name) {
-                ani.play(callback);
-                break;
-            }
-        }
-    };
-    p.playEffect = function(effects) {};
-    p._doDelayRemove = function() {
-        var i, len, target;
-        if (this._delayRemoves.length > 0) {
-            for (i = 0, len = this._delayRemoves.length; i < len; i++) {
-                target = this._delayRemoves[i];
-                if (target instanceof AbstractGameObject) {
-                    this.removeObject(target);
-                } else if (target instanceof Component) {
-                    this.removeComponent(target);
-                }
-            }
-            this._delayRemoves.length = 0;
-        }
-    };
-    p._draw = function(context, visibleRect) {
-        var i, len, child, gBounds, mask;
-        var children = this._children;
-        if (children.length <= 0) {
-            gBounds = this.getGlobalBounds(helpRect);
-            if (gBounds.intersects(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height)) {
-                mask = this.getComponent(Mask);
-                mask && mask.clip(context);
-                this.sendMessage("draw", arguments, Renderer);
-            }
-        } else {
-            mask = this.getComponent(Mask);
-            mask && mask.clip(context);
-            for (i = 0, len = children.length; i < len; i++) {
-                child = children[i];
-                child.draw(context, visibleRect);
-            }
-        }
-    };
-    return UnityGameObject;
-});
-
-define("wozlla/wozllajs/1.0.0/math/Rectangle-debug", [], function() {
-    var Rectangle = function(x, y, w, h) {
-        this.x = x || 0;
-        this.y = y || 0;
-        this.width = w || 0;
-        this.height = h || 0;
-    };
-    var p = Rectangle.prototype;
-    p.top = function() {
-        return this.y;
-    };
-    p.left = function() {
-        return this.x;
-    };
-    p.right = function() {
-        return this.x + this.width;
-    };
-    p.bottom = function() {
-        return this.y + this.height;
-    };
-    p.contains = function(x, y) {
-        return this.x <= x && this.y <= y && this.x + this.width > x && this.y + this.height > y;
-    };
-    p.containsPoint = function(point) {
-        return this.contains(point.x, point.y);
-    };
-    p.intersects = function(x, y, w, h) {
-        return this.x < x + w && this.x + this.width > x && this.y < y + h && this.y + this.height > y;
-    };
-    p.intersectRect = function(r) {
-        return this.intersects(r.x, r.y, r.width, r.height);
-    };
-    Rectangle.MAX_RECT = new Rectangle(Number.MIN_VALUE, Number.MIN_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-    return Rectangle;
 });
 
 define("wozlla/wozllajs/1.0.0/core/Renderer-debug", [ "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/core/Component-debug", "wozlla/wozllajs/1.0.0/assets/loader-debug", "wozlla/wozllajs/1.0.0/utils/Strings-debug", "wozlla/wozllajs/1.0.0/utils/Arrays-debug", "wozlla/wozllajs/1.0.0/utils/Promise-debug", "wozlla/wozllajs/1.0.0/utils/Ajax-debug", "wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", "wozlla/wozllajs/1.0.0/assets/Texture-debug", "wozlla/wozllajs/1.0.0/utils/uniqueKey-debug" ], function(require) {
@@ -2262,6 +2341,23 @@ define("wozlla/wozllajs/1.0.0/core/Filter-debug", [ "wozlla/wozllajs/1.0.0/utils
     var p = Objects.inherits(Filter, Component);
     p.applyFilter = function(cacheContext, x, y, width, height) {};
     return Filter;
+});
+
+define("wozlla/wozllajs/1.0.0/core/events/TouchEvent-debug", [ "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/events/Event-debug" ], function(require) {
+    var Objects = require("wozlla/wozllajs/1.0.0/utils/Objects-debug");
+    var Event = require("wozlla/wozllajs/1.0.0/events/Event-debug");
+    var TouchEvent = function(param) {
+        Event.apply(this, arguments);
+        this.x = param.x;
+        this.y = param.y;
+        this.touch = param.touch;
+    };
+    TouchEvent.TOUCH_START = "touchstart";
+    TouchEvent.TOUCH_END = "touchend";
+    TouchEvent.TOUCH_MOVE = "touchmove";
+    TouchEvent.CLICK = "click";
+    Objects.inherits(TouchEvent, Event);
+    return TouchEvent;
 });
 
 define("wozlla/wozllajs/1.0.0/core/Collider-debug", [ "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/core/Component-debug", "wozlla/wozllajs/1.0.0/assets/loader-debug", "wozlla/wozllajs/1.0.0/utils/Strings-debug", "wozlla/wozllajs/1.0.0/utils/Arrays-debug", "wozlla/wozllajs/1.0.0/utils/Promise-debug", "wozlla/wozllajs/1.0.0/utils/Ajax-debug", "wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", "wozlla/wozllajs/1.0.0/assets/Texture-debug", "wozlla/wozllajs/1.0.0/utils/uniqueKey-debug" ], function(require) {
@@ -2545,8 +2641,4 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
             enabled = false;
         }
     };
-});
-
-define("wozlla/wozllajs/1.0.0/core/GameObject-debug", [ "wozlla/wozllajs/1.0.0/core/CachableGameObject-debug", "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", "wozlla/wozllajs/1.0.0/math/Rectangle-debug", "wozlla/wozllajs/1.0.0/math/Matrix2D-debug", "wozlla/wozllajs/1.0.0/utils/Promise-debug", "wozlla/wozllajs/1.0.0/utils/Arrays-debug", "wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", "wozlla/wozllajs/1.0.0/utils/uniqueKey-debug", "wozlla/wozllajs/1.0.0/events/EventTarget-debug", "wozlla/wozllajs/1.0.0/events/Event-debug", "wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug", "wozlla/wozllajs/1.0.0/core/Transform-debug", "wozlla/wozllajs/1.0.0/core/Component-debug", "wozlla/wozllajs/1.0.0/assets/loader-debug", "wozlla/wozllajs/1.0.0/utils/Strings-debug", "wozlla/wozllajs/1.0.0/utils/Ajax-debug", "wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", "wozlla/wozllajs/1.0.0/assets/Texture-debug", "wozlla/wozllajs/1.0.0/core/Behaviour-debug", "wozlla/wozllajs/1.0.0/core/Animation-debug", "wozlla/wozllajs/1.0.0/core/Time-debug", "wozlla/wozllajs/1.0.0/core/Renderer-debug", "wozlla/wozllajs/1.0.0/core/Layout-debug", "wozlla/wozllajs/1.0.0/core/HitDelegate-debug", "wozlla/wozllajs/1.0.0/core/Mask-debug", "wozlla/wozllajs/1.0.0/utils/createCanvas-debug", "wozlla/wozllajs/1.0.0/core/Filter-debug" ], function(require) {
-    return require("wozlla/wozllajs/1.0.0/core/CachableGameObject-debug");
 });

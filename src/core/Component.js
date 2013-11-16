@@ -3,24 +3,49 @@ define(function(require) {
     var loader = require('../assets/loader');
     var uniqueKey = require('../utils/uniqueKey');
 
-    function Component() {
+	var registry = {};
+
+    function Component(properties) {
         this.UID = uniqueKey();
         this.gameObject = null;
+		this.properties = properties || {};
     }
+
+	Component.getConstructor = function(idOrAlias) {
+		return registry[idOrAlias];
+	};
+
+	Component.getRegistry = function() {
+		return registry;
+	};
+
+	Component.register = function(compCtor) {
+		var id = compCtor.prototype.id;
+		var alias = compCtor.prototype.alias;
+		if(!id || !alias) {
+			throw new Error('component must define id and alias.');
+		}
+		if(registry[id]) {
+			throw new Error('component id "' + id + '" has been registered.');
+		}
+		if(registry[alias]) {
+			throw new Error('component alias "' + alias + '" has been registered.');
+		}
+		registry[id] = compCtor;
+		registry[alias] = compCtor;
+	};
 
     var p = Component.prototype;
 
-    p.alias = undefined;
+	p.id = undefined;
 
-    p.properties = {}; // for build
+    p.alias = undefined;
 
     p.setGameObject = function(gameObject) {
         this.gameObject = gameObject;
     };
 
-    p.initComponent = function() {
-        this.applyProperties(this.properties);
-    };
+    p.initComponent = function() {};
 
     p.destroyComponent = function() {};
 
@@ -34,12 +59,6 @@ define(function(require) {
 
     p.dispatchEvent = function(event) {
         this.gameObject.dispatchEvent(event);
-    };
-
-    p.applyProperties = function(properties) {
-        for(var p in properties) {
-            this[p] = properties[p];
-        }
     };
 
     p.getResource = function(id) {

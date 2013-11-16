@@ -633,7 +633,6 @@ Module.prototype.fetch = function(requestCache) {
 
 // Execute a module
 Module.prototype.exec = function () {
-
   var mod = this
 
   // When module is executed, DO NOT execute it again. When module

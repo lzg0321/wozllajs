@@ -39,16 +39,22 @@ define(function (require, exports, module) {
             if(err) {
                 callback(err);
             } else {
-                callback(new AsyncImage(image));
+                callback(null, new AsyncImage(item.id, image));
             }
         });
     };
     loaderMap['texture'] = function(item, callback) {
-        loadImage(item.src, function(err, image) {
+		var imgSrc = item.src.replace('.tt.json', '.tt.png');
+        loadImage(imgSrc, function(err, image) {
             if(err) {
                 callback(err);
             } else {
-                callback(new Texture(image));
+				Ajax.getJSON(item.src).then(function(data) {
+					callback(null, new Texture(item.id, image, data.frames));
+				}).catchError(function(err) {
+					callback(err);
+				});
+
             }
         });
     };
@@ -87,7 +93,7 @@ define(function (require, exports, module) {
             loadResult;
 
         if(loading || loadQueue.length === 0) return;
-
+		loading = true;
         loadUnit = loadQueue.shift();
         promise = loadUnit.promise;
         items = loadUnit.items;
@@ -95,10 +101,16 @@ define(function (require, exports, module) {
         loadedCount = 0;
         for(i=0,len=items.length; i<len; i++) {
             item = items[i];
+			if(!item) continue;
             itemId = item.id;
             if(assetsMap[itemId]) {
                 loadResult[itemId] = true;
                 loadedCount++;
+				if(loadedCount === items.length) {
+					promise.done(loadResult);
+					loading = false;
+					loadNext();
+				}
             } else {
                 (function(item) {
                     item.loader(item, function(err, result) {
@@ -109,6 +121,7 @@ define(function (require, exports, module) {
                         loadedCount ++;
                         if(loadedCount === items.length) {
                             promise.done(loadResult);
+							loading = false;
                             loadNext();
                         }
                     });
@@ -118,6 +131,10 @@ define(function (require, exports, module) {
     }
 
     exports.baseURL = '';
+
+	exports.printAssets = function() {
+		console.log(assetsMap);
+	};
 
     exports.load = function(items, base) {
         var i, len,
