@@ -1,0 +1,29 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>Jasmine Spec Runner v2.0.0-rc5</title>
+<!---->
+  <link rel="shortcut icon" type="image/png" href="../lib/jasmine-2.0.0-rc5/jasmine_favicon.png">
+  <link rel="stylesheet" type="text/css" href="../lib/jasmine-2.0.0-rc5/jasmine.css">
+
+  <script type="text/javascript" src="../lib/jasmine-2.0.0-rc5/jasmine.js"></script>
+  <script type="text/javascript" src="../lib/jasmine-2.0.0-rc5/jasmine-html.js"></script>
+  <script type="text/javascript" src="../lib/jasmine-2.0.0-rc5/boot.js"></script>
+
+</head>
+<body>
+<canvas id="canvas" width="960" height="640"></canvas>
+<script type="text/javascript" src="../sea-modules/seajs/seajs/2.1.1/sea.js"></script>
+<script>
+    seajs.config({
+        base: "../sea-modules/",
+        debug: true,
+        alias : {
+            wozllajs : 'wozlla/wozllajs/1.0.0/wozlla'
+        }
+    });
+    seajs.use('./main');
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "family": "wozlla",
+  "name": "wozllajs",
+  "version": "1.0.0",
+  "spm": {
+    "output": [
+      "wozlla.js"
+    ]
+  },
+  "devDependencies": {
+    "grunt": "~0.4.1"
+  }
+}
