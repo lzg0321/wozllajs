@@ -283,7 +283,6 @@ define(function(require) {
     };
 
     p.draw = function(context, visibleRect) {
-        var mask;
         if(!this._initialized || !this._active || !this._visible) return;
         context.save();
         this.transform.updateContext(context);

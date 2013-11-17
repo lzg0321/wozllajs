@@ -13,7 +13,7 @@ define("wozlla/wozllajs/1.0.0/wozlla-debug", [ "./assets/AsyncImage-debug", "./u
             },
             AbstractGameObject: require("./core/AbstractGameObject-debug"),
             Animation: require("./core/Animation-debug"),
-            Behivour: require("./core/Behaviour-debug"),
+            Behaviour: require("./core/Behaviour-debug"),
             CachableGameObject: require("./core/CachableGameObject-debug"),
             Collider: require("./core/Collider-debug"),
             Component: require("./core/Component-debug"),
@@ -308,6 +308,9 @@ define("wozlla/wozllajs/1.0.0/assets/loader-debug", [ "wozlla/wozllajs/1.0.0/uti
                     src: item
                 };
             }
+            if (!item.id) {
+                item.id = item.src;
+            }
             item.src = exports.baseURL + item.src;
             item.loader = matchLoader(item);
             items[i] = item;
@@ -490,7 +493,7 @@ define("wozlla/wozllajs/1.0.0/utils/Ajax-debug", [ "wozlla/wozllajs/1.0.0/utils/
         xhr.send();
     };
     var POST = function() {};
-    var xhr = function() {
+    var createXHR = function() {
         return new XMLHttpRequest();
     };
     exports.param = param;
@@ -527,7 +530,7 @@ define("wozlla/wozllajs/1.0.0/utils/Ajax-debug", [ "wozlla/wozllajs/1.0.0/utils/
                 data._ = now;
             }
         }
-        xhr = xhr();
+        xhr = createXHR();
         xhr.overrideMimeType && xhr.overrideMimeType(mimeType);
         try {
             switch (method.toUpperCase()) {
@@ -1054,7 +1057,6 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
         this._doDelayRemove();
     };
     p.draw = function(context, visibleRect) {
-        var mask;
         if (!this._initialized || !this._active || !this._visible) return;
         context.save();
         this.transform.updateContext(context);

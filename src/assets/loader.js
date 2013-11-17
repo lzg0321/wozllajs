@@ -154,6 +154,9 @@ define(function (require, exports, module) {
                     src : item
                 };
             }
+			if(!item.id) {
+				item.id = item.src;
+			}
             item.src = exports.baseURL + item.src;
             item.loader = matchLoader(item);
             items[i] = item;

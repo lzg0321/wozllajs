@@ -32,7 +32,7 @@ define(function (require, exports, module) {
         // TODO
     };
 
-    var xhr = function() {
+    var createXHR = function() {
         return new XMLHttpRequest();
     };
 
@@ -79,7 +79,7 @@ define(function (require, exports, module) {
             }
         }
 
-        xhr = xhr();
+        xhr = createXHR();
         xhr.overrideMimeType && xhr.overrideMimeType(mimeType);
 
         try {

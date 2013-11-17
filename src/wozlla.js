@@ -14,7 +14,7 @@ define(function(require) {
             },
             AbstractGameObject: require('./core/AbstractGameObject'),
             Animation: require('./core/Animation'),
-            Behivour: require('./core/Behaviour'),
+			Behaviour: require('./core/Behaviour'),
             CachableGameObject: require('./core/CachableGameObject'),
             Collider: require('./core/Collider'),
             Component: require('./core/Component'),
