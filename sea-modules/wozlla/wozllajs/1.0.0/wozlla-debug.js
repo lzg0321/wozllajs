@@ -380,18 +380,20 @@ define("wozlla/wozllajs/1.0.0/utils/Promise-debug", [ "wozlla/wozllajs/1.0.0/uti
                 promises = [ promises ];
             }
         } else {
-            promises = W.slice(arguments);
+            promises = Arrays.slice(arguments);
         }
         for (i = 0, len = promises.length; i < len; i++) {
             (function(idx, promiseLen) {
                 promises[idx].then(function(r) {
                     doneNum++;
-                    r = arguments.length > 1 ? W.slice(arguments) : r;
+                    r = arguments.length > 1 ? Arrays.slice(arguments) : r;
                     result[idx] = r;
                     if (doneNum === promiseLen) {
                         p.done.apply(p, result);
                     }
                     return r;
+                }).catchError(function(e) {
+                    p.sendError(e);
                 });
             })(i, len);
         }
@@ -415,7 +417,9 @@ define("wozlla/wozllajs/1.0.0/utils/Promise-debug", [ "wozlla/wozllajs/1.0.0/uti
             if (!p || !(p instanceof Promise)) {
                 p = new Promise();
             }
-            p.sendError(e);
+            setTimeout(function() {
+                p.sendError(e);
+            }, 1);
         }
         return p;
     };
@@ -663,6 +667,9 @@ define("wozlla/wozllajs/1.0.0/core/Component-debug", [ "wozlla/wozllajs/1.0.0/as
     };
     Component.getRegistry = function() {
         return registry;
+    };
+    Component.unregisterAll = function() {
+        register = {};
     };
     Component.register = function(compCtor) {
         var id = compCtor.prototype.id;
@@ -936,10 +943,10 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
         var components = this._components;
         var found = [];
         if (typeof type === "string") {
-            alias = type;
+            alias = type.toLowerCase();
             for (i = 0, len = components.length; i < len; i++) {
                 comp = components[i];
-                if (comp.alias === alias) {
+                if (comp.alias.toLowerCase() === alias) {
                     found.push(comp);
                 }
             }
@@ -1970,23 +1977,36 @@ define("wozlla/wozllajs/1.0.0/events/EventTarget-debug", [ "wozlla/wozllajs/1.0.
         return list;
     };
     p._dispatchEvent = function(event) {
-        var i, len, arr, listeners, handler;
+        var i, len, arr, allArr, listeners, handler;
         event.currentTarget = this;
         event._listenerRemoved = false;
         listeners = event.eventPhase === Event.CAPTURING_PHASE ? this._captureListeners : this._listeners;
         if (listeners) {
             arr = listeners[event.type];
-            if (!arr || arr.length === 0) return event._defaultPrevented;
-            arr = arr.slice();
-            for (i = 0, len = arr.length; i < len; i++) {
-                event._listenerRemoved = false;
-                handler = arr[i];
-                handler(event);
-                if (event._listenerRemoved) {
-                    this.removeEventListener(event.type, handler, event.eventPhase === Event.CAPTURING_PHASE);
+            allArr = listeners["*"];
+            if (arr && arr.length > 0) {
+                arr = arr.slice();
+                for (i = 0, len = arr.length; i < len; i++) {
+                    event._listenerRemoved = false;
+                    handler = arr[i];
+                    handler(event);
+                    if (event._listenerRemoved) {
+                        this.removeEventListener(event.type, handler, event.eventPhase === Event.CAPTURING_PHASE);
+                    }
+                    if (event._immediatePropagationStoped) {
+                        break;
+                    }
                 }
-                if (event._immediatePropagationStoped) {
-                    break;
+            }
+            if (allArr && allArr.length > 0) {
+                allArr = allArr.slice();
+                for (i = 0, len = allArr.length; i < len; i++) {
+                    event._listenerRemoved = false;
+                    handler = allArr[i];
+                    handler(event);
+                    if (event._listenerRemoved) {
+                        this.removeEventListener("*", handler, event.eventPhase === Event.CAPTURING_PHASE);
+                    }
                 }
             }
         }

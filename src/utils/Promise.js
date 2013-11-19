@@ -17,19 +17,21 @@ define(function(require, exports, module) {
                 promises = [promises];
             }
         } else {
-            promises = W.slice(arguments);
+            promises = Arrays.slice(arguments);
         }
         for(i=0,len=promises.length; i<len; i++) {
             (function(idx, promiseLen) {
                 promises[idx].then(function(r) {
                     doneNum ++;
-                    r = arguments.length > 1 ? W.slice(arguments) : r;
+                    r = arguments.length > 1 ? Arrays.slice(arguments) : r;
                     result[idx] = r;
                     if(doneNum === promiseLen) {
                         p.done.apply(p, result);
                     }
                     return r;
-                });
+                }).catchError(function(e) {
+					p.sendError(e);
+				});
             })(i, len);
         }
         return p;
@@ -53,7 +55,9 @@ define(function(require, exports, module) {
             if(!p || !(p instanceof Promise)) {
                 p = new Promise();
             }
-            p.sendError(e);
+            setTimeout(function() {
+				p.sendError(e);
+			}, 1);
         }
         return p;
     };

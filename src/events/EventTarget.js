@@ -119,25 +119,38 @@ define(function (require, exports, module) {
     };
 
     p._dispatchEvent = function(event) {
-        var i, len, arr, listeners, handler;
+        var i, len, arr, allArr, listeners, handler;
         event.currentTarget = this;
         event._listenerRemoved = false;
         listeners = event.eventPhase === Event.CAPTURING_PHASE ? this._captureListeners : this._listeners;
         if(listeners) {
             arr = listeners[event.type];
-            if(!arr || arr.length === 0) return event._defaultPrevented;
-            arr = arr.slice();
-            for(i=0,len=arr.length; i<len; i++) {
-                event._listenerRemoved = false;
-                handler = arr[i];
-                handler(event);
-                if(event._listenerRemoved) {
-                    this.removeEventListener(event.type, handler, event.eventPhase === Event.CAPTURING_PHASE);
-                }
-                if(event._immediatePropagationStoped) {
-                    break;
-                }
-            }
+			allArr = listeners['*'];
+			if(arr && arr.length > 0) {
+				arr = arr.slice();
+				for(i=0,len=arr.length; i<len; i++) {
+					event._listenerRemoved = false;
+					handler = arr[i];
+					handler(event);
+					if(event._listenerRemoved) {
+						this.removeEventListener(event.type, handler, event.eventPhase === Event.CAPTURING_PHASE);
+					}
+					if(event._immediatePropagationStoped) {
+						break;
+					}
+				}
+			}
+			if(allArr && allArr.length > 0) {
+				allArr = allArr.slice();
+				for(i=0,len=allArr.length; i<len; i++) {
+					event._listenerRemoved = false;
+					handler = allArr[i];
+					handler(event);
+					if(event._listenerRemoved) {
+						this.removeEventListener('*', handler, event.eventPhase === Event.CAPTURING_PHASE);
+					}
+				}
+			}
         }
         return event._defaultPrevented;
     };

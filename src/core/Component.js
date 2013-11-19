@@ -19,6 +19,10 @@ define(function(require) {
 		return registry;
 	};
 
+	Component.unregisterAll = function() {
+		register = {};
+	};
+
 	Component.register = function(compCtor) {
 		var id = compCtor.prototype.id;
 		var alias = compCtor.prototype.alias;

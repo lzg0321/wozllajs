@@ -150,10 +150,10 @@ define(function(require) {
         var components = this._components;
         var found = [];
         if(typeof type === 'string') {
-            alias = type;
+            alias = type.toLowerCase();
             for(i=0,len=components.length; i<len; i++) {
                 comp = components[i];
-                if(comp.alias === alias) {
+                if(comp.alias.toLowerCase() === alias) {
                     found.push(comp);
                 }
             }
