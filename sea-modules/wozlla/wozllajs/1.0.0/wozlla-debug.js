@@ -347,6 +347,10 @@ define("wozlla/wozllajs/1.0.0/assets/loader-debug", [ "wozlla/wozllajs/1.0.0/uti
 });
 
 define("wozlla/wozllajs/1.0.0/utils/Strings-debug", [], function(require, exports, module) {
+    var trimRegex = /^[\x09\x0a\x0b\x0c\x0d\x20\xa0\u1680\u180e\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000]+|[\x09\x0a\x0b\x0c\x0d\x20\xa0\u1680\u180e\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000]+$/g;
+    exports.trim = function(str) {
+        return str.replace(trimRegex, "");
+    };
     exports.endWith = function(test, suffix) {
         if (!exports.is(test)) {
             return false;
@@ -1071,7 +1075,7 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
         context.restore();
         this._doDelayRemove();
     };
-    p.testHit = function(x, y) {
+    p.testHit = function(x, y, onlyUseHitDelegate) {
         var hit = false, hitDelegate;
         if (!this.isActive(true) || !this.isVisible(true)) {
             return false;
@@ -1079,7 +1083,7 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
         hitDelegate = this.getComponent(HitDelegate);
         if (hitDelegate) {
             hit = hitDelegate.testHit(x, y);
-        } else {
+        } else if (!onlyUseHitDelegate) {
             testHitContext.setTransform(1, 0, 0, 1, -x, -y);
             this._draw(testHitContext, this.getStage().getVisibleRect());
             hit = testHitContext.getImageData(0, 0, 1, 1).data[3] > 1;
@@ -1102,9 +1106,10 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
                     return obj;
                 }
             }
-        } else {
+        }
+        if (this._interactive) {
             localPoint = this.transform.globalToLocal(x, y);
-            if (this.testHit(localPoint.x, localPoint.y)) {
+            if (this.testHit(localPoint.x, localPoint.y, true)) {
                 return this;
             }
         }
@@ -1928,8 +1933,7 @@ define("wozlla/wozllajs/1.0.0/events/EventTarget-debug", [ "wozlla/wozllajs/1.0.
         var i, len, list, object, defaultAction;
         event.target = this;
         if (false === event.bubbles) {
-            event.eventPhase = Event.BUBBLING_PHASE;
-			//console.log(event.type);
+            event.eventPhase = Event.TARGET_PHASE;
             if (!this._dispatchEvent(event)) {
                 defaultAction = this[EventTarget.DEFAULT_ACTION_MAP[event.type]];
                 defaultAction && defaultAction(event);
@@ -2125,6 +2129,7 @@ define("wozlla/wozllajs/1.0.0/core/Transform-debug", [ "wozlla/wozllajs/1.0.0/ma
         this.skewX = 0;
         this.skewY = 0;
         this.alpha = 1;
+        this.relative = true;
         this.gameObject = params.gameObject;
     };
     Transform.prototype = {
@@ -2218,7 +2223,11 @@ define("wozlla/wozllajs/1.0.0/core/Transform-debug", [ "wozlla/wozllajs/1.0.0/ma
         updateContext: function(context) {
             var mtx, o = this;
             mtx = matrix.identity().appendTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY);
-            context.transform(mtx.a, mtx.b, mtx.c, mtx.d, mtx.tx, mtx.ty);
+            if (this.relative) {
+                context.transform(mtx.a, mtx.b, mtx.c, mtx.d, mtx.tx, mtx.ty);
+            } else {
+                context.setTransform(mtx.a, mtx.b, mtx.c, mtx.d, mtx.tx, mtx.ty);
+            }
             context.globalAlpha *= o.alpha;
         },
         applyTransform: function(transform) {
@@ -2600,12 +2609,16 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
             y = t.pageY - canvasOffset.y;
         }
         target = stage.getTopObjectUnderPoint(x, y, true);
+		if(!target) {
+			console.log('not target');
+		}
         if (type === "mousedown" || type === TouchEvent.TOUCH_START) {
             type = TouchEvent.TOUCH_START;
             touchstartTarget = target;
             touchendTarget = null;
         } else if ((type === "mouseup" || type === TouchEvent.TOUCH_END) && touchstartTarget) {
             type = TouchEvent.TOUCH_END;
+            touchendTarget = target;
         } else if ((type === "mousemove" || type === TouchEvent.TOUCH_MOVE) && touchstartTarget) {
             type = TouchEvent.TOUCH_MOVE;
         }
@@ -2619,7 +2632,7 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
             }));
             if (type === TouchEvent.TOUCH_END) {
                 if (touchstartTarget && touchstartTarget === target) {
-                    touchendTarget.dispatchEvent(new TouchEvent({
+                    target.dispatchEvent(new TouchEvent({
                         type: TouchEvent.CLICK,
                         x: x,
                         y: y,

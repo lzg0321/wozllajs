@@ -16,6 +16,7 @@ define(function(require) {
         this.skewX = 0;
         this.skewY = 0;
         this.alpha = 1;
+		this.relative = true;
         this.gameObject = params.gameObject;
     };
 
@@ -108,7 +109,11 @@ define(function(require) {
         updateContext : function(context) {
             var mtx, o=this;
             mtx = matrix.identity().appendTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY);
-            context.transform(mtx.a,  mtx.b, mtx.c, mtx.d, mtx.tx, mtx.ty);
+			if(this.relative) {
+            	context.transform(mtx.a, mtx.b, mtx.c, mtx.d, mtx.tx, mtx.ty);
+			} else {
+				context.setTransform(mtx.a, mtx.b, mtx.c, mtx.d, mtx.tx, mtx.ty);
+			}
             context.globalAlpha *= o.alpha;
         },
 

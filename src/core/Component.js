@@ -53,11 +53,11 @@ define(function(require) {
 
     p.destroyComponent = function() {};
 
-    p.on = function() {
+    p.on = function(type, listener) {
         this.gameObject.addEventListener.apply(this.gameObject, arguments);
     };
 
-    p.off = function() {
+    p.off = function(type, listener) {
         this.gameObject.removeEventListener.apply(this.gameObject, arguments);
     };
 

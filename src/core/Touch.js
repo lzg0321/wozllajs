@@ -48,6 +48,7 @@ define(function(require) {
         }
         else if((type === 'mouseup' || type === TouchEvent.TOUCH_END) && touchstartTarget) {
             type = TouchEvent.TOUCH_END;
+			touchendTarget = target;
         }
         else if((type === 'mousemove' || type === TouchEvent.TOUCH_MOVE) && touchstartTarget) {
             type = TouchEvent.TOUCH_MOVE;
@@ -63,7 +64,7 @@ define(function(require) {
             }));
             if(type === TouchEvent.TOUCH_END) {
                 if(touchstartTarget && touchstartTarget === target) {
-                    touchendTarget.dispatchEvent(new TouchEvent({
+					target.dispatchEvent(new TouchEvent({
                         type : TouchEvent.CLICK,
                         x : x,
                         y : y,
