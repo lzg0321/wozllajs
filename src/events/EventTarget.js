@@ -67,7 +67,7 @@ define(function (require, exports, module) {
         var i, len, list, object, defaultAction;
         event.target = this;
         if(false === event.bubbles) {
-            event.eventPhase = Event.TARGET_PHASE;
+            event.eventPhase = Event.BUBBLING_PHASE;
             if(!this._dispatchEvent(event)) {
                 defaultAction = this[EventTarget.DEFAULT_ACTION_MAP[event.type]];
                 defaultAction && defaultAction(event);

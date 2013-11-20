@@ -669,7 +669,7 @@ define("wozlla/wozllajs/1.0.0/core/Component-debug", [ "wozlla/wozllajs/1.0.0/as
         return registry;
     };
     Component.unregisterAll = function() {
-        register = {};
+        registry = {};
     };
     Component.register = function(compCtor) {
         var id = compCtor.prototype.id;
@@ -1928,7 +1928,8 @@ define("wozlla/wozllajs/1.0.0/events/EventTarget-debug", [ "wozlla/wozllajs/1.0.
         var i, len, list, object, defaultAction;
         event.target = this;
         if (false === event.bubbles) {
-            event.eventPhase = Event.TARGET_PHASE;
+            event.eventPhase = Event.BUBBLING_PHASE;
+			//console.log(event.type);
             if (!this._dispatchEvent(event)) {
                 defaultAction = this[EventTarget.DEFAULT_ACTION_MAP[event.type]];
                 defaultAction && defaultAction(event);

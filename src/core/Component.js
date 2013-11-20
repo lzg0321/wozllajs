@@ -20,7 +20,7 @@ define(function(require) {
 	};
 
 	Component.unregisterAll = function() {
-		register = {};
+		registry = {};
 	};
 
 	Component.register = function(compCtor) {
