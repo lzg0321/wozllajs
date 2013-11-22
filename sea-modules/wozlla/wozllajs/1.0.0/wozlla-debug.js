@@ -1,4 +1,4 @@
-define("wozlla/wozllajs/1.0.0/wozlla-debug", [ "./assets/AsyncImage-debug", "./utils/Arrays-debug", "./assets/Texture-debug", "./utils/Objects-debug", "./assets/loader-debug", "./utils/Strings-debug", "./utils/Promise-debug", "./utils/Ajax-debug", "./assets/objLoader-debug", "./core/Component-debug", "./utils/uniqueKey-debug", "./core/GameObject-debug", "./core/CachableGameObject-debug", "./core/UnityGameObject-debug", "./math/Rectangle-debug", "./math/Matrix2D-debug", "./core/AbstractGameObject-debug", "./events/EventTarget-debug", "./events/Event-debug", "./core/events/GameObjectEvent-debug", "./core/Transform-debug", "./core/Behaviour-debug", "./core/Animation-debug", "./core/Time-debug", "./core/Renderer-debug", "./core/Layout-debug", "./core/HitDelegate-debug", "./core/Mask-debug", "./utils/createCanvas-debug", "./core/Filter-debug", "./core/events/TouchEvent-debug", "./core/Collider-debug", "./core/Engine-debug", "./utils/Tuple-debug", "./core/Stage-debug", "./core/Touch-debug" ], function(require) {
+define("wozlla/wozllajs/1.0.0/wozlla-debug", [ "./assets/AsyncImage-debug", "./utils/Arrays-debug", "./assets/Texture-debug", "./utils/Objects-debug", "./assets/loader-debug", "./utils/Strings-debug", "./utils/Promise-debug", "./utils/Ajax-debug", "./assets/objLoader-debug", "./core/Component-debug", "./utils/uniqueKey-debug", "./core/GameObject-debug", "./core/CachableGameObject-debug", "./core/UnityGameObject-debug", "./math/Rectangle-debug", "./math/Matrix2D-debug", "./core/AbstractGameObject-debug", "./events/EventTarget-debug", "./events/Event-debug", "./core/events/GameObjectEvent-debug", "./core/Transform-debug", "./core/Behaviour-debug", "./core/Animation-debug", "./core/Time-debug", "./core/Renderer-debug", "./core/Layout-debug", "./core/HitDelegate-debug", "./core/Mask-debug", "./utils/createCanvas-debug", "./core/Filter-debug", "./core/events/TouchEvent-debug", "./core/Collider-debug", "./core/Engine-debug", "./utils/Tuple-debug", "./core/Stage-debug", "./utils/listenAppState-debug", "./core/Touch-debug" ], function(require) {
     return {
         assets: {
             AsyncImage: require("./assets/AsyncImage-debug"),
@@ -240,12 +240,13 @@ define("wozlla/wozllajs/1.0.0/assets/loader-debug", [ "wozlla/wozllajs/1.0.0/uti
         });
     };
     function matchLoader(item) {
-        var loader;
+        var loader, src;
         if (item.type) {
             return loaderMap[item.type];
         }
         Objects.each(loaderMap, function(k, v) {
-            if (Strings.endWith(item.src, k)) {
+            src = item.src.substr(0, item.src.indexOf("?"));
+            if (Strings.endWith(src, k)) {
                 loader = v;
                 return false;
             }
@@ -292,6 +293,9 @@ define("wozlla/wozllajs/1.0.0/assets/loader-debug", [ "wozlla/wozllajs/1.0.0/uti
         }
     }
     exports.baseURL = "";
+    exports.printUsingCounter = function() {
+        console.log(assetsUsingCounter);
+    };
     exports.printAssets = function() {
         console.log(assetsMap);
     };
@@ -311,7 +315,7 @@ define("wozlla/wozllajs/1.0.0/assets/loader-debug", [ "wozlla/wozllajs/1.0.0/uti
             if (!item.id) {
                 item.id = item.src;
             }
-            item.src = exports.baseURL + item.src;
+            item.src = exports.baseURL + item.src + "?t=" + Date.now();
             item.loader = matchLoader(item);
             items[i] = item;
         }
@@ -606,7 +610,7 @@ define("wozlla/wozllajs/1.0.0/assets/objLoader-debug", [ "wozlla/wozllajs/1.0.0/
             name: objData.name
         });
         gameObject.setActive(objData.active);
-        gameObject.setActive(objData.visible);
+        gameObject.setVisible(objData.visible);
         gameObject.setWidth(objData.width || 0);
         gameObject.setHeight(objData.height || 0);
         gameObject.setInteractive(objData.interactive);
@@ -667,7 +671,11 @@ define("wozlla/wozllajs/1.0.0/core/Component-debug", [ "wozlla/wozllajs/1.0.0/as
         this.properties = properties || {};
     }
     Component.getConstructor = function(idOrAlias) {
-        return registry[idOrAlias];
+        var ctor = registry[idOrAlias];
+        if (!ctor) {
+            console.log('[Warn] Unknow component "' + idOrAlias + '"');
+        }
+        return ctor;
     };
     Component.getRegistry = function() {
         return registry;
@@ -698,10 +706,10 @@ define("wozlla/wozllajs/1.0.0/core/Component-debug", [ "wozlla/wozllajs/1.0.0/as
     };
     p.initComponent = function() {};
     p.destroyComponent = function() {};
-    p.on = function() {
+    p.on = function(type, listener) {
         this.gameObject.addEventListener.apply(this.gameObject, arguments);
     };
-    p.off = function() {
+    p.off = function(type, listener) {
         this.gameObject.removeEventListener.apply(this.gameObject, arguments);
     };
     p.dispatchEvent = function(event) {
@@ -1093,12 +1101,13 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
         return hit;
     };
     p.getTopObjectUnderPoint = function(x, y, useInteractive) {
-        var i, child, obj, localPoint;
+        var i, child, obj, localPoint, onlyUseHitDelegate;
         var children = this._children;
         if (useInteractive && !this.isInteractive()) {
             return null;
         }
         if (children.length > 0) {
+            onlyUseHitDelegate = true;
             for (i = children.length - 1; i >= 0; i--) {
                 child = children[i];
                 obj = child.getTopObjectUnderPoint(x, y, useInteractive);
@@ -1109,7 +1118,7 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
         }
         if (this._interactive) {
             localPoint = this.transform.globalToLocal(x, y);
-            if (this.testHit(localPoint.x, localPoint.y, true)) {
+            if (this.testHit(localPoint.x, localPoint.y, onlyUseHitDelegate)) {
                 return this;
             }
         }
@@ -2222,13 +2231,24 @@ define("wozlla/wozllajs/1.0.0/core/Transform-debug", [ "wozlla/wozllajs/1.0.0/ma
          */
         updateContext: function(context) {
             var mtx, o = this;
-            mtx = matrix.identity().appendTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY);
             if (this.relative) {
+                mtx = matrix.identity().appendTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY);
                 context.transform(mtx.a, mtx.b, mtx.c, mtx.d, mtx.tx, mtx.ty);
+                context.globalAlpha *= o.alpha;
             } else {
+                mtx = this.getAbsoluteMatrix();
                 context.setTransform(mtx.a, mtx.b, mtx.c, mtx.d, mtx.tx, mtx.ty);
+                context.globalAlpha = mtx.alpha;
             }
-            context.globalAlpha *= o.alpha;
+        },
+        getAbsoluteMatrix: function(context, mtx) {
+            var o = this;
+            var root = this.getRoot();
+            mtx = mtx || matrix;
+            mtx.identity().prependTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY).prependProperties(o.alpha);
+            o = root;
+            mtx.prependTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY).prependProperties(o.alpha);
+            return mtx;
         },
         applyTransform: function(transform) {
             this.x = transform.x;
@@ -2295,10 +2315,12 @@ define("wozlla/wozllajs/1.0.0/core/Time-debug", [], function() {
     return {
         delta: 0,
         now: 0,
+        measuredFPS: 0,
         update: function() {
             var now = Date.now();
             if (this.now) {
                 this.delta = now - this.now;
+                this.measuredFPS = 1e3 / this.delta;
             }
             this.now = now;
         },
@@ -2402,7 +2424,7 @@ define("wozlla/wozllajs/1.0.0/core/Collider-debug", [ "wozlla/wozllajs/1.0.0/uti
     return Collider;
 });
 
-define("wozlla/wozllajs/1.0.0/core/Engine-debug", [ "wozlla/wozllajs/1.0.0/utils/Tuple-debug", "wozlla/wozllajs/1.0.0/core/Time-debug", "wozlla/wozllajs/1.0.0/core/Stage-debug", "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/math/Rectangle-debug", "wozlla/wozllajs/1.0.0/core/CachableGameObject-debug", "wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", "wozlla/wozllajs/1.0.0/math/Matrix2D-debug", "wozlla/wozllajs/1.0.0/utils/Promise-debug", "wozlla/wozllajs/1.0.0/utils/Arrays-debug", "wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", "wozlla/wozllajs/1.0.0/utils/uniqueKey-debug", "wozlla/wozllajs/1.0.0/events/EventTarget-debug", "wozlla/wozllajs/1.0.0/events/Event-debug", "wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug", "wozlla/wozllajs/1.0.0/core/Transform-debug", "wozlla/wozllajs/1.0.0/core/Component-debug", "wozlla/wozllajs/1.0.0/assets/loader-debug", "wozlla/wozllajs/1.0.0/utils/Strings-debug", "wozlla/wozllajs/1.0.0/utils/Ajax-debug", "wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", "wozlla/wozllajs/1.0.0/assets/Texture-debug", "wozlla/wozllajs/1.0.0/core/Behaviour-debug", "wozlla/wozllajs/1.0.0/core/Animation-debug", "wozlla/wozllajs/1.0.0/core/Renderer-debug", "wozlla/wozllajs/1.0.0/core/Layout-debug", "wozlla/wozllajs/1.0.0/core/HitDelegate-debug", "wozlla/wozllajs/1.0.0/core/Mask-debug", "wozlla/wozllajs/1.0.0/utils/createCanvas-debug", "wozlla/wozllajs/1.0.0/core/Filter-debug", "wozlla/wozllajs/1.0.0/core/Touch-debug", "wozlla/wozllajs/1.0.0/core/events/TouchEvent-debug" ], function(require) {
+define("wozlla/wozllajs/1.0.0/core/Engine-debug", [ "wozlla/wozllajs/1.0.0/utils/Tuple-debug", "wozlla/wozllajs/1.0.0/core/Time-debug", "wozlla/wozllajs/1.0.0/core/Stage-debug", "wozlla/wozllajs/1.0.0/utils/listenAppState-debug", "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/math/Rectangle-debug", "wozlla/wozllajs/1.0.0/core/CachableGameObject-debug", "wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", "wozlla/wozllajs/1.0.0/math/Matrix2D-debug", "wozlla/wozllajs/1.0.0/utils/Promise-debug", "wozlla/wozllajs/1.0.0/utils/Arrays-debug", "wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", "wozlla/wozllajs/1.0.0/utils/uniqueKey-debug", "wozlla/wozllajs/1.0.0/events/EventTarget-debug", "wozlla/wozllajs/1.0.0/events/Event-debug", "wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug", "wozlla/wozllajs/1.0.0/core/Transform-debug", "wozlla/wozllajs/1.0.0/core/Component-debug", "wozlla/wozllajs/1.0.0/assets/loader-debug", "wozlla/wozllajs/1.0.0/utils/Strings-debug", "wozlla/wozllajs/1.0.0/utils/Ajax-debug", "wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", "wozlla/wozllajs/1.0.0/assets/Texture-debug", "wozlla/wozllajs/1.0.0/core/Behaviour-debug", "wozlla/wozllajs/1.0.0/core/Animation-debug", "wozlla/wozllajs/1.0.0/core/Renderer-debug", "wozlla/wozllajs/1.0.0/core/Layout-debug", "wozlla/wozllajs/1.0.0/core/HitDelegate-debug", "wozlla/wozllajs/1.0.0/core/Mask-debug", "wozlla/wozllajs/1.0.0/utils/createCanvas-debug", "wozlla/wozllajs/1.0.0/core/Filter-debug", "wozlla/wozllajs/1.0.0/core/Touch-debug", "wozlla/wozllajs/1.0.0/core/events/TouchEvent-debug" ], function(require) {
     var Tuple = require("wozlla/wozllajs/1.0.0/utils/Tuple-debug");
     var Time = require("wozlla/wozllajs/1.0.0/core/Time-debug");
     var Stage = require("wozlla/wozllajs/1.0.0/core/Stage-debug");
@@ -2413,6 +2435,9 @@ define("wozlla/wozllajs/1.0.0/core/Engine-debug", [ "wozlla/wozllajs/1.0.0/utils
     var engineEventListeners = new Tuple();
     var running = true;
     var frameTime;
+    var useRAF = false;
+    var FPS = 30;
+    var intervalTime = 1e3 / FPS;
     /**
      * 主循环中一帧
      */
@@ -2425,7 +2450,19 @@ define("wozlla/wozllajs/1.0.0/core/Engine-debug", [ "wozlla/wozllajs/1.0.0/utils
         fireEngineEvent();
         // is it good?
         Stage.root && Stage.root.tick();
-        requestAnimationFrame(frame, frameTime);
+        if (Time.measuredFPS < FPS) {
+            intervalTime -= 1;
+            if (intervalTime <= 0) {
+                intervalTime = 1;
+            }
+        } else if (Time.measuredFPS > FPS) {
+            intervalTime += 1;
+        }
+        if (useRAF) {
+            requestAnimationFrame(frame, frameTime);
+        } else {
+            setTimeout(frame, intervalTime);
+        }
     }
     function fireEngineEvent() {
         var i, len, listener, ret;
@@ -2460,7 +2497,11 @@ define("wozlla/wozllajs/1.0.0/core/Engine-debug", [ "wozlla/wozllajs/1.0.0/utils
         start: function(newFrameTime) {
             frameTime = newFrameTime || 10;
             running = true;
-            requestAnimationFrame(frame, frameTime);
+            if (useRAF) {
+                requestAnimationFrame(frame, frameTime);
+            } else {
+                frame();
+            }
         },
         /**
          * 停止主循环
@@ -2475,6 +2516,12 @@ define("wozlla/wozllajs/1.0.0/core/Engine-debug", [ "wozlla/wozllajs/1.0.0/utils
             Time.update();
             Time.delta = frameTime;
             fireEngineEvent();
+        },
+        setUseRAF: function(use) {
+            useRAF = user;
+        },
+        setFPS: function(fps) {
+            FPS = fps;
         }
     };
 });
@@ -2527,13 +2574,15 @@ define("wozlla/wozllajs/1.0.0/utils/Tuple-debug", [], function() {
     return Tuple;
 });
 
-define("wozlla/wozllajs/1.0.0/core/Stage-debug", [ "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/math/Rectangle-debug", "wozlla/wozllajs/1.0.0/core/CachableGameObject-debug", "wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", "wozlla/wozllajs/1.0.0/math/Matrix2D-debug", "wozlla/wozllajs/1.0.0/utils/Promise-debug", "wozlla/wozllajs/1.0.0/utils/Arrays-debug", "wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", "wozlla/wozllajs/1.0.0/utils/uniqueKey-debug", "wozlla/wozllajs/1.0.0/events/EventTarget-debug", "wozlla/wozllajs/1.0.0/events/Event-debug", "wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug", "wozlla/wozllajs/1.0.0/core/Transform-debug", "wozlla/wozllajs/1.0.0/core/Component-debug", "wozlla/wozllajs/1.0.0/assets/loader-debug", "wozlla/wozllajs/1.0.0/utils/Strings-debug", "wozlla/wozllajs/1.0.0/utils/Ajax-debug", "wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", "wozlla/wozllajs/1.0.0/assets/Texture-debug", "wozlla/wozllajs/1.0.0/core/Behaviour-debug", "wozlla/wozllajs/1.0.0/core/Animation-debug", "wozlla/wozllajs/1.0.0/core/Time-debug", "wozlla/wozllajs/1.0.0/core/Renderer-debug", "wozlla/wozllajs/1.0.0/core/Layout-debug", "wozlla/wozllajs/1.0.0/core/HitDelegate-debug", "wozlla/wozllajs/1.0.0/core/Mask-debug", "wozlla/wozllajs/1.0.0/utils/createCanvas-debug", "wozlla/wozllajs/1.0.0/core/Filter-debug", "wozlla/wozllajs/1.0.0/core/Touch-debug", "wozlla/wozllajs/1.0.0/core/events/TouchEvent-debug" ], function(require) {
+define("wozlla/wozllajs/1.0.0/core/Stage-debug", [ "wozlla/wozllajs/1.0.0/utils/listenAppState-debug", "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/math/Rectangle-debug", "wozlla/wozllajs/1.0.0/core/CachableGameObject-debug", "wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", "wozlla/wozllajs/1.0.0/math/Matrix2D-debug", "wozlla/wozllajs/1.0.0/utils/Promise-debug", "wozlla/wozllajs/1.0.0/utils/Arrays-debug", "wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", "wozlla/wozllajs/1.0.0/utils/uniqueKey-debug", "wozlla/wozllajs/1.0.0/events/EventTarget-debug", "wozlla/wozllajs/1.0.0/events/Event-debug", "wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug", "wozlla/wozllajs/1.0.0/core/Transform-debug", "wozlla/wozllajs/1.0.0/core/Component-debug", "wozlla/wozllajs/1.0.0/assets/loader-debug", "wozlla/wozllajs/1.0.0/utils/Strings-debug", "wozlla/wozllajs/1.0.0/utils/Ajax-debug", "wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", "wozlla/wozllajs/1.0.0/assets/Texture-debug", "wozlla/wozllajs/1.0.0/core/Behaviour-debug", "wozlla/wozllajs/1.0.0/core/Animation-debug", "wozlla/wozllajs/1.0.0/core/Time-debug", "wozlla/wozllajs/1.0.0/core/Renderer-debug", "wozlla/wozllajs/1.0.0/core/Layout-debug", "wozlla/wozllajs/1.0.0/core/HitDelegate-debug", "wozlla/wozllajs/1.0.0/core/Mask-debug", "wozlla/wozllajs/1.0.0/utils/createCanvas-debug", "wozlla/wozllajs/1.0.0/core/Filter-debug", "wozlla/wozllajs/1.0.0/core/Touch-debug", "wozlla/wozllajs/1.0.0/core/events/TouchEvent-debug" ], function(require) {
+    var listenAppState = require("wozlla/wozllajs/1.0.0/utils/listenAppState-debug");
     var Objects = require("wozlla/wozllajs/1.0.0/utils/Objects-debug");
     var Rectangle = require("wozlla/wozllajs/1.0.0/math/Rectangle-debug");
     var CachableGameObject = require("wozlla/wozllajs/1.0.0/core/CachableGameObject-debug");
     var Touch = require("wozlla/wozllajs/1.0.0/core/Touch-debug");
     var visibleRect = new Rectangle();
     var Stage = function(param) {
+        var me = this;
         CachableGameObject.apply(this, arguments);
         this.autoClear = param.autoClear;
         this._width = param.width || param.canvas.width;
@@ -2570,6 +2619,18 @@ define("wozlla/wozllajs/1.0.0/core/Stage-debug", [ "wozlla/wozllajs/1.0.0/utils/
         return visibleRect;
     };
     return Stage;
+});
+
+define("wozlla/wozllajs/1.0.0/utils/listenAppState-debug", [], function() {
+    return function(stateCallbacks) {
+        var onchange = function(e) {
+            if (e.type === "blur") stateCallbacks.onPause(); else if (e.type === "focus") stateCallbacks.onResume();
+        };
+        if (navigator.isCocoonJS) {} else if ("onblur" in window) {
+            window.onfocus = onchange;
+            window.onblur = onchange;
+        }
+    };
 });
 
 define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/events/TouchEvent-debug", "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/events/Event-debug" ], function(require) {
@@ -2609,9 +2670,6 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
             y = t.pageY - canvasOffset.y;
         }
         target = stage.getTopObjectUnderPoint(x, y, true);
-		if(!target) {
-			console.log('not target');
-		}
         if (type === "mousedown" || type === TouchEvent.TOUCH_START) {
             type = TouchEvent.TOUCH_START;
             touchstartTarget = target;

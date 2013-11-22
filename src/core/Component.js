@@ -12,7 +12,11 @@ define(function(require) {
     }
 
 	Component.getConstructor = function(idOrAlias) {
-		return registry[idOrAlias];
+		var ctor = registry[idOrAlias];
+		if(!ctor) {
+			console.log('[Warn] Unknow component "' + idOrAlias + '"');
+		}
+		return ctor;
 	};
 
 	Component.getRegistry = function() {

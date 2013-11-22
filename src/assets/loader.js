@@ -69,12 +69,13 @@ define(function (require, exports, module) {
 
 
     function matchLoader(item) {
-        var loader;
+        var loader, src;
         if(item.type) {
             return loaderMap[item.type];
         }
         Objects.each(loaderMap, function(k, v) {
-            if(Strings.endWith(item.src, k)) {
+			src = item.src.substr(0, item.src.indexOf('?'));
+            if(Strings.endWith(src, k)) {
                 loader = v;
                 return false;
             }
@@ -132,6 +133,10 @@ define(function (require, exports, module) {
 
     exports.baseURL = '';
 
+	exports.printUsingCounter = function() {
+		console.log(assetsUsingCounter);
+	};
+
 	exports.printAssets = function() {
 		console.log(assetsMap);
 	};
@@ -157,7 +162,7 @@ define(function (require, exports, module) {
 			if(!item.id) {
 				item.id = item.src;
 			}
-            item.src = exports.baseURL + item.src;
+            item.src = exports.baseURL + item.src + '?t=' + Date.now();
             item.loader = matchLoader(item);
             items[i] = item;
         }

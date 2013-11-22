@@ -311,12 +311,13 @@ define(function(require) {
     };
 
     p.getTopObjectUnderPoint = function(x, y, useInteractive) {
-        var i, child, obj, localPoint;
+        var i, child, obj, localPoint, onlyUseHitDelegate;
         var children = this._children;
         if(useInteractive && !this.isInteractive()) {
             return null;
         }
         if(children.length > 0) {
+			onlyUseHitDelegate = true;
             for(i=children.length-1; i>=0 ; i--) {
                 child = children[i];
                 obj = child.getTopObjectUnderPoint(x, y, useInteractive);
@@ -327,7 +328,7 @@ define(function(require) {
         }
 		if(this._interactive) {
 			localPoint = this.transform.globalToLocal(x, y);
-			if(this.testHit(localPoint.x, localPoint.y, true)) {
+			if(this.testHit(localPoint.x, localPoint.y, onlyUseHitDelegate)) {
 				return this;
 			}
 		}

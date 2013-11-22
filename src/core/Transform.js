@@ -84,9 +84,9 @@ define(function(require) {
                 mtx.prependTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY)
                     .prependProperties(o.alpha);
                 o = o.gameObject._parent;
-                if(o) {
-                    o = o.transform;
-                }
+				if(o) {
+					o = o.transform;
+				}
             }
             return mtx;
         },
@@ -108,14 +108,29 @@ define(function(require) {
          */
         updateContext : function(context) {
             var mtx, o=this;
-            mtx = matrix.identity().appendTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY);
 			if(this.relative) {
+				mtx = matrix.identity().appendTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY);
             	context.transform(mtx.a, mtx.b, mtx.c, mtx.d, mtx.tx, mtx.ty);
+				context.globalAlpha *= o.alpha;
 			} else {
+				mtx = this.getAbsoluteMatrix();
 				context.setTransform(mtx.a, mtx.b, mtx.c, mtx.d, mtx.tx, mtx.ty);
+				context.globalAlpha = mtx.alpha;
 			}
-            context.globalAlpha *= o.alpha;
         },
+
+		getAbsoluteMatrix : function(context, mtx) {
+			var o = this;
+			var root = this.getRoot();
+			mtx = mtx || matrix;
+			mtx.identity()
+				.prependTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY)
+				.prependProperties(o.alpha);
+			o = root;
+			mtx.prependTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY)
+				.prependProperties(o.alpha);
+			return mtx;
+		},
 
         applyTransform : function(transform) {
             this.x = transform.x;
