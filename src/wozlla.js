@@ -1,6 +1,6 @@
 define(function(require) {
 
-    return {
+    return window.wozllajs = {
         assets : {
             AsyncImage : require('./assets/AsyncImage'),
             Texture : require('./assets/Texture'),
