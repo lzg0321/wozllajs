@@ -9,7 +9,7 @@ define(function(require, exports) {
 		var gameObject, children, components;
 		gameObject = new GameObject({ name : objData.name });
 		gameObject.setActive(objData.active);
-		gameObject.setActive(objData.visible);
+		gameObject.setVisible(objData.visible);
 		gameObject.setWidth(objData.width || 0);
 		gameObject.setHeight(objData.height || 0);
 		gameObject.setInteractive(objData.interactive);

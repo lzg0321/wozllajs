@@ -1,5 +1,6 @@
 define(function(require) {
 
+	var listenAppState = require('../utils/listenAppState');
     var Objects = require('../utils/Objects');
     var Rectangle = require('../math/Rectangle');
     var CachableGameObject = require('./CachableGameObject');
@@ -8,6 +9,7 @@ define(function(require) {
     var visibleRect = new Rectangle();
 
     var Stage = function(param) {
+		var me = this;
         CachableGameObject.apply(this, arguments);
         this.autoClear = param.autoClear;
         this._width = param.width || param.canvas.width;

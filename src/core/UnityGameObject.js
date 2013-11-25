@@ -291,7 +291,7 @@ define(function(require) {
         this._doDelayRemove();
     };
 
-    p.testHit = function(x, y) {
+    p.testHit = function(x, y, onlyUseHitDelegate) {
         var hit = false, hitDelegate;
         if(!this.isActive(true) || !this.isVisible(true)) {
             return false;
@@ -300,7 +300,7 @@ define(function(require) {
         if(hitDelegate) {
             hit = hitDelegate.testHit(x, y);
         }
-        else {
+        else if(!onlyUseHitDelegate) {
             testHitContext.setTransform(1, 0, 0, 1, -x, -y);
             this._draw(testHitContext, this.getStage().getVisibleRect());
             hit = testHitContext.getImageData(0, 0, 1, 1).data[3] > 1;
@@ -311,12 +311,13 @@ define(function(require) {
     };
 
     p.getTopObjectUnderPoint = function(x, y, useInteractive) {
-        var i, child, obj, localPoint;
+        var i, child, obj, localPoint, onlyUseHitDelegate;
         var children = this._children;
         if(useInteractive && !this.isInteractive()) {
             return null;
         }
         if(children.length > 0) {
+			onlyUseHitDelegate = true;
             for(i=children.length-1; i>=0 ; i--) {
                 child = children[i];
                 obj = child.getTopObjectUnderPoint(x, y, useInteractive);
@@ -324,12 +325,13 @@ define(function(require) {
                     return obj;
                 }
             }
-        } else {
-            localPoint = this.transform.globalToLocal(x, y);
-            if(this.testHit(localPoint.x, localPoint.y)) {
-                return this;
-            }
         }
+		if(this._interactive) {
+			localPoint = this.transform.globalToLocal(x, y);
+			if(this.testHit(localPoint.x, localPoint.y, onlyUseHitDelegate)) {
+				return this;
+			}
+		}
         return null;
     };
 

@@ -17,6 +17,9 @@ define(function(require) {
     var engineEventListeners = new Tuple();
     var running = true;
     var frameTime;
+	var useRAF = false;
+	var FPS = 30;
+	var intervalTime = 1000/FPS;
 
     /**
      * 主循环中一帧
@@ -30,7 +33,19 @@ define(function(require) {
         fireEngineEvent();
         // is it good?
         Stage.root && Stage.root.tick();
-        requestAnimationFrame(frame, frameTime);
+		if(Time.measuredFPS < FPS) {
+			intervalTime -= 1;
+			if(intervalTime <= 0) {
+				intervalTime = 1;
+			}
+		} else if(Time.measuredFPS > FPS) {
+			intervalTime += 1;
+		}
+        if(useRAF) {
+			requestAnimationFrame(frame, frameTime);
+		} else {
+			setTimeout(frame, intervalTime);
+		}
     }
 
     function fireEngineEvent() {
@@ -69,7 +84,11 @@ define(function(require) {
         start : function(newFrameTime) {
             frameTime = newFrameTime || 10;
             running = true;
-            requestAnimationFrame(frame, frameTime);
+			if(useRAF) {
+            	requestAnimationFrame(frame, frameTime);
+			} else {
+				frame();
+			}
         },
 
         /**
@@ -86,7 +105,15 @@ define(function(require) {
             Time.update();
             Time.delta = frameTime;
             fireEngineEvent();
-        }
+        },
+
+		setUseRAF : function(use) {
+			useRAF = user;
+		},
+
+		setFPS : function(fps) {
+			FPS = fps;
+		}
     }
 
 });

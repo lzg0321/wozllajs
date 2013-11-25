@@ -1,5 +1,101 @@
-define("wozlla/wozllajs/1.0.0/wozlla-debug", [ "./assets/AsyncImage-debug", "./utils/Arrays-debug", "./assets/Texture-debug", "./utils/Objects-debug", "./assets/loader-debug", "./utils/Strings-debug", "./utils/Promise-debug", "./utils/Ajax-debug", "./assets/objLoader-debug", "./core/Component-debug", "./utils/uniqueKey-debug", "./core/GameObject-debug", "./core/CachableGameObject-debug", "./core/UnityGameObject-debug", "./math/Rectangle-debug", "./math/Matrix2D-debug", "./core/AbstractGameObject-debug", "./events/EventTarget-debug", "./events/Event-debug", "./core/events/GameObjectEvent-debug", "./core/Transform-debug", "./core/Behaviour-debug", "./core/Animation-debug", "./core/Time-debug", "./core/Renderer-debug", "./core/Layout-debug", "./core/HitDelegate-debug", "./core/Mask-debug", "./utils/createCanvas-debug", "./core/Filter-debug", "./core/events/TouchEvent-debug", "./core/Collider-debug", "./core/Engine-debug", "./utils/Tuple-debug", "./core/Stage-debug", "./utils/listenAppState-debug", "./core/Touch-debug" ], function(require) {
-    return window.wozllajs = {
+(function() {
+	var defined = {};
+	var definedListeners = window.definedListeners = {};
+
+	var normalize = function(base, dept) {
+		var bases = base.split('/');
+		var depts = dept.split('/');
+		var first = depts[0];
+		if(first !== '.' && first !== '..') {
+			bases.length = 0;
+		} else {
+			bases.pop();
+		}
+		for(var i=0; i<depts.length; i++) {
+			dept = depts[i];
+			if(dept === '.' || dept === bases[bases.length-1]) {
+				continue;
+			}
+			if(dept === '..') {
+				bases.pop();
+			} else {
+				bases.push(dept);
+			}
+		}
+		return bases.join('/');
+	};
+
+	var createLocalRequire = function(base) {
+		return function(path) {
+			return defined[normalize(base, path)];
+		}
+	};
+	var addEventListener = function(type, listener) {
+		definedListeners[type] = definedListeners[type] || [];
+		definedListeners[type].push(listener);
+	};
+	var removeEventListener = function(type, listener) {
+		var i, len;
+		var listeners = definedListeners[type];
+		if(listeners) {
+			for(i=0,len=listeners.length; i<len; i++) {
+				if(listeners[i] === listener) {
+					listeners.splice(i, 1);
+					break;
+				}
+			}
+		}
+	};
+	var fireEvent = function(type) {
+		var i, len;
+		var listeners = definedListeners[type];
+		if(listeners && listeners.length) {
+			listeners = [].concat(listeners);
+			for(i=0,len=listeners.length; i<len; i++) {
+				listeners[i](type);
+			}
+		}
+	};
+
+	window.define = window.define || function(id, depts, factory) {
+		var i, len, deptsLen=depts.length;
+		var require = createLocalRequire(id);
+		var module = {
+			deptMap: {},
+			exports : {}
+		};
+		var doDefine = function() {
+			var exports = factory(require, module.exports, module);
+			defined[id] = exports || module.exports;
+			fireEvent(id);
+		};
+		if(depts.length === 0) {
+			doDefine();
+		} else {
+			for(i=0,len=depts.length; i<len; i++) {
+				(function(dept, module) {
+					function check() {
+						deptsLen--;
+						if(deptsLen === 0) {
+							doDefine();
+						}
+					}
+					if(defined[dept]) {
+						check();
+						return;
+					}
+					function onDeptDefined() {
+						removeEventListener(dept, onDeptDefined);
+						check();
+					}
+					addEventListener(dept, onDeptDefined);
+				})(normalize(id, depts[i]), module);
+			}
+		}
+	};
+})();define("wozlla/wozllajs/1.0.0/wozlla-debug", [ "./assets/AsyncImage-debug", "./utils/Arrays-debug", "./assets/Texture-debug", "./utils/Objects-debug", "./assets/loader-debug", "./utils/Strings-debug", "./utils/Promise-debug", "./utils/Ajax-debug", "./assets/objLoader-debug", "./core/Component-debug", "./utils/uniqueKey-debug", "./core/GameObject-debug", "./core/CachableGameObject-debug", "./core/UnityGameObject-debug", "./math/Rectangle-debug", "./math/Matrix2D-debug", "./core/AbstractGameObject-debug", "./events/EventTarget-debug", "./events/Event-debug", "./core/events/GameObjectEvent-debug", "./core/Transform-debug", "./core/Behaviour-debug", "./core/Animation-debug", "./core/Time-debug", "./core/Renderer-debug", "./core/Layout-debug", "./core/HitDelegate-debug", "./core/Mask-debug", "./utils/createCanvas-debug", "./core/Filter-debug", "./core/events/TouchEvent-debug", "./core/Collider-debug", "./core/Engine-debug", "./utils/Tuple-debug", "./core/Stage-debug", "./utils/listenAppState-debug", "./core/Touch-debug" ], function(require) {
+    console.log('yes');
+	return window.wozllajs = {
         assets: {
             AsyncImage: require("./assets/AsyncImage-debug"),
             Texture: require("./assets/Texture-debug"),
