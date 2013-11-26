@@ -313,7 +313,6 @@ define(function(require) {
 
 	/**
 	 * 初始化该对象
-	 * @protected
 	 */
     p.init = function() {
         var i, len, child;
@@ -332,6 +331,9 @@ define(function(require) {
         }));
     };
 
+	/**
+	 * 销毁该对象
+	 */
     p.destroy = function() {
         var i, len, child;
         var children = this._children;
@@ -347,6 +349,9 @@ define(function(require) {
         }))
     };
 
+	/**
+	 * layout
+	 */
     p.layout = function() {
         var layout = this.getComponent(Layout);
         var children = this._children;
@@ -357,7 +362,6 @@ define(function(require) {
         }
         layout && layout.doLayout();
     };
-
     p.update = function() {
         if(!this._initialized || !this._active) return;
         var i, len, child;
