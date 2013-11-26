@@ -27,7 +27,12 @@
 
 	var createLocalRequire = function(base) {
 		return function(path) {
-			return defined[normalize(base, path)];
+			var fPath = normalize(base, path);
+			var module = defined[fPath];
+			if(!module) {
+				throw new Error("Can't require module by '" + path + "' from '" + base + "', please check the module is loaded.");
+			}
+			return module;
 		}
 	};
 	var addEventListener = function(type, listener) {

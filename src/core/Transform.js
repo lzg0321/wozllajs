@@ -5,6 +5,12 @@ define(function(require) {
     // 一个createjs类用于帮助从Transform到canvas的context中的transform参数
     var matrix = new Matrix2D();
 
+	/**
+	 * @class wozllajs.core.Transform
+	 * @constructor
+	 * @param params
+	 * @param params.gameObject the gameobject of this transform
+	 */
     var Transform = function(params) {
         this.x = 0;
         this.y = 0;

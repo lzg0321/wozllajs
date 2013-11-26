@@ -7,28 +7,74 @@ define(function(require) {
     var Transform = require('./Transform');
 
 	/**
+	 * 	@class wozllajs.core.AbstractGameObject
+	 * 	@extends wozllajs.events.EventTarget
+	 * 		AbstractGameObject 类是所以游戏对象的基类.
+	 * 		1. 定义了树形结构
+	 * 		2. 继承 EventTarget 实现游戏中的事件调度
 	 *
-	 * @name AbstractGameObject
-	 * @class AbstractGameObject 类是所以游戏对象的基类，其定义了树形结构，并继承 EventTarget 以实现游戏中的事件调度
-	 * @constructor
-	 * @abstract
-	 * @extends EventTarget
-	 * @param {Object} params
-	 * @param {String} params.id
+	 * 	@abstract
+	 * 	@protected
+	 * 	@constructor
+	 * 		这是一个抽象的基类，不要直接使用
+	 *  @param {Object} params
+	 *  @param {string} params.name name of this object
+	 *
 	 */
 	var AbstractGameObject = function(params) {
 		EventTarget.apply(this, arguments);
-
+		/**
+		 * @type {string}
+		 * 	name of this object, 在树型结构中用来构成path
+		 * @public
+		 * @readonly
+		 */
 		this.name = params.name;
+
+		/**
+		 * @type {int}
+		 * 	唯一ID
+		 * @readonly
+		 */
 		this.UID = uniqueKey();
+
+		/**
+		 * @type {Transform}
+		 * 	该属性定义了该gameObject的形状、位置、alpha
+		 * @readonly
+		 */
 		this.transform = new Transform({ gameObject: this });
+
+		/**
+		 *
+		 * @type {AbstractGameObject}
+		 * 	parent object
+		 * @protected
+		 */
 		this._parent = null;
+
+		/**
+		 * @type {Array}
+		 *  children of this object
+		 * @protected
+		 */
 		this._children = [];
+
+		/**
+		 *
+		 * @type {object}
+		 * 	It's a map for quickly search children of this game object
+		 * @protected
+		 */
 		this._childrenMap = {};
 	};
 
 	var p = Objects.inherits(AbstractGameObject, EventTarget);
 
+	/**
+	 * 设置该object的name
+	 * @param name
+	 */
 	p.setName = function(name) {
 		if(this._parent) {
 			delete this._parent._childrenMap[this.name];
@@ -37,10 +83,19 @@ define(function(require) {
 		this.name = name;
 	};
 
+	/**
+	 * get parent
+	 * @returns {null|AbstractGameObject}
+	 */
 	p.getParent = function() {
 		return this._parent;
 	};
 
+	/**
+	 * get tree path
+	 * @param {string} [seperator=/]
+	 * @returns {string}
+	 */
 	p.getPath = function(seperator) {
 		var o = this;
 		var path = [];
@@ -51,6 +106,10 @@ define(function(require) {
 		return path.join(seperator || '/');
 	};
 
+	/**
+	 * get stage
+	 * @returns {wozllajs.core.Stage} 如果这个对象没有加入到stage中，返回null
+	 */
 	p.getStage = function() {
 		var o = this;
 		while(o && !o.isStage) {
@@ -59,10 +118,18 @@ define(function(require) {
 		return o.isStage ? o : null;
 	};
 
+	/**
+	 * get children
+	 * @returns {Array}
+	 */
 	p.getChildren = function() {
 		return this._children.slice();
 	};
 
+	/**
+	 * sort children
+	 * @param func sorter
+	 */
 	p.sortChildren = function(func) {
 		this._children.sort(func);
 		this.dispatchEvent(new GameObjectEvent({
@@ -71,10 +138,19 @@ define(function(require) {
 		}));
 	};
 
+	/**
+	 * get child by name
+	 * @param name
+	 * @returns {null|AbstractGameObject}
+	 */
 	p.getObjectByName = function(name) {
 		return this._childrenMap[name];
 	};
 
+	/**
+	 * add child to this object
+	 * @param obj {AbstractGameObject}
+	 */
 	p.addObject = function(obj) {
 		this._childrenMap[obj.name] = obj;
 		this._children.push(obj);
@@ -86,6 +162,11 @@ define(function(require) {
 		}));
 	};
 
+	/**
+	 * insert child at index
+	 * @param obj child game object
+	 * @param index the position the child will be insert
+	 */
 	p.insertObject = function(obj, index) {
 		this._childrenMap[obj.name] = obj;
 		this._children.splice(index, 0, obj);
@@ -97,6 +178,11 @@ define(function(require) {
 		}));
 	};
 
+	/**
+	 * insert child before the child
+	 * @param obj be inserted child
+	 * @param objOrName relative child or it's name
+	 */
 	p.insertBefore = function(obj, objOrName) {
 		var i, len, child;
 		var index = 0;
@@ -110,6 +196,11 @@ define(function(require) {
 		this.insertObject(obj, index);
 	};
 
+	/**
+	 * insert child after the relative child
+	 * @param obj be inserted child
+	 * @param objOrName relative child or it's name
+	 */
 	p.insertAfter = function(obj, objOrName) {
 		var i, len, child;
 		var index = this._children.length;
@@ -123,6 +214,11 @@ define(function(require) {
 		this.insertObject(obj, index+1);
 	};
 
+	/**
+	 * remove child
+	 * @param objOrName the child be removed or it's name
+	 * @returns {number} the position of removed child
+	 */
 	p.removeObject = function(objOrName) {
 		var children = this._children;
 		var obj = typeof objOrName === 'string' ? this._childrenMap[objOrName] : objOrName;
@@ -147,17 +243,28 @@ define(function(require) {
 		return idx;
 	};
 
-	p.remove = function(params) {
+	/**
+	 * remove me from parent
+	 */
+	p.remove = function() {
 		this._parent && this._parent.removeObject(this);
 		this._parent = null;
 	};
 
-	p.removeAll = function(params) {
+	/**
+	 * remove all children
+	 */
+	p.removeAll = function() {
 		// event ?
 		this._children = [];
 		this._childrenMap = {};
 	};
 
+	/**
+	 * find child object by name
+	 * @param name
+	 * @returns {null|AbstractGameObject}
+	 */
 	p.findObjectByName = function(name) {
 		var i, len, children;
 		var obj = this.getObjectByName(name);
@@ -171,6 +278,12 @@ define(function(require) {
 		return obj;
 	};
 
+	/**
+	 * find object by tree path
+	 * @param path the path of find
+	 * @param seperator the seperator of the param path
+	 * @returns {null|AbstractGameObject}
+	 */
 	p.findObjectByPath = function(path, seperator) {
 		var i, len;
 		var paths = path.split(seperator || '/');
