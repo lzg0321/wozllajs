@@ -607,7 +607,8 @@ define("wozlla/wozllajs/1.0.0/assets/objLoader-debug", [ "wozlla/wozllajs/1.0.0/
         var i, len, comp;
         var gameObject, children, components;
         gameObject = new GameObject({
-            name: objData.name
+            name: objData.name,
+            id: objData.gid || objData.id
         });
         gameObject.setActive(objData.active);
         gameObject.setVisible(objData.visible);
@@ -743,8 +744,27 @@ define("wozlla/wozllajs/1.0.0/utils/uniqueKey-debug", [], function() {
     };
 });
 
-define("wozlla/wozllajs/1.0.0/core/GameObject-debug", [ "wozlla/wozllajs/1.0.0/core/CachableGameObject-debug", "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", "wozlla/wozllajs/1.0.0/math/Rectangle-debug", "wozlla/wozllajs/1.0.0/math/Matrix2D-debug", "wozlla/wozllajs/1.0.0/utils/Promise-debug", "wozlla/wozllajs/1.0.0/utils/Arrays-debug", "wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", "wozlla/wozllajs/1.0.0/utils/uniqueKey-debug", "wozlla/wozllajs/1.0.0/events/EventTarget-debug", "wozlla/wozllajs/1.0.0/events/Event-debug", "wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug", "wozlla/wozllajs/1.0.0/core/Transform-debug", "wozlla/wozllajs/1.0.0/core/Component-debug", "wozlla/wozllajs/1.0.0/assets/loader-debug", "wozlla/wozllajs/1.0.0/utils/Strings-debug", "wozlla/wozllajs/1.0.0/utils/Ajax-debug", "wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", "wozlla/wozllajs/1.0.0/assets/Texture-debug", "wozlla/wozllajs/1.0.0/core/Behaviour-debug", "wozlla/wozllajs/1.0.0/core/Animation-debug", "wozlla/wozllajs/1.0.0/core/Time-debug", "wozlla/wozllajs/1.0.0/core/Renderer-debug", "wozlla/wozllajs/1.0.0/core/Layout-debug", "wozlla/wozllajs/1.0.0/core/HitDelegate-debug", "wozlla/wozllajs/1.0.0/core/Mask-debug", "wozlla/wozllajs/1.0.0/utils/createCanvas-debug", "wozlla/wozllajs/1.0.0/core/Filter-debug" ], function(require) {
-    return require("wozlla/wozllajs/1.0.0/core/CachableGameObject-debug");
+define("wozlla/wozllajs/1.0.0/core/GameObject-debug", [ "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/core/CachableGameObject-debug", "wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", "wozlla/wozllajs/1.0.0/math/Rectangle-debug", "wozlla/wozllajs/1.0.0/math/Matrix2D-debug", "wozlla/wozllajs/1.0.0/utils/Promise-debug", "wozlla/wozllajs/1.0.0/utils/Arrays-debug", "wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", "wozlla/wozllajs/1.0.0/utils/uniqueKey-debug", "wozlla/wozllajs/1.0.0/events/EventTarget-debug", "wozlla/wozllajs/1.0.0/events/Event-debug", "wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug", "wozlla/wozllajs/1.0.0/core/Transform-debug", "wozlla/wozllajs/1.0.0/core/Component-debug", "wozlla/wozllajs/1.0.0/assets/loader-debug", "wozlla/wozllajs/1.0.0/utils/Strings-debug", "wozlla/wozllajs/1.0.0/utils/Ajax-debug", "wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", "wozlla/wozllajs/1.0.0/assets/Texture-debug", "wozlla/wozllajs/1.0.0/core/Behaviour-debug", "wozlla/wozllajs/1.0.0/core/Animation-debug", "wozlla/wozllajs/1.0.0/core/Time-debug", "wozlla/wozllajs/1.0.0/core/Renderer-debug", "wozlla/wozllajs/1.0.0/core/Layout-debug", "wozlla/wozllajs/1.0.0/core/HitDelegate-debug", "wozlla/wozllajs/1.0.0/core/Mask-debug", "wozlla/wozllajs/1.0.0/utils/createCanvas-debug", "wozlla/wozllajs/1.0.0/core/Filter-debug" ], function(require) {
+    var idMap = {};
+    var Objects = require("wozlla/wozllajs/1.0.0/utils/Objects-debug");
+    var CachableGameObject = require("wozlla/wozllajs/1.0.0/core/CachableGameObject-debug");
+    var GameObjectEvent = require("wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug");
+    var GameObject = function() {
+        var me = this;
+        CachableGameObject.apply(this, arguments);
+        if (this.id) {
+            idMap[this.id] = this;
+            this.addEventListener(GameObjectEvent.DESTROY, function(e) {
+                e.removeListener();
+                delete idMap[me.id];
+            });
+        }
+    };
+    Objects.inherits(GameObject, CachableGameObject);
+    GameObject.getById = function(id) {
+        return idMap[id];
+    };
+    return GameObject;
 });
 
 define("wozlla/wozllajs/1.0.0/core/CachableGameObject-debug", [ "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", "wozlla/wozllajs/1.0.0/math/Rectangle-debug", "wozlla/wozllajs/1.0.0/math/Matrix2D-debug", "wozlla/wozllajs/1.0.0/utils/Promise-debug", "wozlla/wozllajs/1.0.0/utils/Arrays-debug", "wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", "wozlla/wozllajs/1.0.0/utils/uniqueKey-debug", "wozlla/wozllajs/1.0.0/events/EventTarget-debug", "wozlla/wozllajs/1.0.0/events/Event-debug", "wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug", "wozlla/wozllajs/1.0.0/core/Transform-debug", "wozlla/wozllajs/1.0.0/core/Component-debug", "wozlla/wozllajs/1.0.0/assets/loader-debug", "wozlla/wozllajs/1.0.0/utils/Strings-debug", "wozlla/wozllajs/1.0.0/utils/Ajax-debug", "wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", "wozlla/wozllajs/1.0.0/assets/Texture-debug", "wozlla/wozllajs/1.0.0/core/Behaviour-debug", "wozlla/wozllajs/1.0.0/core/Animation-debug", "wozlla/wozllajs/1.0.0/core/Time-debug", "wozlla/wozllajs/1.0.0/core/Renderer-debug", "wozlla/wozllajs/1.0.0/core/Layout-debug", "wozlla/wozllajs/1.0.0/core/HitDelegate-debug", "wozlla/wozllajs/1.0.0/core/Mask-debug", "wozlla/wozllajs/1.0.0/utils/createCanvas-debug", "wozlla/wozllajs/1.0.0/core/Filter-debug" ], function(require) {
@@ -841,6 +861,14 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
     var testHitContext = testHitCanvas.getContext("2d");
     var helpRect = new Rectangle();
     var helpMatrix = new Matrix2D();
+    /**
+	 * 该类将所有Component的功能组合进来，实现组件式的游戏对象
+	 * @class wozllajs.core.UnityGameObject
+	 * @extends wozllajs.core.AbstractGameObject
+	 * @constructor
+	 * @param param
+	 * @param param.name
+	 */
     var UnityGameObject = function(param) {
         AbstractGameObject.apply(this, arguments);
         this._active = true;
@@ -853,6 +881,11 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
         this._delayRemoves = [];
     };
     var p = Objects.inherits(UnityGameObject, AbstractGameObject);
+    /**
+	 * 判断该object是否是激活的
+	 * @param upWards 是否向上根据tree中的parent, ancients去判断
+	 * @returns {Boolean}
+	 */
     p.isActive = function(upWards) {
         if (upWards === false) {
             return this._active;
@@ -868,9 +901,18 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
         }
         return active;
     };
+    /**
+	 * set active
+	 * @param active
+	 */
     p.setActive = function(active) {
         this._active = active;
     };
+    /**
+	 * 判断该object是否可见
+	 * @param upWards 是否向上根据tree中的parent, ancients去判断
+	 * @returns {Boolean}
+	 */
     p.isVisible = function(upWards) {
         if (upWards === false) {
             return this._visible;
@@ -886,27 +928,61 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
         }
         return visible;
     };
+    /**
+	 * set visible
+	 * @param visible
+	 */
     p.setVisible = function(visible) {
         this._visible = visible;
     };
+    /**
+	 * 判断该object是否可交互, 当有children时忽略_interactive属性默认为可交互，这是通常用在test hit上.
+	 * @returns {boolean}
+	 */
     p.isInteractive = function() {
         return this._children.length > 0 || this._interactive;
     };
+    /**
+	 * set interactive
+	 * @param interactive
+	 */
     p.setInteractive = function(interactive) {
         this._interactive = interactive;
     };
+    /**
+	 * get width
+	 * @returns {int}
+	 */
     p.getWidth = function() {
         return this._width;
     };
+    /**
+	 * set width
+	 * @param w
+	 */
     p.setWidth = function(w) {
         this._width = w;
     };
+    /**
+	 * get height of this object
+	 * @returns {*}
+	 */
     p.getHeight = function() {
         return this._height;
     };
+    /**
+	 * set height
+	 * @param h
+	 */
     p.setHeight = function(h) {
         this._height = h;
     };
+    /**
+	 * 获取这个对象的绝对bound，用于绘制的时候判断是否在屏幕中
+	 * @param {wozllajs.math.Rectangle} resultRect 如果传了这个参数，结果将返回这个rectangle
+	 * @param print for debugging
+	 * @returns {wozllajs.math.Rectangle}
+	 */
     p.getGlobalBounds = function(resultRect, print) {
         if (!resultRect) {
             resultRect = new Rectangle();
@@ -924,10 +1000,19 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
         resultRect.height = Math.max(localA.y, localB.y, localC.y, localD.y) - resultRect.y;
         return resultRect;
     };
+    /**
+	 * add a component
+	 * @param component
+	 */
     p.addComponent = function(component) {
         this._components.push(component);
         component.setGameObject(this);
     };
+    /**
+	 * get component by it's constructor or alias
+	 * @param type
+	 * @returns {wozllajs.core.Component}
+	 */
     p.getComponent = function(type) {
         var i, len, comp;
         var components = this._components;
@@ -950,6 +1035,11 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
         }
         return null;
     };
+    /**
+	 * get all components by it's constructor or alias
+	 * @param type
+	 * @returns {Array}
+	 */
     p.getComponents = function(type) {
         var i, len, comp, alias;
         var components = this._components;
@@ -972,6 +1062,10 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
         }
         return found;
     };
+    /**
+	 * remove component
+	 * @param component
+	 */
     p.removeComponent = function(component) {
         var i, len, comp;
         var components = this._components;
@@ -984,15 +1078,32 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
             }
         }
     };
+    /**
+	 * 在下一阶段移除 component
+	 * @param component
+	 */
     p.delayRemoveComponent = function(component) {
         this._delayRemoves.push(component);
     };
+    /**
+	 * 在下一阶段移除 game object
+	 * @param gameObject
+	 */
     p.delayRemoveObject = function(gameObject) {
         this._delayRemoves.push(gameObject);
     };
+    /**
+	 * 在下一阶段 remove me from parent
+	 */
     p.delayRemove = function() {
         this._parent.delayRemoveObject(this);
     };
+    /**
+	 * 调用所有component的指定方法，并传递参数
+	 * @param methodName
+	 * @param args
+	 * @param type
+	 */
     p.sendMessage = function(methodName, args, type) {
         var i, len, comp, method;
         var components = this._components;
@@ -1004,6 +1115,11 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
             }
         }
     };
+    /**
+	 * 调用所有component指定方法并传递参数，包括该object的children
+	 * @param methodName
+	 * @param args
+	 */
     p.broadcastMessage = function(methodName, args) {
         var i, len, child;
         var children = this._children;
@@ -1013,6 +1129,9 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
         }
         this.sendMessage(methodName, args);
     };
+    /**
+	 * 初始化该对象
+	 */
     p.init = function() {
         var i, len, child;
         var children = this._children;
@@ -1029,6 +1148,9 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
             bubbles: true
         }));
     };
+    /**
+	 * 销毁该对象
+	 */
     p.destroy = function() {
         var i, len, child;
         var children = this._children;
@@ -1043,6 +1165,9 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
             bubbles: true
         }));
     };
+    /**
+	 * layout
+	 */
     p.layout = function() {
         var layout = this.getComponent(Layout);
         var children = this._children;
@@ -1173,6 +1298,14 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
 });
 
 define("wozlla/wozllajs/1.0.0/math/Rectangle-debug", [], function() {
+    /**
+	 * @class wozllajs.math.Rectangle
+	 * @constructor
+	 * @param x
+	 * @param y
+	 * @param w
+	 * @param h
+	 */
     var Rectangle = function(x, y, w, h) {
         this.x = x || 0;
         this.y = y || 0;
@@ -1180,55 +1313,98 @@ define("wozlla/wozllajs/1.0.0/math/Rectangle-debug", [], function() {
         this.height = h || 0;
     };
     var p = Rectangle.prototype;
+    /**
+	 * get top
+	 * @returns {int}
+	 */
     p.top = function() {
         return this.y;
     };
+    /**
+	 * get left
+	 * @returns {int}
+	 */
     p.left = function() {
         return this.x;
     };
+    /**
+	 * get right
+	 * @returns {int}
+	 */
     p.right = function() {
         return this.x + this.width;
     };
+    /**
+	 * get bottom
+	 * @returns {int}
+	 */
     p.bottom = function() {
         return this.y + this.height;
     };
+    /**
+	 * 判断是否包含某个点
+	 * @param x
+	 * @param y
+	 * @returns {boolean}
+	 */
     p.contains = function(x, y) {
         return this.x <= x && this.y <= y && this.x + this.width > x && this.y + this.height > y;
     };
+    /**
+	 * 判断是否包含某个点
+	 * @param {Point} point
+	 * @returns {boolean}
+	 */
     p.containsPoint = function(point) {
         return this.contains(point.x, point.y);
     };
+    /**
+	 * 判断是否与另一个矩形重叠
+	 * @param x
+	 * @param y
+	 * @param w
+	 * @param h
+	 * @returns {boolean}
+	 */
     p.intersects = function(x, y, w, h) {
         return this.x < x + w && this.x + this.width > x && this.y < y + h && this.y + this.height > y;
     };
+    /**
+	 * 判断是否与另一个矩形重叠
+	 * @param {Rectangle} r
+	 * @returns {boolean}
+	 */
     p.intersectRect = function(r) {
         return this.intersects(r.x, r.y, r.width, r.height);
     };
+    /**
+	 * js中最大的矩形
+	 * @static
+	 * @type {wozllajs.math.Rectangle}
+	 * @readonly
+	 */
     Rectangle.MAX_RECT = new Rectangle(Number.MIN_VALUE, Number.MIN_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
     return Rectangle;
 });
 
-/**
- * Copy from createjs
- * @see createjs.com
- */
 define("wozlla/wozllajs/1.0.0/math/Matrix2D-debug", [], function() {
     /**
+	 * Copy from createjs, see createjs.com
+	 *
      * Represents an affine transformation matrix, and provides tools for constructing and concatenating matrixes.
-     * @class Matrix2D
+     * @class wozllajs.math.Matrix2D
+	 * @constructor
      * @param {Number} [a=1] Specifies the a property for the new matrix.
      * @param {Number} [b=0] Specifies the b property for the new matrix.
      * @param {Number} [c=0] Specifies the c property for the new matrix.
      * @param {Number} [d=1] Specifies the d property for the new matrix.
      * @param {Number} [tx=0] Specifies the tx property for the new matrix.
      * @param {Number} [ty=0] Specifies the ty property for the new matrix.
-     * @constructor
      **/
     var Matrix2D = function(a, b, c, d, tx, ty) {
         this.initialize(a, b, c, d, tx, ty);
     };
     var p = Matrix2D.prototype;
-    // static public properties:
     /**
      * An identity matrix, representing a null transformation.
      * @property identity
@@ -1712,27 +1888,75 @@ define("wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", [ "wozlla/wozllajs
     var GameObjectEvent = require("wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug");
     var Transform = require("wozlla/wozllajs/1.0.0/core/Transform-debug");
     /**
+	 * 	@class wozllajs.core.AbstractGameObject
+	 * 	@extends wozllajs.events.EventTarget
+	 * 		AbstractGameObject 类是所以游戏对象的基类.
+	 * 		1. 定义了树形结构
+	 * 		2. 继承 EventTarget 实现游戏中的事件调度
 	 *
-	 * @name AbstractGameObject
-	 * @class AbstractGameObject 类是所以游戏对象的基类，其定义了树形结构，并继承 EventTarget 以实现游戏中的事件调度
-	 * @constructor
-	 * @abstract
-	 * @extends EventTarget
-	 * @param {Object} params
-	 * @param {String} params.id
+	 * 	@abstract
+	 * 	@protected
+	 * 	@constructor
+	 * 		这是一个抽象的基类，不要直接使用
+	 *  @param {Object} params
+	 *  @param {string} params.name name of this object
+	 *
 	 */
     var AbstractGameObject = function(params) {
         EventTarget.apply(this, arguments);
+        /**
+		 *	unique id, using for query
+		 * @type {string}
+		 * @public @readonly
+		 */
+        this.id = params.id;
+        /**
+		 * @type {string}
+		 * 	name of this object, 在树型结构中用来构成path
+		 * @public
+		 * @readonly
+		 */
         this.name = params.name;
+        /**
+		 * @type {int}
+		 * 	唯一UID, 几乎没有用途
+		 * @readonly
+		 */
         this.UID = uniqueKey();
+        /**
+		 * @type {Transform}
+		 * 	该属性定义了该gameObject的形状、位置、alpha
+		 * @readonly
+		 */
         this.transform = new Transform({
             gameObject: this
         });
+        /**
+		 *
+		 * @type {AbstractGameObject}
+		 * 	parent object
+		 * @protected
+		 */
         this._parent = null;
+        /**
+		 * @type {Array}
+		 *  children of this object
+		 * @protected
+		 */
         this._children = [];
+        /**
+		 *
+		 * @type {object}
+		 * 	It's a map for quickly search children of this game object
+		 * @protected
+		 */
         this._childrenMap = {};
     };
     var p = Objects.inherits(AbstractGameObject, EventTarget);
+    /**
+	 * 设置该object的name
+	 * @param name
+	 */
     p.setName = function(name) {
         if (this._parent) {
             delete this._parent._childrenMap[this.name];
@@ -1740,9 +1964,18 @@ define("wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", [ "wozlla/wozllajs
         }
         this.name = name;
     };
+    /**
+	 * get parent
+	 * @returns {null|AbstractGameObject}
+	 */
     p.getParent = function() {
         return this._parent;
     };
+    /**
+	 * get tree path
+	 * @param {string} [seperator=/]
+	 * @returns {string}
+	 */
     p.getPath = function(seperator) {
         var o = this;
         var path = [];
@@ -1752,6 +1985,10 @@ define("wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", [ "wozlla/wozllajs
         }
         return path.join(seperator || "/");
     };
+    /**
+	 * get stage
+	 * @returns {wozllajs.core.Stage} 如果这个对象没有加入到stage中，返回null
+	 */
     p.getStage = function() {
         var o = this;
         while (o && !o.isStage) {
@@ -1759,9 +1996,17 @@ define("wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", [ "wozlla/wozllajs
         }
         return o.isStage ? o : null;
     };
+    /**
+	 * get children
+	 * @returns {Array}
+	 */
     p.getChildren = function() {
         return this._children.slice();
     };
+    /**
+	 * sort children
+	 * @param func sorter
+	 */
     p.sortChildren = function(func) {
         this._children.sort(func);
         this.dispatchEvent(new GameObjectEvent({
@@ -1769,9 +2014,18 @@ define("wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", [ "wozlla/wozllajs
             bubbles: false
         }));
     };
+    /**
+	 * get child by name
+	 * @param name
+	 * @returns {null|AbstractGameObject}
+	 */
     p.getObjectByName = function(name) {
         return this._childrenMap[name];
     };
+    /**
+	 * add child to this object
+	 * @param obj {AbstractGameObject}
+	 */
     p.addObject = function(obj) {
         this._childrenMap[obj.name] = obj;
         this._children.push(obj);
@@ -1782,6 +2036,11 @@ define("wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", [ "wozlla/wozllajs
             child: obj
         }));
     };
+    /**
+	 * insert child at index
+	 * @param obj child game object
+	 * @param index the position the child will be insert
+	 */
     p.insertObject = function(obj, index) {
         this._childrenMap[obj.name] = obj;
         this._children.splice(index, 0, obj);
@@ -1792,6 +2051,11 @@ define("wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", [ "wozlla/wozllajs
             child: obj
         }));
     };
+    /**
+	 * insert child before the child
+	 * @param obj be inserted child
+	 * @param objOrName relative child or it's name
+	 */
     p.insertBefore = function(obj, objOrName) {
         var i, len, child;
         var index = 0;
@@ -1804,6 +2068,11 @@ define("wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", [ "wozlla/wozllajs
         }
         this.insertObject(obj, index);
     };
+    /**
+	 * insert child after the relative child
+	 * @param obj be inserted child
+	 * @param objOrName relative child or it's name
+	 */
     p.insertAfter = function(obj, objOrName) {
         var i, len, child;
         var index = this._children.length;
@@ -1816,6 +2085,11 @@ define("wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", [ "wozlla/wozllajs
         }
         this.insertObject(obj, index + 1);
     };
+    /**
+	 * remove child
+	 * @param objOrName the child be removed or it's name
+	 * @returns {number} the position of removed child
+	 */
     p.removeObject = function(objOrName) {
         var children = this._children;
         var obj = typeof objOrName === "string" ? this._childrenMap[objOrName] : objOrName;
@@ -1839,15 +2113,26 @@ define("wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", [ "wozlla/wozllajs
         }
         return idx;
     };
-    p.remove = function(params) {
+    /**
+	 * remove me from parent
+	 */
+    p.remove = function() {
         this._parent && this._parent.removeObject(this);
         this._parent = null;
     };
-    p.removeAll = function(params) {
+    /**
+	 * remove all children
+	 */
+    p.removeAll = function() {
         // event ?
         this._children = [];
         this._childrenMap = {};
     };
+    /**
+	 * find child object by name
+	 * @param name
+	 * @returns {null|AbstractGameObject}
+	 */
     p.findObjectByName = function(name) {
         var i, len, children;
         var obj = this.getObjectByName(name);
@@ -1860,6 +2145,12 @@ define("wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", [ "wozlla/wozllajs
         }
         return obj;
     };
+    /**
+	 * find object by tree path
+	 * @param path the path of find
+	 * @param seperator the seperator of the param path
+	 * @returns {null|AbstractGameObject}
+	 */
     p.findObjectByPath = function(path, seperator) {
         var i, len;
         var paths = path.split(seperator || "/");
@@ -1879,8 +2170,8 @@ define("wozlla/wozllajs/1.0.0/events/EventTarget-debug", [ "wozlla/wozllajs/1.0.
     var Event = require("wozlla/wozllajs/1.0.0/events/Event-debug");
     /**
      *
-     * @name EventTarget
-     * @class EventTarget 类是可调度事件的所有类的基类。
+     * @class wozllajs.events.EventTarget
+	 * 	EventTarget类是可调度事件的所有类的基类。
      * @constructor
      */
     var EventTarget = function() {
@@ -1893,13 +2184,14 @@ define("wozlla/wozllajs/1.0.0/events/EventTarget-debug", [ "wozlla/wozllajs/1.0.
         touchend: "onTouchEnd",
         click: "onClick"
     };
-    /**
-     * @lends EventTarget.prototype
-     */
     var p = EventTarget.prototype;
     /**
-     *
-     */
+	 * 增加事件监听器
+	 * @param eventType
+	 * @param listener
+	 * @param [useCapture=false] true时加入捕获列表
+	 * @returns {Function} 监听器
+	 */
     p.addEventListener = function(eventType, listener, useCapture) {
         var listeners = useCapture ? this._captureListeners : this._listeners;
         var arr = listeners[eventType];
@@ -1914,6 +2206,12 @@ define("wozlla/wozllajs/1.0.0/events/EventTarget-debug", [ "wozlla/wozllajs/1.0.
         }
         return listener;
     };
+    /**
+	 * 移除监听器
+	 * @param eventType
+	 * @param listener
+	 * @param [useCapture=false] true时从捕获列表移除
+	 */
     p.removeEventListener = function(eventType, listener, useCapture) {
         var listeners = useCapture ? this._captureListeners : this._listeners;
         if (!listeners) {
@@ -1934,10 +2232,19 @@ define("wozlla/wozllajs/1.0.0/events/EventTarget-debug", [ "wozlla/wozllajs/1.0.
             }
         }
     };
+    /**
+	 * 判断是否包含某类事件监听器
+	 * @param eventType
+	 * @returns {boolean}
+	 */
     p.hasEventListener = function(eventType) {
         var listeners = this._listeners, captureListeners = this._captureListeners;
         return !!(listeners && listeners[eventType] || captureListeners && captureListeners[eventType]);
     };
+    /**
+	 * 分配一个事件到当前对象的事件流中
+	 * @param {Event} event
+	 */
     p.dispatchEvent = function(event) {
         var i, len, list, object, defaultAction;
         event.target = this;
@@ -2031,37 +2338,42 @@ define("wozlla/wozllajs/1.0.0/events/EventTarget-debug", [ "wozlla/wozllajs/1.0.
 
 define("wozlla/wozllajs/1.0.0/events/Event-debug", [], function(require, exports, module) {
     /**
-     * @name Event
-     * @class Event 类作为创建 Event 对象的基类，当发生事件时，Event 对象将作为参数传递给事件侦听器。
+     * @class wozllajs.events.Event
+	 * 	Event类作为创建 Event 对象的基类，当发生事件时，Event 对象将作为参数传递给事件侦听器。
      * @constructor
      * @param {Object} params
      * @param {String} params.type 指定事件类型
-     * @param {Boolean} params.bubbles 指定事件是否冒泡
+     * @param {Boolean} [params.bubbles=false] 指定事件是否冒泡
      */
     var Event = function(params) {
         /**
-         * [readonly] 事件类型
+         * 事件类型
          * @type {String}
+		 * @readonly
          */
         this.type = params.type;
         /**
-         * [readonly] 事件目标
+         * 事件目标
          * @type {EventTarget}
+		 * @readonly
          */
         this.target = null;
         /**
-         * [readonly] 当前正在使用某个事件侦听器处理 Event 对象的对象。
+         * 当前正在使用某个事件侦听器处理 Event 对象的对象。
          * @type {EventTarget}
+		 * @readonly
          */
         this.currentTarget = null;
         /**
-         * [readonly] 事件流中的当前阶段。
+         * 事件流中的当前阶段。
          * @type {int}
+		 * @readonly
          */
         this.eventPhase = null;
         /**
-         * [只读] 表示事件是否为冒泡事件。
+         * 表示事件是否为冒泡事件。
          * @type {Boolean}
+		 * @readonly
          */
         this.bubbles = params.bubbles;
         this._immediatePropagationStoped = false;
@@ -2072,9 +2384,6 @@ define("wozlla/wozllajs/1.0.0/events/Event-debug", [], function(require, exports
     Event.CAPTURING_PHASE = 1;
     Event.BUBBLING_PHASE = 2;
     Event.TARGET_PHASE = 3;
-    /**
-     * @lends Event.prototype
-     */
     var p = Event.prototype;
     /**
      * 防止对事件流中当前节点中和所有后续节点中的事件侦听器进行处理。
@@ -2113,10 +2422,6 @@ define("wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug", [ "wozlla/wozl
     GameObjectEvent.INIT = "init";
     GameObjectEvent.DESTROY = "destroy";
     GameObjectEvent.CHANGED = "changed";
-    /**
-     * fire when child game object added , removed
-     * @type {string}
-     */
     GameObjectEvent.ADDED = "added";
     GameObjectEvent.REMOVED = "removed";
     var p = Objects.inherits(GameObjectEvent, Event);
@@ -2127,6 +2432,12 @@ define("wozlla/wozllajs/1.0.0/core/Transform-debug", [ "wozlla/wozllajs/1.0.0/ma
     var Matrix2D = require("wozlla/wozllajs/1.0.0/math/Matrix2D-debug");
     // 一个createjs类用于帮助从Transform到canvas的context中的transform参数
     var matrix = new Matrix2D();
+    /**
+	 * @class wozllajs.core.Transform
+	 * @constructor
+	 * @param params
+	 * @param params.gameObject the gameobject of this transform
+	 */
     var Transform = function(params) {
         this.x = 0;
         this.y = 0;
@@ -2476,9 +2787,15 @@ define("wozlla/wozllajs/1.0.0/core/Engine-debug", [ "wozlla/wozllajs/1.0.0/utils
             listener.apply(listener, arguments);
         }
     }
+    /**
+	 * 游戏引擎 提供控制游戏主循环和监听主循环事件，设置FPS
+	 * @class wozllajs.core.Engine
+	 * @static
+	 */
     return {
         /**
          * 添加一个listener在主循环中调用
+		 * @static
          * @param listener {function}
          */
         addListener: function(listener) {
@@ -2486,6 +2803,7 @@ define("wozlla/wozllajs/1.0.0/core/Engine-debug", [ "wozlla/wozllajs/1.0.0/utils
         },
         /**
          * 移除主循环中的一个listener
+		 * @static
          * @param listener {function}
          */
         removeListener: function(listener) {
@@ -2493,6 +2811,7 @@ define("wozlla/wozllajs/1.0.0/core/Engine-debug", [ "wozlla/wozllajs/1.0.0/utils
         },
         /**
          * 开始主循环或重新开始主循环
+		 * @static
          */
         start: function(newFrameTime) {
             frameTime = newFrameTime || 10;
@@ -2505,21 +2824,31 @@ define("wozlla/wozllajs/1.0.0/core/Engine-debug", [ "wozlla/wozllajs/1.0.0/utils
         },
         /**
          * 停止主循环
+		 * @static
          */
         stop: function() {
             running = false;
         },
         /**
          * 运行一步
+		 * @static
          */
         runStep: function() {
             Time.update();
             Time.delta = frameTime;
             fireEngineEvent();
         },
+        /**
+		 * @static
+		 * @param use
+		 */
         setUseRAF: function(use) {
             useRAF = user;
         },
+        /**
+		 * @static
+		 * @param fps
+		 */
         setFPS: function(fps) {
             FPS = fps;
         }

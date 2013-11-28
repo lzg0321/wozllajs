@@ -23,6 +23,13 @@ define(function(require) {
 	 */
 	var AbstractGameObject = function(params) {
 		EventTarget.apply(this, arguments);
+
+		/**
+		 *	unique id, using for query
+		 * @type {string}
+		 * @public @readonly
+		 */
+		this.id = params.id;
 		/**
 		 * @type {string}
 		 * 	name of this object, 在树型结构中用来构成path
@@ -33,7 +40,7 @@ define(function(require) {
 
 		/**
 		 * @type {int}
-		 * 	唯一ID
+		 * 	唯一UID, 几乎没有用途
 		 * @readonly
 		 */
 		this.UID = uniqueKey();
