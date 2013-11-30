@@ -20,6 +20,14 @@ define(function(require) {
     var helpRect = new Rectangle();
     var helpMatrix = new Matrix2D();
 
+	/**
+	 * 该类将所有Component的功能组合进来，实现组件式的游戏对象
+	 * @class wozllajs.core.UnityGameObject
+	 * @extends wozllajs.core.AbstractGameObject
+	 * @constructor
+	 * @param param
+	 * @param param.name
+	 */
     var UnityGameObject = function(param) {
         AbstractGameObject.apply(this, arguments);
         this._active = true;
@@ -34,6 +42,11 @@ define(function(require) {
 
     var p = Objects.inherits(UnityGameObject, AbstractGameObject);
 
+	/**
+	 * 判断该object是否是激活的
+	 * @param upWards 是否向上根据tree中的parent, ancients去判断
+	 * @returns {Boolean}
+	 */
     p.isActive = function(upWards) {
         if(upWards === false) {
             return this._active;
@@ -50,10 +63,19 @@ define(function(require) {
         return active;
     };
 
+	/**
+	 * set active
+	 * @param active
+	 */
     p.setActive = function(active) {
         this._active = active;
     };
 
+	/**
+	 * 判断该object是否可见
+	 * @param upWards 是否向上根据tree中的parent, ancients去判断
+	 * @returns {Boolean}
+	 */
     p.isVisible = function(upWards) {
         if(upWards === false) {
             return this._visible;
@@ -70,34 +92,68 @@ define(function(require) {
         return visible;
     };
 
+	/**
+	 * set visible
+	 * @param visible
+	 */
     p.setVisible = function(visible) {
         this._visible = visible;
     };
 
+	/**
+	 * 判断该object是否可交互, 当有children时忽略_interactive属性默认为可交互，这是通常用在test hit上.
+	 * @returns {boolean}
+	 */
     p.isInteractive = function() {
         return this._children.length > 0 || this._interactive;
     };
 
+	/**
+	 * set interactive
+	 * @param interactive
+	 */
     p.setInteractive = function(interactive) {
         this._interactive = interactive;
     };
 
+	/**
+	 * get width
+	 * @returns {int}
+	 */
     p.getWidth = function() {
         return this._width;
     };
 
+	/**
+	 * set width
+	 * @param w
+	 */
     p.setWidth = function(w) {
         this._width = w;
     };
 
+	/**
+	 * get height of this object
+	 * @returns {*}
+	 */
     p.getHeight = function() {
         return this._height;
     };
 
+	/**
+	 * set height
+	 * @param h
+	 */
     p.setHeight = function(h) {
         this._height = h;
     };
 
+	/**
+	 * 获取这个对象的绝对bound，用于绘制的时候判断是否在屏幕中
+	 * @param {wozllajs.math.Rectangle} resultRect 如果传了这个参数，结果将返回这个rectangle
+	 * @param print for debugging
+	 * @returns {wozllajs.math.Rectangle}
+	 */
     p.getGlobalBounds = function(resultRect, print) {
         if(!resultRect) {
             resultRect = new Rectangle();
@@ -116,11 +172,20 @@ define(function(require) {
         return resultRect;
     };
 
+	/**
+	 * add a component
+	 * @param component
+	 */
     p.addComponent = function(component) {
         this._components.push(component);
         component.setGameObject(this);
     };
 
+	/**
+	 * get component by it's constructor or alias
+	 * @param type
+	 * @returns {wozllajs.core.Component}
+	 */
     p.getComponent = function(type) {
         var i, len, comp;
         var components = this._components;
@@ -145,6 +210,11 @@ define(function(require) {
         return null;
     };
 
+	/**
+	 * get all components by it's constructor or alias
+	 * @param type
+	 * @returns {Array}
+	 */
     p.getComponents = function(type) {
         var i, len, comp, alias;
         var components = this._components;
@@ -168,6 +238,10 @@ define(function(require) {
         return found;
     };
 
+	/**
+	 * remove component
+	 * @param component
+	 */
     p.removeComponent = function(component) {
         var i, len, comp;
         var components = this._components;
@@ -181,18 +255,35 @@ define(function(require) {
         }
     };
 
+	/**
+	 * 在下一阶段移除 component
+	 * @param component
+	 */
     p.delayRemoveComponent = function(component) {
         this._delayRemoves.push(component);
     };
 
+	/**
+	 * 在下一阶段移除 game object
+	 * @param gameObject
+	 */
     p.delayRemoveObject = function(gameObject) {
         this._delayRemoves.push(gameObject);
     };
 
+	/**
+	 * 在下一阶段 remove me from parent
+	 */
     p.delayRemove = function() {
         this._parent.delayRemoveObject(this);
     };
 
+	/**
+	 * 调用所有component的指定方法，并传递参数
+	 * @param methodName
+	 * @param args
+	 * @param type
+	 */
     p.sendMessage = function(methodName, args, type) {
         var i, len, comp, method;
         var components = this._components;
@@ -205,6 +296,11 @@ define(function(require) {
         }
     };
 
+	/**
+	 * 调用所有component指定方法并传递参数，包括该object的children
+	 * @param methodName
+	 * @param args
+	 */
     p.broadcastMessage = function(methodName, args) {
         var i, len, child;
         var children = this._children;
@@ -215,6 +311,9 @@ define(function(require) {
         this.sendMessage(methodName, args);
     };
 
+	/**
+	 * 初始化该对象
+	 */
     p.init = function() {
         var i, len, child;
         var children = this._children;
@@ -232,6 +331,9 @@ define(function(require) {
         }));
     };
 
+	/**
+	 * 销毁该对象
+	 */
     p.destroy = function() {
         var i, len, child;
         var children = this._children;
@@ -247,6 +349,9 @@ define(function(require) {
         }))
     };
 
+	/**
+	 * layout
+	 */
     p.layout = function() {
         var layout = this.getComponent(Layout);
         var children = this._children;
@@ -257,7 +362,6 @@ define(function(require) {
         }
         layout && layout.doLayout();
     };
-
     p.update = function() {
         if(!this._initialized || !this._active) return;
         var i, len, child;

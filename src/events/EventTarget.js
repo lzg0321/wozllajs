@@ -4,8 +4,8 @@ define(function (require, exports, module) {
 
     /**
      *
-     * @name EventTarget
-     * @class EventTarget 类是可调度事件的所有类的基类。
+     * @class wozllajs.events.EventTarget
+	 * 	EventTarget类是可调度事件的所有类的基类。
      * @constructor
      */
     var EventTarget = function() {
@@ -20,14 +20,15 @@ define(function (require, exports, module) {
         'click' : 'onClick'
     };
 
-    /**
-     * @lends EventTarget.prototype
-     */
     var p = EventTarget.prototype;
 
-    /**
-     *
-     */
+	/**
+	 * 增加事件监听器
+	 * @param eventType
+	 * @param listener
+	 * @param [useCapture=false] true时加入捕获列表
+	 * @returns {Function} 监听器
+	 */
     p.addEventListener = function(eventType, listener, useCapture) {
         var listeners = useCapture ? this._captureListeners : this._listeners;
         var arr = listeners[eventType];
@@ -42,6 +43,12 @@ define(function (require, exports, module) {
         return listener;
     };
 
+	/**
+	 * 移除监听器
+	 * @param eventType
+	 * @param listener
+	 * @param [useCapture=false] true时从捕获列表移除
+	 */
     p.removeEventListener = function(eventType, listener, useCapture) {
         var listeners = useCapture ? this._captureListeners : this._listeners;
         if (!listeners) { return; }
@@ -58,11 +65,20 @@ define(function (require, exports, module) {
         }
     };
 
+	/**
+	 * 判断是否包含某类事件监听器
+	 * @param eventType
+	 * @returns {boolean}
+	 */
     p.hasEventListener = function(eventType) {
         var listeners = this._listeners, captureListeners = this._captureListeners;
         return !!((listeners && listeners[eventType]) || (captureListeners && captureListeners[eventType]));
     };
 
+	/**
+	 * 分配一个事件到当前对象的事件流中
+	 * @param {Event} event
+	 */
     p.dispatchEvent = function(event) {
         var i, len, list, object, defaultAction;
         event.target = this;

@@ -1,28 +1,23 @@
-/**
- * Copy from createjs
- * @see createjs.com
- */
-
 define(function() {
 
     /**
+	 * Copy from createjs, see createjs.com
+	 *
      * Represents an affine transformation matrix, and provides tools for constructing and concatenating matrixes.
-     * @class Matrix2D
+     * @class wozllajs.math.Matrix2D
+	 * @constructor
      * @param {Number} [a=1] Specifies the a property for the new matrix.
      * @param {Number} [b=0] Specifies the b property for the new matrix.
      * @param {Number} [c=0] Specifies the c property for the new matrix.
      * @param {Number} [d=1] Specifies the d property for the new matrix.
      * @param {Number} [tx=0] Specifies the tx property for the new matrix.
      * @param {Number} [ty=0] Specifies the ty property for the new matrix.
-     * @constructor
      **/
     var Matrix2D = function(a, b, c, d, tx, ty) {
         this.initialize(a, b, c, d, tx, ty);
     };
 
     var p = Matrix2D.prototype;
-
-// static public properties:
 
     /**
      * An identity matrix, representing a null transformation.

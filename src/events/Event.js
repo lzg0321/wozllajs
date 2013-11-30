@@ -1,43 +1,48 @@
 define(function (require, exports, module) {
 
     /**
-     * @name Event
-     * @class Event 类作为创建 Event 对象的基类，当发生事件时，Event 对象将作为参数传递给事件侦听器。
+     * @class wozllajs.events.Event
+	 * 	Event类作为创建 Event 对象的基类，当发生事件时，Event 对象将作为参数传递给事件侦听器。
      * @constructor
      * @param {Object} params
      * @param {String} params.type 指定事件类型
-     * @param {Boolean} params.bubbles 指定事件是否冒泡
+     * @param {Boolean} [params.bubbles=false] 指定事件是否冒泡
      */
 
     var Event = function(params) {
 
         /**
-         * [readonly] 事件类型
+         * 事件类型
          * @type {String}
+		 * @readonly
          */
         this.type = params.type;
 
         /**
-         * [readonly] 事件目标
+         * 事件目标
          * @type {EventTarget}
+		 * @readonly
          */
         this.target = null;
 
         /**
-         * [readonly] 当前正在使用某个事件侦听器处理 Event 对象的对象。
+         * 当前正在使用某个事件侦听器处理 Event 对象的对象。
          * @type {EventTarget}
+		 * @readonly
          */
         this.currentTarget = null;
 
         /**
-         * [readonly] 事件流中的当前阶段。
+         * 事件流中的当前阶段。
          * @type {int}
+		 * @readonly
          */
         this.eventPhase = null;
 
         /**
-         * [只读] 表示事件是否为冒泡事件。
+         * 表示事件是否为冒泡事件。
          * @type {Boolean}
+		 * @readonly
          */
         this.bubbles = params.bubbles;
 
@@ -51,9 +56,6 @@ define(function (require, exports, module) {
     Event.BUBBLING_PHASE = 2;
     Event.TARGET_PHASE = 3;
 
-    /**
-     * @lends Event.prototype
-     */
     var p = Event.prototype;
 
     /**

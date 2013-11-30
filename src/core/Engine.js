@@ -61,10 +61,17 @@ define(function(require) {
         }
     }
 
+	/**
+	 * 游戏引擎 提供控制游戏主循环和监听主循环事件，设置FPS
+	 * @class wozllajs.core.Engine
+	 * @static
+	 */
+
     return {
 
         /**
          * 添加一个listener在主循环中调用
+		 * @static
          * @param listener {function}
          */
         addListener : function(listener) {
@@ -72,6 +79,7 @@ define(function(require) {
         },
         /**
          * 移除主循环中的一个listener
+		 * @static
          * @param listener {function}
          */
         removeListener : function(listener) {
@@ -80,6 +88,7 @@ define(function(require) {
 
         /**
          * 开始主循环或重新开始主循环
+		 * @static
          */
         start : function(newFrameTime) {
             frameTime = newFrameTime || 10;
@@ -93,6 +102,7 @@ define(function(require) {
 
         /**
          * 停止主循环
+		 * @static
          */
         stop : function() {
             running = false;
@@ -100,6 +110,7 @@ define(function(require) {
 
         /**
          * 运行一步
+		 * @static
          */
         runStep : function() {
             Time.update();
@@ -107,10 +118,18 @@ define(function(require) {
             fireEngineEvent();
         },
 
+		/**
+		 * @static
+		 * @param use
+		 */
 		setUseRAF : function(use) {
 			useRAF = user;
 		},
 
+		/**
+		 * @static
+		 * @param fps
+		 */
 		setFPS : function(fps) {
 			FPS = fps;
 		}

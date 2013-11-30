@@ -10,10 +10,6 @@ define(function(require) {
     GameObjectEvent.INIT = 'init';
     GameObjectEvent.DESTROY = 'destroy';
     GameObjectEvent.CHANGED = 'changed';
-    /**
-     * fire when child game object added , removed
-     * @type {string}
-     */
     GameObjectEvent.ADDED = 'added';
     GameObjectEvent.REMOVED = 'removed';
 
