@@ -4,9 +4,12 @@ define(function(require) {
 
     var stage;
     var enabled = true;
+	var multiTouchEnabled = false;
 
     var touchstartTarget;
     var touchendTarget;
+	var touches = [];
+
     var canvasOffsetCache;
 
     function getCanvasOffset() {
@@ -23,6 +26,7 @@ define(function(require) {
 
     function onEvent(e) {
         if(!enabled) return;
+		var i, len, inTouchList;
         var canvasOffset, x, y, t;
         var type = e.type;
         var target;
@@ -41,10 +45,13 @@ define(function(require) {
 
         target = stage.getTopObjectUnderPoint(x, y, true);
 
+
         if(type === 'mousedown' || type === TouchEvent.TOUCH_START) {
             type = TouchEvent.TOUCH_START;
             touchstartTarget = target;
+			touches.length = 0;
             touchendTarget = null;
+
         }
         else if((type === 'mouseup' || type === TouchEvent.TOUCH_END) && touchstartTarget) {
             type = TouchEvent.TOUCH_END;
@@ -54,13 +61,24 @@ define(function(require) {
             type = TouchEvent.TOUCH_MOVE;
         }
 
+		if(multiTouchEnabled && target) {
+			for(i=0,len=touches.length; i<len; i++) {
+				if(touches[i] === target) {
+					inTouchList = true;
+					break;
+				}
+			}
+			!inTouchList && touches.push(target);
+		}
+
         if(touchstartTarget) {
             touchstartTarget.dispatchEvent(new TouchEvent({
                 type : type,
                 x : x,
                 y : y,
                 bubbles: true,
-                touch: target
+                touch: target,
+				touches : touches
             }));
             if(type === TouchEvent.TOUCH_END) {
                 if(touchstartTarget && touchstartTarget === target) {
@@ -69,7 +87,8 @@ define(function(require) {
                         x : x,
                         y : y,
                         bubbles: true,
-                        touch : target
+                        touch : target,
+						touches : touches
                     }));
                     touchstartTarget = null;
                     touchendTarget = null;
@@ -105,6 +124,9 @@ define(function(require) {
                 }, false);
             }
         },
+		setMultiTouches : function(flag) {
+			multiTouchEnabled = flag;
+		},
         enable : function() {
             enabled = true;
         },

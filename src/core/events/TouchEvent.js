@@ -8,6 +8,7 @@ define(function(require) {
         this.x = param.x;
         this.y = param.y;
         this.touch = param.touch;
+		this.touches = param.touches;
     };
 
     TouchEvent.TOUCH_START = 'touchstart';
