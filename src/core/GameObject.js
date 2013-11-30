@@ -12,6 +12,7 @@ define(function(require) {
 		if(this.id) {
 			idMap[this.id] = this;
 			this.addEventListener(GameObjectEvent.DESTROY, function(e) {
+				if(e.target !== me) return;
 				e.removeListener();
 				delete idMap[me.id];
 			});

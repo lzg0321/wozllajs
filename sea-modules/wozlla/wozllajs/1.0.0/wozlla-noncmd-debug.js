@@ -856,6 +856,7 @@ define("wozlla/wozllajs/1.0.0/core/GameObject-debug", [ "wozlla/wozllajs/1.0.0/u
         if (this.id) {
             idMap[this.id] = this;
             this.addEventListener(GameObjectEvent.DESTROY, function(e) {
+                if (e.target !== me) return;
                 e.removeListener();
                 delete idMap[me.id];
             });
@@ -2817,6 +2818,7 @@ define("wozlla/wozllajs/1.0.0/core/events/TouchEvent-debug", [ "wozlla/wozllajs/
         this.x = param.x;
         this.y = param.y;
         this.touch = param.touch;
+        this.touches = param.touches;
     };
     TouchEvent.TOUCH_START = "touchstart";
     TouchEvent.TOUCH_END = "touchend";
@@ -3067,8 +3069,10 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
     var TouchEvent = require("wozlla/wozllajs/1.0.0/core/events/TouchEvent-debug");
     var stage;
     var enabled = true;
+    var multiTouchEnabled = false;
     var touchstartTarget;
     var touchendTarget;
+    var touches = [];
     var canvasOffsetCache;
     function getCanvasOffset() {
         if (canvasOffsetCache) return canvasOffsetCache;
@@ -3086,6 +3090,7 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
     }
     function onEvent(e) {
         if (!enabled) return;
+        var i, len, inTouchList;
         var canvasOffset, x, y, t;
         var type = e.type;
         var target;
@@ -3103,6 +3108,7 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
         if (type === "mousedown" || type === TouchEvent.TOUCH_START) {
             type = TouchEvent.TOUCH_START;
             touchstartTarget = target;
+            touches.length = 0;
             touchendTarget = null;
         } else if ((type === "mouseup" || type === TouchEvent.TOUCH_END) && touchstartTarget) {
             type = TouchEvent.TOUCH_END;
@@ -3110,13 +3116,23 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
         } else if ((type === "mousemove" || type === TouchEvent.TOUCH_MOVE) && touchstartTarget) {
             type = TouchEvent.TOUCH_MOVE;
         }
+        if (multiTouchEnabled && target) {
+            for (i = 0, len = touches.length; i < len; i++) {
+                if (touches[i] === target) {
+                    inTouchList = true;
+                    break;
+                }
+            }
+            !inTouchList && touches.push(target);
+        }
         if (touchstartTarget) {
             touchstartTarget.dispatchEvent(new TouchEvent({
                 type: type,
                 x: x,
                 y: y,
                 bubbles: true,
-                touch: target
+                touch: target,
+                touches: touches
             }));
             if (type === TouchEvent.TOUCH_END) {
                 if (touchstartTarget && touchstartTarget === target) {
@@ -3125,7 +3141,8 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
                         x: x,
                         y: y,
                         bubbles: true,
-                        touch: target
+                        touch: target,
+                        touches: touches
                     }));
                     touchstartTarget = null;
                     touchendTarget = null;
@@ -3157,6 +3174,9 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
                     }
                 }, false);
             }
+        },
+        setMultiTouches: function(flag) {
+            multiTouchEnabled = flag;
         },
         enable: function() {
             enabled = true;
