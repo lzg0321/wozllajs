@@ -7,7 +7,11 @@ define(function(require, exports) {
 	exports.buildGameObject = function(objData) {
 		var i, len, comp;
 		var gameObject, children, components;
-		gameObject = new GameObject({ name : objData.name, id: objData.gid || objData.id });
+		gameObject = new GameObject({
+			name : objData.name,
+			id: objData.gid || objData.id,
+			tags : objData.tags
+		});
 		gameObject.setActive(objData.active);
 		gameObject.setVisible(objData.visible);
 		gameObject.setWidth(objData.width || 0);

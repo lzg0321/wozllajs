@@ -709,7 +709,8 @@ define("wozlla/wozllajs/1.0.0/assets/objLoader-debug", [ "wozlla/wozllajs/1.0.0/
         var gameObject, children, components;
         gameObject = new GameObject({
             name: objData.name,
-            id: objData.gid || objData.id
+            id: objData.gid || objData.id,
+            tags: objData.tags
         });
         gameObject.setActive(objData.active);
         gameObject.setVisible(objData.visible);
@@ -2018,6 +2019,11 @@ define("wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", [ "wozlla/wozllajs
 		 */
         this.name = params.name;
         /**
+		 * 标签
+		 * @type {tags|*}
+		 */
+        this.tags = params.tags;
+        /**
 		 * @type {int}
 		 * 	唯一UID, 几乎没有用途
 		 * @readonly
@@ -2063,6 +2069,14 @@ define("wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", [ "wozlla/wozllajs
             this._parent._childrenMap[name] = this;
         }
         this.name = name;
+    };
+    /**
+	 * 判断是否有某个标签
+	 * @param tag
+	 * @returns {tags|*|tags|*|boolean}
+	 */
+    p.isTagged = function(tag) {
+        return this.tags && this.tags.indexOf(tag) !== -1;
     };
     /**
 	 * get parent

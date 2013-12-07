@@ -39,6 +39,12 @@ define(function(require) {
 		this.name = params.name;
 
 		/**
+		 * 标签
+		 * @type {tags|*}
+		 */
+		this.tags = params.tags;
+
+		/**
 		 * @type {int}
 		 * 	唯一UID, 几乎没有用途
 		 * @readonly
@@ -88,6 +94,15 @@ define(function(require) {
 			this._parent._childrenMap[name] = this;
 		}
 		this.name = name;
+	};
+
+	/**
+	 * 判断是否有某个标签
+	 * @param tag
+	 * @returns {tags|*|tags|*|boolean}
+	 */
+	p.isTagged = function(tag) {
+		return this.tags && this.tags.indexOf(tag) !== -1;
 	};
 
 	/**
