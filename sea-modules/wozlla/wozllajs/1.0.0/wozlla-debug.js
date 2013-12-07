@@ -705,6 +705,11 @@ define("wozlla/wozllajs/1.0.0/core/Component-debug", [ "wozlla/wozllajs/1.0.0/as
     p.setGameObject = function(gameObject) {
         this.gameObject = gameObject;
     };
+    p.applyProperties = function() {
+        for (var i in this.properties) {
+            this[i] = this.properties[i];
+        }
+    };
     p.initComponent = function() {};
     p.destroyComponent = function() {};
     p.on = function(type, listener) {
@@ -2398,6 +2403,9 @@ define("wozlla/wozllajs/1.0.0/events/Event-debug", [], function(require, exports
     Event.BUBBLING_PHASE = 2;
     Event.TARGET_PHASE = 3;
     var p = Event.prototype;
+    p.isPropagationStopped = function() {
+        return this._propagationStoped;
+    };
     /**
      * 防止对事件流中当前节点中和所有后续节点中的事件侦听器进行处理。
      */
@@ -3009,6 +3017,7 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
         var canvasOffset, x, y, t;
         var type = e.type;
         var target;
+        var touchEvent;
         canvasOffset = getCanvasOffset();
         // mouse event
         if (!e.touches) {
@@ -3019,7 +3028,9 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
             x = t.pageX - canvasOffset.x;
             y = t.pageY - canvasOffset.y;
         }
-        target = stage.getTopObjectUnderPoint(x, y, true);
+        if (type === TouchEvent.TOUCH_START || touchstartTarget) {
+            target = stage.getTopObjectUnderPoint(x, y, true);
+        }
         if (type === "mousedown" || type === TouchEvent.TOUCH_START) {
             type = TouchEvent.TOUCH_START;
             touchstartTarget = target;
@@ -3041,14 +3052,18 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
             !inTouchList && touches.push(target);
         }
         if (touchstartTarget) {
-            touchstartTarget.dispatchEvent(new TouchEvent({
+            touchEvent = new TouchEvent({
                 type: type,
                 x: x,
                 y: y,
                 bubbles: true,
                 touch: target,
                 touches: touches
-            }));
+            });
+            touchstartTarget.dispatchEvent(touchEvent);
+            if (touchEvent.isPropagationStopped()) {
+                touchstartTarget = null;
+            }
             if (type === TouchEvent.TOUCH_END) {
                 if (touchstartTarget && touchstartTarget === target) {
                     target.dispatchEvent(new TouchEvent({

@@ -53,6 +53,12 @@ define(function(require) {
         this.gameObject = gameObject;
     };
 
+	p.applyProperties = function() {
+		for(var i in this.properties) {
+			this[i] = this.properties[i];
+		}
+	};
+
     p.initComponent = function() {};
 
     p.destroyComponent = function() {};
