@@ -2115,6 +2115,15 @@ define("wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", [ "wozlla/wozllajs
         }
         return o.isStage ? o : null;
     };
+    p.indexInParent = function() {
+        if (this._parent) {
+            return -1;
+        }
+        return this._parent.getChildIndex(this);
+    };
+    p.getChildIndex = function(child) {
+        return this._children.indexOf(child);
+    };
     /**
 	 * get children
 	 * @returns {Array}
