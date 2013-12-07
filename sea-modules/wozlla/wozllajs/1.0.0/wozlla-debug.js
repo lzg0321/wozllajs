@@ -2914,6 +2914,7 @@ define("wozlla/wozllajs/1.0.0/core/Stage-debug", [ "wozlla/wozllajs/1.0.0/utils/
         var me = this;
         CachableGameObject.apply(this, arguments);
         this.autoClear = param.autoClear;
+        this.bgColor = param.bgColor || "#000000";
         this._width = param.width || param.canvas.width;
         this._height = param.height || param.canvas.height;
         this.stageCanvas = param.canvas;
@@ -2931,7 +2932,10 @@ define("wozlla/wozllajs/1.0.0/core/Stage-debug", [ "wozlla/wozllajs/1.0.0/utils/
         this.draw();
     };
     p.draw = function() {
-        this.autoClear && this.stageContext.fillRect(0, 0, this._width, this._height);
+        if (this.autoClear) {
+            this.stageContext.fillStyle = this.bgColor || "#000000";
+            this.stageContext.fillRect(0, 0, this._width, this._height);
+        }
         CachableGameObject.prototype.draw.apply(this, [ this.stageContext, this.getVisibleRect() ]);
     };
     p.resize = function(width, height) {
