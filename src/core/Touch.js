@@ -44,9 +44,9 @@ define(function(require) {
             y = t.pageY - canvasOffset.y;
         }
 
-		if(type === TouchEvent.TOUCH_START || touchstartTarget) {
+		//if(type === 'mousedown' || type === TouchEvent.TOUCH_START || touchstartTarget) {
         	target = stage.getTopObjectUnderPoint(x, y, true);
-		}
+		//}
 
         if(type === 'mousedown' || type === TouchEvent.TOUCH_START) {
             type = TouchEvent.TOUCH_START;
@@ -85,9 +85,9 @@ define(function(require) {
 
 			touchstartTarget.dispatchEvent(touchEvent);
 
-			if(touchEvent.isPropagationStopped()) {
-				touchstartTarget = null;
-			}
+//			if(touchEvent.isPropagationStopped()) {
+//				touchstartTarget = null;
+//			}
 
             if(type === TouchEvent.TOUCH_END) {
                 if(touchstartTarget && touchstartTarget === target) {

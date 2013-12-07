@@ -3028,9 +3028,9 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
             x = t.pageX - canvasOffset.x;
             y = t.pageY - canvasOffset.y;
         }
-        if (type === TouchEvent.TOUCH_START || touchstartTarget) {
-            target = stage.getTopObjectUnderPoint(x, y, true);
-        }
+        //if(type === 'mousedown' || type === TouchEvent.TOUCH_START || touchstartTarget) {
+        target = stage.getTopObjectUnderPoint(x, y, true);
+        //}
         if (type === "mousedown" || type === TouchEvent.TOUCH_START) {
             type = TouchEvent.TOUCH_START;
             touchstartTarget = target;
@@ -3061,9 +3061,9 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
                 touches: touches
             });
             touchstartTarget.dispatchEvent(touchEvent);
-            if (touchEvent.isPropagationStopped()) {
-                touchstartTarget = null;
-            }
+            //			if(touchEvent.isPropagationStopped()) {
+            //				touchstartTarget = null;
+            //			}
             if (type === TouchEvent.TOUCH_END) {
                 if (touchstartTarget && touchstartTarget === target) {
                     target.dispatchEvent(new TouchEvent({
