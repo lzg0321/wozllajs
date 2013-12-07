@@ -644,7 +644,6 @@ define("wozlla/wozllajs/1.0.0/assets/objLoader-debug", [ "wozlla/wozllajs/1.0.0/
         }
         return comp;
     };
-    exports.initObjectData = function(objData) {};
     exports.loadObjFile = function(filePath) {
         return loader.load({
             id: filePath,
@@ -652,11 +651,11 @@ define("wozlla/wozllajs/1.0.0/assets/objLoader-debug", [ "wozlla/wozllajs/1.0.0/
             type: "json"
         });
     };
-    exports.loadAndInitObjFile = function(filePath) {
+    exports.loadAndInitObjFile = function(filePath, removeResource) {
         return exports.loadObjFile(filePath).then(function() {
             var objData = loader.get(filePath);
             var obj = exports.buildGameObject(objData);
-            loader.remove(filePath);
+            removeResource && loader.remove(filePath);
             return obj;
         });
     };

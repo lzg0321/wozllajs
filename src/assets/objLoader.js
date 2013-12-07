@@ -44,10 +44,6 @@ define(function(require, exports) {
 		return comp;
 	};
 
-	exports.initObjectData = function(objData) {
-
-	};
-
 	exports.loadObjFile = function(filePath) {
 		return loader.load({
 			id : filePath,
@@ -56,11 +52,11 @@ define(function(require, exports) {
 		});
 	};
 
-	exports.loadAndInitObjFile = function(filePath) {
+	exports.loadAndInitObjFile = function(filePath, removeResource) {
 		return exports.loadObjFile(filePath).then(function() {
 			var objData = loader.get(filePath);
 			var obj = exports.buildGameObject(objData);
-			loader.remove(filePath);
+			removeResource && loader.remove(filePath);
 			return obj;
 		});
 	};
