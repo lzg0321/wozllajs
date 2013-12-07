@@ -34,7 +34,7 @@ define(function(require) {
     };
 
     p.draw = function() {
-        this.autoClear && this.stageContext.clearRect(0, 0, this._width, this._height);
+        this.autoClear && this.stageContext.fillRect(0, 0, this._width, this._height);
         CachableGameObject.prototype.draw.apply(this, [this.stageContext, this.getVisibleRect()]);
     };
 

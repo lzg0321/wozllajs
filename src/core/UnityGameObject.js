@@ -475,12 +475,12 @@ define(function(require) {
         var i, len, child, gBounds, mask;
         var children = this._children;
         if(children.length <= 0) {
-            gBounds = this.getGlobalBounds(helpRect);
-            if(gBounds.intersects(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height)) {
+            //gBounds = this.getGlobalBounds(helpRect);
+            //if(gBounds.intersects(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height)) {
                 mask = this.getComponent(Mask);
                 mask && mask.clip(context);
                 this.sendMessage('draw', arguments, Renderer);
-            }
+            //}
         } else {
             mask = this.getComponent(Mask);
             mask && mask.clip(context);

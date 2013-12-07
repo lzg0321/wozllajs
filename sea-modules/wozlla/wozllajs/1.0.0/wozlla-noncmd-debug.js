@@ -1381,12 +1381,11 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
         var i, len, child, gBounds, mask;
         var children = this._children;
         if (children.length <= 0) {
-            gBounds = this.getGlobalBounds(helpRect);
-            if (gBounds.intersects(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height)) {
-                mask = this.getComponent(Mask);
-                mask && mask.clip(context);
-                this.sendMessage("draw", arguments, Renderer);
-            }
+            //gBounds = this.getGlobalBounds(helpRect);
+            //if(gBounds.intersects(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height)) {
+            mask = this.getComponent(Mask);
+            mask && mask.clip(context);
+            this.sendMessage("draw", arguments, Renderer);
         } else {
             mask = this.getComponent(Mask);
             mask && mask.clip(context);
@@ -3034,7 +3033,7 @@ define("wozlla/wozllajs/1.0.0/core/Stage-debug", [ "wozlla/wozllajs/1.0.0/utils/
         this.draw();
     };
     p.draw = function() {
-        this.autoClear && this.stageContext.clearRect(0, 0, this._width, this._height);
+        this.autoClear && this.stageContext.fillRect(0, 0, this._width, this._height);
         CachableGameObject.prototype.draw.apply(this, [ this.stageContext, this.getVisibleRect() ]);
     };
     p.resize = function(width, height) {
