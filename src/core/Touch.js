@@ -30,6 +30,7 @@ define(function(require) {
         var canvasOffset, x, y, t;
         var type = e.type;
         var target;
+		var touchEvent;
         canvasOffset = getCanvasOffset();
         // mouse event
         if (!e.touches) {
@@ -43,8 +44,9 @@ define(function(require) {
             y = t.pageY - canvasOffset.y;
         }
 
-        target = stage.getTopObjectUnderPoint(x, y, true);
-
+		if(type === TouchEvent.TOUCH_START || touchstartTarget) {
+        	target = stage.getTopObjectUnderPoint(x, y, true);
+		}
 
         if(type === 'mousedown' || type === TouchEvent.TOUCH_START) {
             type = TouchEvent.TOUCH_START;
@@ -72,14 +74,21 @@ define(function(require) {
 		}
 
         if(touchstartTarget) {
-            touchstartTarget.dispatchEvent(new TouchEvent({
-                type : type,
-                x : x,
-                y : y,
-                bubbles: true,
-                touch: target,
+			touchEvent = new TouchEvent({
+				type : type,
+				x : x,
+				y : y,
+				bubbles: true,
+				touch: target,
 				touches : touches
-            }));
+			});
+
+			touchstartTarget.dispatchEvent(touchEvent);
+
+			if(touchEvent.isPropagationStopped()) {
+				touchstartTarget = null;
+			}
+
             if(type === TouchEvent.TOUCH_END) {
                 if(touchstartTarget && touchstartTarget === target) {
 					target.dispatchEvent(new TouchEvent({
