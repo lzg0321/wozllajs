@@ -2549,6 +2549,7 @@ define("wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug", [ "wozlla/wozl
     var Event = require("wozlla/wozllajs/1.0.0/events/Event-debug");
     var GameObjectEvent = function(param) {
         Event.apply(this, arguments);
+        this.child = param.child;
     };
     GameObjectEvent.INIT = "init";
     GameObjectEvent.DESTROY = "destroy";

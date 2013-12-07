@@ -5,6 +5,7 @@ define(function(require) {
 
     var GameObjectEvent = function(param) {
         Event.apply(this, arguments);
+		this.child = param.child;
     };
 
     GameObjectEvent.INIT = 'init';
