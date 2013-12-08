@@ -1123,6 +1123,14 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
         resultRect.height = Math.max(localA.y, localB.y, localC.y, localD.y) - resultRect.y;
         return resultRect;
     };
+    p.query = function(selector) {
+        var splits = selector.split(":");
+        var result = this.getObjectByName(splits[0]);
+        if (splits[1]) {
+            result = result.getComponent(splits[1]);
+        }
+        return result;
+    };
     /**
 	 * add a component
 	 * @param component
@@ -2132,7 +2140,7 @@ define("wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", [ "wozlla/wozllajs
         return o.isStage ? o : null;
     };
     p.indexInParent = function() {
-        if (this._parent) {
+        if (!this._parent) {
             return -1;
         }
         return this._parent.getChildIndex(this);

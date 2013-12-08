@@ -172,6 +172,15 @@ define(function(require) {
         return resultRect;
     };
 
+	p.query = function(selector) {
+		var splits = selector.split(':');
+		var result = this.getObjectByName(splits[0]);
+		if(splits[1]) {
+			result = result.getComponent(splits[1]);
+		}
+		return result;
+	};
+
 	/**
 	 * add a component
 	 * @param component

@@ -141,7 +141,7 @@ define(function(require) {
 	};
 
 	p.indexInParent = function() {
-		if(this._parent) {
+		if(!this._parent) {
 			return -1;
 		}
 		return this._parent.getChildIndex(this);
