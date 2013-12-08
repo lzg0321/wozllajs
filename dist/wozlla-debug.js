@@ -98,6 +98,16 @@ define("wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", [ "wozlla/wozllajs/1.0.0
         // center
         this.draw(context, rx + gl, ry + gt, ow - gl - gr, oh - gt - gb, gl, gt, width - gl - gr, height - gt - gb);
     };
+    p.draw3in1 = function(context, region, splitCoords, widths) {
+        if (!region || !splitCoords || !widths || splitCoords.length !== 2 || widths.length !== 3) return;
+        var rx = region.x;
+        var ry = region.y;
+        var ow = region.w;
+        var oh = region.h;
+        this.draw(context, rx, ry, splitCoords[0], oh, 0, 0, widths[0], oh);
+        this.draw(context, rx + splitCoords[0], ry, splitCoords[1] - splitCoords[0], oh, widths[0], 0, widths[1], oh);
+        this.draw(context, rx + splitCoords[1], ry, ow - splitCoords[1], oh, widths[0] + widths[1], 0, widths[2], oh);
+    };
     p.dispose = function() {
         this.image && this.image.dispose && this.image.dispose();
         this.image = null;
@@ -151,6 +161,12 @@ define("wozlla/wozllajs/1.0.0/assets/Texture-debug", [ "wozlla/wozllajs/1.0.0/ut
         var f = this.getFrame(name);
         if (f) {
             this.drawAs9Grid(context, f, grid, width, height);
+        }
+    };
+    p.drawFrameAs3in1 = function(context, name, splitCoords, widths) {
+        var f = this.getFrame(name);
+        if (f) {
+            this.draw3in1(context, f, splitCoords, widths);
         }
     };
     module.exports = Texture;
