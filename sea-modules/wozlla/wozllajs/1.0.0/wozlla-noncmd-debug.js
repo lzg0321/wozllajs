@@ -777,6 +777,29 @@ define("wozlla/wozllajs/1.0.0/assets/objLoader-debug", [ "wozlla/wozllajs/1.0.0/
             return obj;
         });
     };
+    exports.loadObjFiles = function(filePaths) {
+        var fileItems = [];
+        for (var i in filePaths) {
+            fileItems.push({
+                id: filePaths[i],
+                src: filePaths[i],
+                type: "json"
+            });
+        }
+        return loader.load(fileItems);
+    };
+    exports.loadAndInitObjFiles = function(filePaths, removeResource) {
+        return exports.loadObjFiles(filePaths).then(function() {
+            var objs = [];
+            for (var i in filePaths) {
+                var objData = loader.get(filePaths[i]);
+                var obj = exports.buildGameObject(objData);
+                removeResource && loader.remove(filePaths[i]);
+                objs.push(obj);
+            }
+            return objs;
+        });
+    };
 });
 
 define("wozlla/wozllajs/1.0.0/core/Component-debug", [ "wozlla/wozllajs/1.0.0/assets/loader-debug", "wozlla/wozllajs/1.0.0/utils/Strings-debug", "wozlla/wozllajs/1.0.0/utils/Arrays-debug", "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/utils/Promise-debug", "wozlla/wozllajs/1.0.0/utils/Ajax-debug", "wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", "wozlla/wozllajs/1.0.0/assets/Texture-debug", "wozlla/wozllajs/1.0.0/utils/uniqueKey-debug" ], function(require) {
