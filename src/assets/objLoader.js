@@ -9,7 +9,7 @@ define(function(require, exports) {
 		var gameObject, children, components;
 		gameObject = new GameObject({
 			name : objData.name,
-			id: objData.gid || objData.id,
+			id: objData.gid,
 			tags : objData.tags
 		});
 		gameObject.setActive(objData.active);

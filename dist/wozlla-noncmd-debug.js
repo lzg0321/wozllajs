@@ -725,7 +725,7 @@ define("wozlla/wozllajs/1.0.0/assets/objLoader-debug", [ "wozlla/wozllajs/1.0.0/
         var gameObject, children, components;
         gameObject = new GameObject({
             name: objData.name,
-            id: objData.gid || objData.id,
+            id: objData.gid,
             tags: objData.tags
         });
         gameObject.setActive(objData.active);
