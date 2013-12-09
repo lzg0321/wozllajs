@@ -55,7 +55,9 @@ define(function(require) {
 
 	p.applyProperties = function() {
 		for(var i in this.properties) {
-			this[i] = this.properties[i];
+			if(this[i] === undefined || this[i] === null) {
+				this[i] = this.properties[i];
+			}
 		}
 	};
 

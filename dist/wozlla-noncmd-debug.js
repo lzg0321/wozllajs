@@ -861,7 +861,9 @@ define("wozlla/wozllajs/1.0.0/core/Component-debug", [ "wozlla/wozllajs/1.0.0/as
     };
     p.applyProperties = function() {
         for (var i in this.properties) {
-            this[i] = this.properties[i];
+            if (this[i] === undefined || this[i] === null) {
+                this[i] = this.properties[i];
+            }
         }
     };
     p.initComponent = function() {};
