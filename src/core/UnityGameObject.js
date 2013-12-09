@@ -352,6 +352,7 @@ define(function(require) {
         }
         this._doDelayRemove();
         this.sendMessage('destroyComponent');
+		this.removeAllListeners();
         this.dispatchEvent(new GameObjectEvent({
             type : GameObjectEvent.DESTROY,
             bubbles : true

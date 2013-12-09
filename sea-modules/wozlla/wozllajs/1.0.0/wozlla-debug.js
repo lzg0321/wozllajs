@@ -1213,6 +1213,7 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
         }
         this._doDelayRemove();
         this.sendMessage("destroyComponent");
+        this.removeAllListeners();
         this.dispatchEvent(new GameObjectEvent({
             type: GameObjectEvent.DESTROY,
             bubbles: true
@@ -2305,6 +2306,13 @@ define("wozlla/wozllajs/1.0.0/events/EventTarget-debug", [ "wozlla/wozllajs/1.0.
                 break;
             }
         }
+    };
+    /**
+	 * 移除所有监听器
+	 */
+    p.removeAllListeners = function() {
+        this._captureListeners = {};
+        this._listeners = {};
     };
     /**
 	 * 判断是否包含某类事件监听器
