@@ -65,4 +65,29 @@ define(function(require, exports) {
 		});
 	};
 
+	exports.loadObjFiles = function(filePaths) {
+		var fileItems = [];
+		for(var i in filePaths){
+			fileItems.push({
+				id: filePaths[i],
+				src: filePaths[i],
+				type: 'json'
+			});
+		}
+		return loader.load(fileItems);
+	};
+
+	exports.loadAndInitObjFiles = function(filePaths, removeResource) {
+		return exports.loadObjFiles(filePaths).then(function() {
+			var objs = [];
+			for(var i in filePaths){
+				var objData = loader.get(filePaths[i]);
+				var obj = exports.buildGameObject(objData);
+				removeResource && loader.remove(filePaths[i]);
+				objs.push(obj);
+			}
+			return objs;
+		});
+	};
+
 });
