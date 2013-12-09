@@ -65,6 +65,21 @@ define(function(require, exports) {
 		});
 	};
 
+	exports.loadAndInitObjFileToObjs = function(filePath, exts, removeResource) {
+		return exports.loadObjFile(filePath).then(function() {
+			var objs = [];
+			for(var i in exts){
+				var objData = loader.get(filePath);
+				var obj = exports.buildGameObject(objData);
+				objData.name += exts[i];
+				removeResource && loader.remove(filePath);
+				objs.push(obj);
+			}
+			return objs;
+		});
+	};
+
+	//loadObjFiles loadAndInitObjFiles未经测试，正确性待考证。
 	exports.loadObjFiles = function(filePaths) {
 		var fileItems = [];
 		for(var i in filePaths){
