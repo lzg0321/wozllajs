@@ -783,11 +783,11 @@ define("wozlla/wozllajs/1.0.0/assets/objLoader-debug", [ "wozlla/wozllajs/1.0.0/
             for (var i in exts) {
                 var objData = loader.get(filePath);
                 var obj = exports.buildGameObject(objData);
-                objData.name += exts[i];
-                removeResource && loader.remove(filePath);
+                obj.setName(objData.name + exts[i]);
                 objs.push(obj);
             }
-            return objs;
+            removeResource && loader.remove(filePath);
+            return [ objs ];
         });
     };
     //loadObjFiles loadAndInitObjFiles未经测试，正确性待考证。
@@ -811,7 +811,7 @@ define("wozlla/wozllajs/1.0.0/assets/objLoader-debug", [ "wozlla/wozllajs/1.0.0/
                 removeResource && loader.remove(filePaths[i]);
                 objs.push(obj);
             }
-            return objs;
+            return [ objs ];
         });
     };
 });

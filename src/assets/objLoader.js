@@ -68,14 +68,14 @@ define(function(require, exports) {
 	exports.loadAndInitObjFileToObjs = function(filePath, exts, removeResource) {
 		return exports.loadObjFile(filePath).then(function() {
 			var objs = [];
-			for(var i in exts){
+			for (var i in exts) {
 				var objData = loader.get(filePath);
 				var obj = exports.buildGameObject(objData);
-				objData.name += exts[i];
-				removeResource && loader.remove(filePath);
+				obj.setName(objData.name + exts[i]);
 				objs.push(obj);
 			}
-			return objs;
+			removeResource && loader.remove(filePath);
+			return [objs];
 		});
 	};
 
@@ -101,7 +101,7 @@ define(function(require, exports) {
 				removeResource && loader.remove(filePaths[i]);
 				objs.push(obj);
 			}
-			return objs;
+			return [objs];
 		});
 	};
 
