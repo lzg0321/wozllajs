@@ -2832,12 +2832,16 @@ define("wozlla/wozllajs/1.0.0/core/events/TouchEvent-debug", [ "wozlla/wozllajs/
         this.y = param.y;
         this.touch = param.touch;
         this.touches = param.touches;
+        this.touchMoveDetection = false;
     };
     TouchEvent.TOUCH_START = "touchstart";
     TouchEvent.TOUCH_END = "touchend";
     TouchEvent.TOUCH_MOVE = "touchmove";
     TouchEvent.CLICK = "click";
-    Objects.inherits(TouchEvent, Event);
+    var p = Objects.inherits(TouchEvent, Event);
+    p.setTouchMoveDetection = function(flag) {
+        this.touchMoveDetection = flag;
+    };
     return TouchEvent;
 });
 
@@ -3091,6 +3095,7 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
     var stage;
     var enabled = true;
     var multiTouchEnabled = false;
+    var touchMoveDetection = true;
     var touchstartTarget;
     var touchendTarget;
     var touches = [];
@@ -3127,7 +3132,15 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
             y = t.pageY - canvasOffset.y;
         }
         //if(type === 'mousedown' || type === TouchEvent.TOUCH_START || touchstartTarget) {
-        target = stage.getTopObjectUnderPoint(x, y, true);
+        if (type === "mousemove" || type === TouchEvent.TOUCH_MOVE) {
+            if (touchMoveDetection) {
+                target = stage.getTopObjectUnderPoint(x, y, true);
+            } else {
+                target = touchstartTarget;
+            }
+        } else {
+            target = stage.getTopObjectUnderPoint(x, y, true);
+        }
         //}
         if (type === "mousedown" || type === TouchEvent.TOUCH_START) {
             type = TouchEvent.TOUCH_START;
@@ -3159,9 +3172,11 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
                 touches: touches
             });
             touchstartTarget.dispatchEvent(touchEvent);
-            //			if(touchEvent.isPropagationStopped()) {
-            //				touchstartTarget = null;
-            //			}
+            if (type === TouchEvent.TOUCH_START) {
+                touchMoveDetection = touchEvent.touchMoveDetection;
+            } else if (type === TouchEvent.TOUCH_END) {
+                touchMoveDetection = true;
+            }
             if (type === TouchEvent.TOUCH_END) {
                 if (touchstartTarget && touchstartTarget === target) {
                     target.dispatchEvent(new TouchEvent({

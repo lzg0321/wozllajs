@@ -6,6 +6,7 @@ define(function(require) {
     var enabled = true;
 	var multiTouchEnabled = false;
 
+	var touchMoveDetection = true;
     var touchstartTarget;
     var touchendTarget;
 	var touches = [];
@@ -45,7 +46,15 @@ define(function(require) {
         }
 
 		//if(type === 'mousedown' || type === TouchEvent.TOUCH_START || touchstartTarget) {
-        	target = stage.getTopObjectUnderPoint(x, y, true);
+        if(type === 'mousemove' || type === TouchEvent.TOUCH_MOVE) {
+			if(touchMoveDetection) {
+				target = stage.getTopObjectUnderPoint(x, y, true);
+			} else {
+				target = touchstartTarget;
+			}
+		} else {
+			target = stage.getTopObjectUnderPoint(x, y, true);
+		}
 		//}
 
         if(type === 'mousedown' || type === TouchEvent.TOUCH_START) {
@@ -84,10 +93,12 @@ define(function(require) {
 			});
 
 			touchstartTarget.dispatchEvent(touchEvent);
-
-//			if(touchEvent.isPropagationStopped()) {
-//				touchstartTarget = null;
-//			}
+			if(type === TouchEvent.TOUCH_START) {
+				touchMoveDetection = touchEvent.touchMoveDetection;
+			}
+			else if(type === TouchEvent.TOUCH_END) {
+				touchMoveDetection = true;
+			}
 
             if(type === TouchEvent.TOUCH_END) {
                 if(touchstartTarget && touchstartTarget === target) {
@@ -133,6 +144,7 @@ define(function(require) {
                 }, false);
             }
         },
+
 		setMultiTouches : function(flag) {
 			multiTouchEnabled = flag;
 		},
