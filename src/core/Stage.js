@@ -12,7 +12,7 @@ define(function(require) {
 		var me = this;
         CachableGameObject.apply(this, arguments);
         this.autoClear = param.autoClear;
-		this.bgColor = param.bgColor || '#000000';
+		this.bgColor = param.bgColor;
         this._width = param.width || param.canvas.width;
         this._height = param.height || param.canvas.height;
         this.stageCanvas = param.canvas;
@@ -36,8 +36,12 @@ define(function(require) {
 
     p.draw = function() {
         if(this.autoClear) {
-			this.stageContext.fillStyle = this.bgColor || '#000000';
-			this.stageContext.fillRect(0, 0, this._width, this._height);
+			if(this.bgColor) {
+				this.stageContext.fillStyle = this.bgColor;
+				this.stageContext.fillRect(0, 0, this._width, this._height);
+			} else {
+				this.stageContext.clearRect(0, 0, this._width, this._height);
+			}
 		}
         CachableGameObject.prototype.draw.apply(this, [this.stageContext, this.getVisibleRect()]);
     };

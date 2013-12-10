@@ -59,13 +59,26 @@ define("wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", [ "wozlla/wozllajs/1.0.0
         this.src = image && image.src;
     };
     var p = AsyncImage.prototype;
-    p.draw = function(context) {
-        // TODO optimize performance for slice and unshift
-        var args = Arrays.slice(arguments, 1);
+    p.draw = function(context, a, b, c, d, e, f, g, h) {
+        // slice 性能差, 用最大参数数目优化
+        //var args = Ext.Array.slice(arguments, 1);
         var image = this.image;
+        var argsLen = arguments.length;
         if (image) {
-            args.unshift(image);
-            context.drawImage.apply(context, args);
+            //args.unshift(image);
+            //context.drawImage.apply(context, args);
+            //console.log(a, b, c, d, e, f, g, h);
+            if (argsLen === 3) {
+                context.drawImage(image, a, b);
+            }
+            if (argsLen === 5) {
+                context.drawImage(image, a, b, c, d);
+            }
+            if (argsLen === 7) {
+                context.drawImage(image, a, b, c, d, e, f);
+            } else {
+                context.drawImage(image, a, b, c, d, e, f, g, h);
+            }
         }
     };
     p.drawAs9Grid = function(context, region, grid, width, height) {
@@ -3017,7 +3030,7 @@ define("wozlla/wozllajs/1.0.0/core/Stage-debug", [ "wozlla/wozllajs/1.0.0/utils/
         var me = this;
         CachableGameObject.apply(this, arguments);
         this.autoClear = param.autoClear;
-        this.bgColor = param.bgColor || "#000000";
+        this.bgColor = param.bgColor;
         this._width = param.width || param.canvas.width;
         this._height = param.height || param.canvas.height;
         this.stageCanvas = param.canvas;
@@ -3036,8 +3049,12 @@ define("wozlla/wozllajs/1.0.0/core/Stage-debug", [ "wozlla/wozllajs/1.0.0/utils/
     };
     p.draw = function() {
         if (this.autoClear) {
-            this.stageContext.fillStyle = this.bgColor || "#000000";
-            this.stageContext.fillRect(0, 0, this._width, this._height);
+            if (this.bgColor) {
+                this.stageContext.fillStyle = this.bgColor;
+                this.stageContext.fillRect(0, 0, this._width, this._height);
+            } else {
+                this.stageContext.clearRect(0, 0, this._width, this._height);
+            }
         }
         CachableGameObject.prototype.draw.apply(this, [ this.stageContext, this.getVisibleRect() ]);
     };
