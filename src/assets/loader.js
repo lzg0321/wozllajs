@@ -190,17 +190,40 @@ define(function (require, exports, module) {
     };
 
     exports.remove = function(id) {
-        var asset;
+        var item, asset;
         if(assetsUsingCounter[id])
             assetsUsingCounter[id] --;
 
-        asset = assetsMap[id];
+		item = assetsMap[id];
         if(assetsUsingCounter[id] === 0) {
             delete assetsMap[id];
+			asset = item.result;
             if(asset && asset.dispose && typeof asset.dispose === 'function') {
                 asset.dispose();
             }
         }
     };
+
+	exports.computeImageMemory = function() {
+		var id, item, img;
+		var size = 0;
+
+		var get2Pow = function(width) {
+			var base = 2;
+			while(width > base) {
+				base *= 2;
+			}
+			return base;
+		};
+
+		for(id in assetsMap) {
+			item = assetsMap[id];
+			if(item && item.result instanceof AsyncImage) {
+				img = item.result.image;
+				size += get2Pow(img.width) * get2Pow(img.height);
+			}
+		}
+		return size*4/1024/1024;
+	};
 
 });

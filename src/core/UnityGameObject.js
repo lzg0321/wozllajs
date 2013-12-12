@@ -264,6 +264,10 @@ define(function(require) {
         }
     };
 
+	p.removeAllComponents = function() {
+		this._components.length = 0;
+	};
+
 	/**
 	 * 在下一阶段移除 component
 	 * @param component
@@ -352,11 +356,11 @@ define(function(require) {
         }
         this._doDelayRemove();
         this.sendMessage('destroyComponent');
-		this.removeAllListeners();
         this.dispatchEvent(new GameObjectEvent({
             type : GameObjectEvent.DESTROY,
             bubbles : true
-        }))
+        }));
+		this.removeAllListeners();
     };
 
 	/**
