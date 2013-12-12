@@ -19,6 +19,8 @@ define(function(require) {
 		}
 	};
 
+	GameObject.idMap = idMap;
+
 	Objects.inherits(GameObject, CachableGameObject);
 
 	GameObject.getById = function(id) {

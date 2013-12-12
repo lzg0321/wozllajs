@@ -9,6 +9,7 @@ define(function(require) {
         this.y = param.y;
         this.touch = param.touch;
 		this.touches = param.touches;
+		this.touchMoveDetection = false;
     };
 
     TouchEvent.TOUCH_START = 'touchstart';
@@ -16,7 +17,11 @@ define(function(require) {
     TouchEvent.TOUCH_MOVE = 'touchmove';
     TouchEvent.CLICK = 'click';
 
-    Objects.inherits(TouchEvent, Event);
+    var p = Objects.inherits(TouchEvent, Event);
+
+	p.setTouchMoveDetection = function(flag) {
+		this.touchMoveDetection = flag;
+	};
 
     return TouchEvent;
 

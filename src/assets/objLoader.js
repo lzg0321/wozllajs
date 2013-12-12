@@ -7,7 +7,11 @@ define(function(require, exports) {
 	exports.buildGameObject = function(objData) {
 		var i, len, comp;
 		var gameObject, children, components;
-		gameObject = new GameObject({ name : objData.name, id: objData.gid || objData.id });
+		gameObject = new GameObject({
+			name : objData.name,
+			id: objData.gid,
+			tags : objData.tags
+		});
 		gameObject.setActive(objData.active);
 		gameObject.setVisible(objData.visible);
 		gameObject.setWidth(objData.width || 0);
@@ -44,10 +48,6 @@ define(function(require, exports) {
 		return comp;
 	};
 
-	exports.initObjectData = function(objData) {
-
-	};
-
 	exports.loadObjFile = function(filePath) {
 		return loader.load({
 			id : filePath,
@@ -56,12 +56,52 @@ define(function(require, exports) {
 		});
 	};
 
-	exports.loadAndInitObjFile = function(filePath) {
+	exports.loadAndInitObjFile = function(filePath, removeResource) {
 		return exports.loadObjFile(filePath).then(function() {
 			var objData = loader.get(filePath);
 			var obj = exports.buildGameObject(objData);
-			loader.remove(filePath);
+			removeResource && loader.remove(filePath);
 			return obj;
+		});
+	};
+
+	exports.loadAndInitObjFileToObjs = function(filePath, exts, removeResource) {
+		return exports.loadObjFile(filePath).then(function() {
+			var objs = [];
+			for (var i in exts) {
+				var objData = loader.get(filePath);
+				var obj = exports.buildGameObject(objData);
+				obj.setName(objData.name + exts[i]);
+				objs.push(obj);
+			}
+			removeResource && loader.remove(filePath);
+			return [objs];
+		});
+	};
+
+	//loadObjFiles loadAndInitObjFiles未经测试，正确性待考证。
+	exports.loadObjFiles = function(filePaths) {
+		var fileItems = [];
+		for(var i in filePaths){
+			fileItems.push({
+				id: filePaths[i],
+				src: filePaths[i],
+				type: 'json'
+			});
+		}
+		return loader.load(fileItems);
+	};
+
+	exports.loadAndInitObjFiles = function(filePaths, removeResource) {
+		return exports.loadObjFiles(filePaths).then(function() {
+			var objs = [];
+			for(var i in filePaths){
+				var objData = loader.get(filePaths[i]);
+				var obj = exports.buildGameObject(objData);
+				removeResource && loader.remove(filePaths[i]);
+				objs.push(obj);
+			}
+			return [objs];
 		});
 	};
 

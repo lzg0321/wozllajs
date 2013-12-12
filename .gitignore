@@ -8,4 +8,9 @@
 /docs
 =======
 /docs/*
+<<<<<<< HEAD
+>>>>>>> CMD
+=======
+/performance/*
+performance
 >>>>>>> CMD

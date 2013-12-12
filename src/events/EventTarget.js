@@ -66,6 +66,14 @@ define(function (require, exports, module) {
     };
 
 	/**
+	 * 移除所有监听器
+	 */
+	p.removeAllListeners = function() {
+		this._captureListeners = {};
+		this._listeners = {};
+	};
+
+	/**
 	 * 判断是否包含某类事件监听器
 	 * @param eventType
 	 * @returns {boolean}

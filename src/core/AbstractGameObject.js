@@ -39,6 +39,12 @@ define(function(require) {
 		this.name = params.name;
 
 		/**
+		 * 标签
+		 * @type {tags|*}
+		 */
+		this.tags = params.tags;
+
+		/**
 		 * @type {int}
 		 * 	唯一UID, 几乎没有用途
 		 * @readonly
@@ -91,6 +97,15 @@ define(function(require) {
 	};
 
 	/**
+	 * 判断是否有某个标签
+	 * @param tag
+	 * @returns {tags|*|tags|*|boolean}
+	 */
+	p.isTagged = function(tag) {
+		return this.tags && this.tags.indexOf(tag) !== -1;
+	};
+
+	/**
 	 * get parent
 	 * @returns {null|AbstractGameObject}
 	 */
@@ -123,6 +138,17 @@ define(function(require) {
 			o = o._parent;
 		}
 		return o.isStage ? o : null;
+	};
+
+	p.indexInParent = function() {
+		if(!this._parent) {
+			return -1;
+		}
+		return this._parent.getChildIndex(this);
+	};
+
+	p.getChildIndex = function(child) {
+		return this._children.indexOf(child);
 	};
 
 	/**

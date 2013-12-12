@@ -172,6 +172,15 @@ define(function(require) {
         return resultRect;
     };
 
+	p.query = function(selector) {
+		var splits = selector.split(':');
+		var result = this.getObjectByName(splits[0]);
+		if(splits[1]) {
+			result = result.getComponent(splits[1]);
+		}
+		return result;
+	};
+
 	/**
 	 * add a component
 	 * @param component
@@ -254,6 +263,10 @@ define(function(require) {
             }
         }
     };
+
+	p.removeAllComponents = function() {
+		this._components.length = 0;
+	};
 
 	/**
 	 * 在下一阶段移除 component
@@ -346,7 +359,8 @@ define(function(require) {
         this.dispatchEvent(new GameObjectEvent({
             type : GameObjectEvent.DESTROY,
             bubbles : true
-        }))
+        }));
+		this.removeAllListeners();
     };
 
 	/**
@@ -475,12 +489,12 @@ define(function(require) {
         var i, len, child, gBounds, mask;
         var children = this._children;
         if(children.length <= 0) {
-            gBounds = this.getGlobalBounds(helpRect);
-            if(gBounds.intersects(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height)) {
+            //gBounds = this.getGlobalBounds(helpRect);
+            //if(gBounds.intersects(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height)) {
                 mask = this.getComponent(Mask);
                 mask && mask.clip(context);
                 this.sendMessage('draw', arguments, Renderer);
-            }
+            //}
         } else {
             mask = this.getComponent(Mask);
             mask && mask.clip(context);

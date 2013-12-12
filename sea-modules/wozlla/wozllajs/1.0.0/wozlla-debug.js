@@ -59,13 +59,26 @@ define("wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", [ "wozlla/wozllajs/1.0.0
         this.src = image && image.src;
     };
     var p = AsyncImage.prototype;
-    p.draw = function(context) {
-        // TODO optimize performance for slice and unshift
-        var args = Arrays.slice(arguments, 1);
+    p.draw = function(context, a, b, c, d, e, f, g, h) {
+        // slice 性能差, 用最大参数数目优化
+        //var args = Ext.Array.slice(arguments, 1);
         var image = this.image;
+        var argsLen = arguments.length;
         if (image) {
-            args.unshift(image);
-            context.drawImage.apply(context, args);
+            //args.unshift(image);
+            //context.drawImage.apply(context, args);
+            //console.log(a, b, c, d, e, f, g, h);
+            if (argsLen === 3) {
+                context.drawImage(image, a, b);
+            }
+            if (argsLen === 5) {
+                context.drawImage(image, a, b, c, d);
+            }
+            if (argsLen === 7) {
+                context.drawImage(image, a, b, c, d, e, f);
+            } else {
+                context.drawImage(image, a, b, c, d, e, f, g, h);
+            }
         }
     };
     p.drawAs9Grid = function(context, region, grid, width, height) {
@@ -97,6 +110,16 @@ define("wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", [ "wozlla/wozllajs/1.0.0
         this.draw(context, rx + ow - gr, ry + gt, gr, oh - gt - gb, width - gr, gt, gr, height - gt - gb);
         // center
         this.draw(context, rx + gl, ry + gt, ow - gl - gr, oh - gt - gb, gl, gt, width - gl - gr, height - gt - gb);
+    };
+    p.draw3in1 = function(context, region, splitCoords, widths) {
+        if (!region || !splitCoords || !widths || splitCoords.length !== 2 || widths.length !== 3) return;
+        var rx = region.x;
+        var ry = region.y;
+        var ow = region.w;
+        var oh = region.h;
+        this.draw(context, rx, ry, splitCoords[0], oh, 0, 0, widths[0], oh);
+        this.draw(context, rx + splitCoords[0], ry, splitCoords[1] - splitCoords[0], oh, widths[0], 0, widths[1], oh);
+        this.draw(context, rx + splitCoords[1], ry, ow - splitCoords[1], oh, widths[0] + widths[1], 0, widths[2], oh);
     };
     p.dispose = function() {
         this.image && this.image.dispose && this.image.dispose();
@@ -151,6 +174,12 @@ define("wozlla/wozllajs/1.0.0/assets/Texture-debug", [ "wozlla/wozllajs/1.0.0/ut
         var f = this.getFrame(name);
         if (f) {
             this.drawAs9Grid(context, f, grid, width, height);
+        }
+    };
+    p.drawFrameAs3in1 = function(context, name, splitCoords, widths) {
+        var f = this.getFrame(name);
+        if (f) {
+            this.draw3in1(context, f, splitCoords, widths);
         }
     };
     module.exports = Texture;
@@ -338,15 +367,35 @@ define("wozlla/wozllajs/1.0.0/assets/loader-debug", [ "wozlla/wozllajs/1.0.0/uti
         return item.result;
     };
     exports.remove = function(id) {
-        var asset;
+        var item, asset;
         if (assetsUsingCounter[id]) assetsUsingCounter[id]--;
-        asset = assetsMap[id];
+        item = assetsMap[id];
         if (assetsUsingCounter[id] === 0) {
             delete assetsMap[id];
+            asset = item.result;
             if (asset && asset.dispose && typeof asset.dispose === "function") {
                 asset.dispose();
             }
         }
+    };
+    exports.computeImageMemory = function() {
+        var id, item, img;
+        var size = 0;
+        var get2Pow = function(width) {
+            var base = 2;
+            while (width > base) {
+                base *= 2;
+            }
+            return base;
+        };
+        for (id in assetsMap) {
+            item = assetsMap[id];
+            if (item && item.result instanceof AsyncImage) {
+                img = item.result.image;
+                size += get2Pow(img.width) * get2Pow(img.height);
+            }
+        }
+        return size * 4 / 1024 / 1024;
     };
 });
 
@@ -608,7 +657,8 @@ define("wozlla/wozllajs/1.0.0/assets/objLoader-debug", [ "wozlla/wozllajs/1.0.0/
         var gameObject, children, components;
         gameObject = new GameObject({
             name: objData.name,
-            id: objData.gid || objData.id
+            id: objData.gid,
+            tags: objData.tags
         });
         gameObject.setActive(objData.active);
         gameObject.setVisible(objData.visible);
@@ -644,7 +694,6 @@ define("wozlla/wozllajs/1.0.0/assets/objLoader-debug", [ "wozlla/wozllajs/1.0.0/
         }
         return comp;
     };
-    exports.initObjectData = function(objData) {};
     exports.loadObjFile = function(filePath) {
         return loader.load({
             id: filePath,
@@ -652,12 +701,49 @@ define("wozlla/wozllajs/1.0.0/assets/objLoader-debug", [ "wozlla/wozllajs/1.0.0/
             type: "json"
         });
     };
-    exports.loadAndInitObjFile = function(filePath) {
+    exports.loadAndInitObjFile = function(filePath, removeResource) {
         return exports.loadObjFile(filePath).then(function() {
             var objData = loader.get(filePath);
             var obj = exports.buildGameObject(objData);
-            loader.remove(filePath);
+            removeResource && loader.remove(filePath);
             return obj;
+        });
+    };
+    exports.loadAndInitObjFileToObjs = function(filePath, exts, removeResource) {
+        return exports.loadObjFile(filePath).then(function() {
+            var objs = [];
+            for (var i in exts) {
+                var objData = loader.get(filePath);
+                var obj = exports.buildGameObject(objData);
+                obj.setName(objData.name + exts[i]);
+                objs.push(obj);
+            }
+            removeResource && loader.remove(filePath);
+            return [ objs ];
+        });
+    };
+    //loadObjFiles loadAndInitObjFiles未经测试，正确性待考证。
+    exports.loadObjFiles = function(filePaths) {
+        var fileItems = [];
+        for (var i in filePaths) {
+            fileItems.push({
+                id: filePaths[i],
+                src: filePaths[i],
+                type: "json"
+            });
+        }
+        return loader.load(fileItems);
+    };
+    exports.loadAndInitObjFiles = function(filePaths, removeResource) {
+        return exports.loadObjFiles(filePaths).then(function() {
+            var objs = [];
+            for (var i in filePaths) {
+                var objData = loader.get(filePaths[i]);
+                var obj = exports.buildGameObject(objData);
+                removeResource && loader.remove(filePaths[i]);
+                objs.push(obj);
+            }
+            return [ objs ];
         });
     };
 });
@@ -704,6 +790,13 @@ define("wozlla/wozllajs/1.0.0/core/Component-debug", [ "wozlla/wozllajs/1.0.0/as
     p.alias = undefined;
     p.setGameObject = function(gameObject) {
         this.gameObject = gameObject;
+    };
+    p.applyProperties = function() {
+        for (var i in this.properties) {
+            if (this[i] === undefined || this[i] === null) {
+                this[i] = this.properties[i];
+            }
+        }
     };
     p.initComponent = function() {};
     p.destroyComponent = function() {};
@@ -761,6 +854,7 @@ define("wozlla/wozllajs/1.0.0/core/GameObject-debug", [ "wozlla/wozllajs/1.0.0/u
             });
         }
     };
+    GameObject.idMap = idMap;
     Objects.inherits(GameObject, CachableGameObject);
     GameObject.getById = function(id) {
         return idMap[id];
@@ -1001,6 +1095,14 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
         resultRect.height = Math.max(localA.y, localB.y, localC.y, localD.y) - resultRect.y;
         return resultRect;
     };
+    p.query = function(selector) {
+        var splits = selector.split(":");
+        var result = this.getObjectByName(splits[0]);
+        if (splits[1]) {
+            result = result.getComponent(splits[1]);
+        }
+        return result;
+    };
     /**
 	 * add a component
 	 * @param component
@@ -1078,6 +1180,9 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
                 break;
             }
         }
+    };
+    p.removeAllComponents = function() {
+        this._components.length = 0;
     };
     /**
 	 * 在下一阶段移除 component
@@ -1165,6 +1270,7 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
             type: GameObjectEvent.DESTROY,
             bubbles: true
         }));
+        this.removeAllListeners();
     };
     /**
 	 * layout
@@ -1280,12 +1386,11 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
         var i, len, child, gBounds, mask;
         var children = this._children;
         if (children.length <= 0) {
-            gBounds = this.getGlobalBounds(helpRect);
-            if (gBounds.intersects(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height)) {
-                mask = this.getComponent(Mask);
-                mask && mask.clip(context);
-                this.sendMessage("draw", arguments, Renderer);
-            }
+            //gBounds = this.getGlobalBounds(helpRect);
+            //if(gBounds.intersects(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height)) {
+            mask = this.getComponent(Mask);
+            mask && mask.clip(context);
+            this.sendMessage("draw", arguments, Renderer);
         } else {
             mask = this.getComponent(Mask);
             mask && mask.clip(context);
@@ -1919,6 +2024,11 @@ define("wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", [ "wozlla/wozllajs
 		 */
         this.name = params.name;
         /**
+		 * 标签
+		 * @type {tags|*}
+		 */
+        this.tags = params.tags;
+        /**
 		 * @type {int}
 		 * 	唯一UID, 几乎没有用途
 		 * @readonly
@@ -1966,6 +2076,14 @@ define("wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", [ "wozlla/wozllajs
         this.name = name;
     };
     /**
+	 * 判断是否有某个标签
+	 * @param tag
+	 * @returns {tags|*|tags|*|boolean}
+	 */
+    p.isTagged = function(tag) {
+        return this.tags && this.tags.indexOf(tag) !== -1;
+    };
+    /**
 	 * get parent
 	 * @returns {null|AbstractGameObject}
 	 */
@@ -1996,6 +2114,15 @@ define("wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", [ "wozlla/wozllajs
             o = o._parent;
         }
         return o.isStage ? o : null;
+    };
+    p.indexInParent = function() {
+        if (!this._parent) {
+            return -1;
+        }
+        return this._parent.getChildIndex(this);
+    };
+    p.getChildIndex = function(child) {
+        return this._children.indexOf(child);
     };
     /**
 	 * get children
@@ -2234,6 +2361,13 @@ define("wozlla/wozllajs/1.0.0/events/EventTarget-debug", [ "wozlla/wozllajs/1.0.
         }
     };
     /**
+	 * 移除所有监听器
+	 */
+    p.removeAllListeners = function() {
+        this._captureListeners = {};
+        this._listeners = {};
+    };
+    /**
 	 * 判断是否包含某类事件监听器
 	 * @param eventType
 	 * @returns {boolean}
@@ -2386,6 +2520,9 @@ define("wozlla/wozllajs/1.0.0/events/Event-debug", [], function(require, exports
     Event.BUBBLING_PHASE = 2;
     Event.TARGET_PHASE = 3;
     var p = Event.prototype;
+    p.isPropagationStopped = function() {
+        return this._propagationStoped;
+    };
     /**
      * 防止对事件流中当前节点中和所有后续节点中的事件侦听器进行处理。
      */
@@ -2419,6 +2556,7 @@ define("wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug", [ "wozlla/wozl
     var Event = require("wozlla/wozllajs/1.0.0/events/Event-debug");
     var GameObjectEvent = function(param) {
         Event.apply(this, arguments);
+        this.child = param.child;
     };
     GameObjectEvent.INIT = "init";
     GameObjectEvent.DESTROY = "destroy";
@@ -2718,12 +2856,16 @@ define("wozlla/wozllajs/1.0.0/core/events/TouchEvent-debug", [ "wozlla/wozllajs/
         this.y = param.y;
         this.touch = param.touch;
         this.touches = param.touches;
+        this.touchMoveDetection = false;
     };
     TouchEvent.TOUCH_START = "touchstart";
     TouchEvent.TOUCH_END = "touchend";
     TouchEvent.TOUCH_MOVE = "touchmove";
     TouchEvent.CLICK = "click";
-    Objects.inherits(TouchEvent, Event);
+    var p = Objects.inherits(TouchEvent, Event);
+    p.setTouchMoveDetection = function(flag) {
+        this.touchMoveDetection = flag;
+    };
     return TouchEvent;
 });
 
@@ -2916,6 +3058,7 @@ define("wozlla/wozllajs/1.0.0/core/Stage-debug", [ "wozlla/wozllajs/1.0.0/utils/
         var me = this;
         CachableGameObject.apply(this, arguments);
         this.autoClear = param.autoClear;
+        this.bgColor = param.bgColor;
         this._width = param.width || param.canvas.width;
         this._height = param.height || param.canvas.height;
         this.stageCanvas = param.canvas;
@@ -2933,7 +3076,14 @@ define("wozlla/wozllajs/1.0.0/core/Stage-debug", [ "wozlla/wozllajs/1.0.0/utils/
         this.draw();
     };
     p.draw = function() {
-        this.autoClear && this.stageContext.clearRect(0, 0, this._width, this._height);
+        if (this.autoClear) {
+            if (this.bgColor) {
+                this.stageContext.fillStyle = this.bgColor;
+                this.stageContext.fillRect(0, 0, this._width, this._height);
+            } else {
+                this.stageContext.clearRect(0, 0, this._width, this._height);
+            }
+        }
         CachableGameObject.prototype.draw.apply(this, [ this.stageContext, this.getVisibleRect() ]);
     };
     p.resize = function(width, height) {
@@ -2969,6 +3119,7 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
     var stage;
     var enabled = true;
     var multiTouchEnabled = false;
+    var touchMoveDetection = true;
     var touchstartTarget;
     var touchendTarget;
     var touches = [];
@@ -2993,6 +3144,7 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
         var canvasOffset, x, y, t;
         var type = e.type;
         var target;
+        var touchEvent;
         canvasOffset = getCanvasOffset();
         // mouse event
         if (!e.touches) {
@@ -3003,7 +3155,17 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
             x = t.pageX - canvasOffset.x;
             y = t.pageY - canvasOffset.y;
         }
-        target = stage.getTopObjectUnderPoint(x, y, true);
+        //if(type === 'mousedown' || type === TouchEvent.TOUCH_START || touchstartTarget) {
+        if (type === "mousemove" || type === TouchEvent.TOUCH_MOVE) {
+            if (touchMoveDetection) {
+                target = stage.getTopObjectUnderPoint(x, y, true);
+            } else {
+                target = touchstartTarget;
+            }
+        } else {
+            target = stage.getTopObjectUnderPoint(x, y, true);
+        }
+        //}
         if (type === "mousedown" || type === TouchEvent.TOUCH_START) {
             type = TouchEvent.TOUCH_START;
             touchstartTarget = target;
@@ -3025,14 +3187,20 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
             !inTouchList && touches.push(target);
         }
         if (touchstartTarget) {
-            touchstartTarget.dispatchEvent(new TouchEvent({
+            touchEvent = new TouchEvent({
                 type: type,
                 x: x,
                 y: y,
                 bubbles: true,
                 touch: target,
                 touches: touches
-            }));
+            });
+            touchstartTarget.dispatchEvent(touchEvent);
+            if (type === TouchEvent.TOUCH_START) {
+                touchMoveDetection = touchEvent.touchMoveDetection;
+            } else if (type === TouchEvent.TOUCH_END) {
+                touchMoveDetection = true;
+            }
             if (type === TouchEvent.TOUCH_END) {
                 if (touchstartTarget && touchstartTarget === target) {
                     target.dispatchEvent(new TouchEvent({

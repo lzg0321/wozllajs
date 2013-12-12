@@ -58,6 +58,10 @@ define(function (require, exports, module) {
 
     var p = Event.prototype;
 
+	p.isPropagationStopped = function() {
+		return this._propagationStoped;
+	};
+
     /**
      * 防止对事件流中当前节点中和所有后续节点中的事件侦听器进行处理。
      */

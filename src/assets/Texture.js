@@ -40,6 +40,15 @@ define(function (require, exports, module) {
         }
     };
 
+	p.drawFrameAs3in1 = function(context, name, splitCoords, widths) {
+		var f = this.getFrame(name);
+		if(f) {
+			this.draw3in1(context, f, splitCoords, widths);
+		}
+	}
+
+
+
     module.exports = Texture;
 
 });
