@@ -305,11 +305,25 @@ define("wozlla/wozllajs/1.0.0/assets/loader-debug", [ "wozlla/wozllajs/1.0.0/uti
                 }
             } else {
                 (function(item) {
+                    if (!item.loader) {
+                        console.log("[Warn]: loader not found");
+                        item.error = "loader not found";
+                        item.result = null;
+                        loadedCount++;
+                        if (loadedCount === items.length) {
+                            promise.done(loadResult);
+                            loading = false;
+                            loadNext();
+                        }
+                        return;
+                    }
                     item.loader(item, function(err, result) {
                         item.error = err;
                         item.result = result;
-                        assetsMap[item.id] = item;
-                        loadResult[item.id] = true;
+                        if (!err) {
+                            assetsMap[item.id] = item;
+                            loadResult[item.id] = true;
+                        }
                         loadedCount++;
                         if (loadedCount === items.length) {
                             promise.done(loadResult);
@@ -353,7 +367,8 @@ define("wozlla/wozllajs/1.0.0/assets/loader-debug", [ "wozlla/wozllajs/1.0.0/uti
             items: items,
             promise: promise
         });
-        loadNext();
+        // 暂时先这样
+        setTimeout(loadNext, 1);
         return promise;
     };
     exports.getItem = function(id) {

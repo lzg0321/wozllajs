@@ -114,18 +114,32 @@ define(function (require, exports, module) {
 				}
             } else {
                 (function(item) {
-                    item.loader(item, function(err, result) {
-                        item.error = err;
-                        item.result = result;
-                        assetsMap[item.id] = item;
-                        loadResult[item.id] = true;
-                        loadedCount ++;
-                        if(loadedCount === items.length) {
-                            promise.done(loadResult);
+					if(!item.loader) {
+						console.log('[Warn]: loader not found');
+						item.error = 'loader not found';
+						item.result = null;
+						loadedCount++;
+						if (loadedCount === items.length) {
+							promise.done(loadResult);
 							loading = false;
-                            loadNext();
-                        }
-                    });
+							loadNext();
+						}
+						return;
+					}
+					item.loader(item, function(err, result) {
+						item.error = err;
+						item.result = result;
+						if(!err) {
+							assetsMap[item.id] = item;
+							loadResult[item.id] = true;
+						}
+						loadedCount++;
+						if (loadedCount === items.length) {
+							promise.done(loadResult);
+							loading = false;
+							loadNext();
+						}
+					});
                 })(item);
             }
         }
@@ -173,7 +187,8 @@ define(function (require, exports, module) {
             items : items,
             promise : promise
         });
-        loadNext();
+		// 暂时先这样
+        setTimeout(loadNext, 1);
         return promise;
     };
 
