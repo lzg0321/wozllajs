@@ -223,11 +223,13 @@ define("wozlla/wozllajs/1.0.0/assets/loader-debug", [ "wozlla/wozllajs/1.0.0/uti
     var Ajax = require("wozlla/wozllajs/1.0.0/utils/Ajax-debug");
     var AsyncImage = require("wozlla/wozllajs/1.0.0/assets/AsyncImage-debug");
     var Texture = require("wozlla/wozllajs/1.0.0/assets/Texture-debug");
+    var loadingAssetsMap = {};
     var assetsMap = {};
     var assetsUsingCounter = {};
     var loaderMap = {};
     var loadQueue = [];
     var loading = false;
+    var idleCallback;
     function loadImage(src, callback) {
         var img = new Image();
         img.src = src;
@@ -284,7 +286,10 @@ define("wozlla/wozllajs/1.0.0/assets/loader-debug", [ "wozlla/wozllajs/1.0.0/uti
     }
     function loadNext() {
         var i, len, item, itemId, items, promise, loadUnit, loadedCount, loadResult;
-        if (loading || loadQueue.length === 0) return;
+        if (loading || loadQueue.length === 0) {
+            idleCallback && idleCallback();
+            return;
+        }
         loading = true;
         loadUnit = loadQueue.shift();
         promise = loadUnit.promise;
@@ -320,6 +325,7 @@ define("wozlla/wozllajs/1.0.0/assets/loader-debug", [ "wozlla/wozllajs/1.0.0/uti
                     item.loader(item, function(err, result) {
                         item.error = err;
                         item.result = result;
+                        delete loadingAssetsMap[item.id];
                         if (!err) {
                             assetsMap[item.id] = item;
                             loadResult[item.id] = true;
@@ -342,6 +348,9 @@ define("wozlla/wozllajs/1.0.0/assets/loader-debug", [ "wozlla/wozllajs/1.0.0/uti
     exports.printAssets = function() {
         console.log(assetsMap);
     };
+    exports.setIdleCallback = function(callback) {
+        idleCallback = callback;
+    };
     exports.load = function(items, base) {
         var i, len, promise, item, loadItems;
         if (!Arrays.is(items)) {
@@ -361,14 +370,14 @@ define("wozlla/wozllajs/1.0.0/assets/loader-debug", [ "wozlla/wozllajs/1.0.0/uti
             item.src = exports.baseURL + item.src + "?t=" + Date.now();
             item.loader = matchLoader(item);
             items[i] = item;
+            loadingAssetsMap[item.id] = true;
         }
         promise = new Promise();
         loadQueue.push({
             items: items,
             promise: promise
         });
-        // 暂时先这样
-        setTimeout(loadNext, 1);
+        loadNext();
         return promise;
     };
     exports.getItem = function(id) {
@@ -388,6 +397,9 @@ define("wozlla/wozllajs/1.0.0/assets/loader-debug", [ "wozlla/wozllajs/1.0.0/uti
         if (assetsUsingCounter[id] === 0) {
             delete assetsMap[id];
             asset = item.result;
+            if (loadingAssetsMap[id]) {
+                return;
+            }
             if (asset && asset.dispose && typeof asset.dispose === "function") {
                 asset.dispose();
             }
@@ -2843,8 +2855,8 @@ define("wozlla/wozllajs/1.0.0/core/Mask-debug", [ "wozlla/wozllajs/1.0.0/utils/O
 });
 
 define("wozlla/wozllajs/1.0.0/utils/createCanvas-debug", [], function() {
-    return function(width, height) {
-        var canvas = document.createElement("canvas");
+    return function(width, height, screenCanvas) {
+        var canvas = document.createElement(navigator.isCocoonJS && screenCanvas ? "screencanvas" : "canvas");
         canvas.width = width;
         canvas.height = height;
         return canvas;
@@ -3234,14 +3246,28 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
     }
     return {
         init: function(theStage) {
+            var down = 0;
             var canvas = theStage.stageCanvas;
             stage = theStage;
             if ("ontouchstart" in window) {
-                canvas.addEventListener("touchstart", onEvent, false);
-                canvas.addEventListener("touchend", onEvent, false);
-                canvas.addEventListener("touchmove", onEvent, false);
+                canvas.addEventListener("touchstart", function(e) {
+                    down++;
+                    if (down === 1) {
+                        onEvent(e);
+                    }
+                }, false);
+                canvas.addEventListener("touchend", function(e) {
+                    down--;
+                    if (down === 0) {
+                        onEvent(e);
+                    }
+                }, false);
+                canvas.addEventListener("touchmove", function(e) {
+                    if (down === 1) {
+                        onEvent(e);
+                    }
+                }, false);
             } else {
-                var down = false;
                 canvas.addEventListener("mousedown", function(e) {
                     down = true;
                     onEvent(e);

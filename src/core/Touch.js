@@ -120,22 +120,36 @@ define(function(require) {
 
     return {
         init : function(theStage) {
+			var down = 0;
             var canvas = theStage.stageCanvas;
             stage = theStage;
 
             if('ontouchstart' in window) {
-                canvas.addEventListener("touchstart", onEvent, false);
-                canvas.addEventListener("touchend", onEvent, false);
-                canvas.addEventListener("touchmove", onEvent, false);
+                canvas.addEventListener("touchstart", function(e) {
+					down++;
+					if(down === 1) {
+						onEvent(e);
+					}
+				}, false);
+                canvas.addEventListener("touchend", function(e) {
+					down--;
+					if(down === 0) {
+						onEvent(e);
+					}
+				}, false);
+                canvas.addEventListener("touchmove", function(e) {
+					if(down === 1) {
+						onEvent(e);
+					}
+				}, false);
             } else {
-                var down = false;
                 canvas.addEventListener("mousedown", function(e) {
                     down = true;
-                    onEvent(e);
+					onEvent(e);
                 }, false);
                 canvas.addEventListener("mouseup", function(e) {
-                    down = false;
-                    onEvent(e);
+					down = false;
+					onEvent(e);
                 }, false);
                 canvas.addEventListener("mousemove", function(e) {
                     if(down) {

@@ -14,12 +14,16 @@ define(function (require, exports, module) {
     var AsyncImage = require('./AsyncImage');
     var Texture = require('./Texture');
 
-    var assetsMap = {};
+    var loadingAssetsMap = {};
+	var assetsMap = {};
     var assetsUsingCounter = {};
     var loaderMap = {};
 
     var loadQueue = [];
     var loading = false;
+
+
+	var idleCallback;
 
     function loadImage(src, callback) {
         var img = new Image();
@@ -93,7 +97,10 @@ define(function (require, exports, module) {
             loadedCount,
             loadResult;
 
-        if(loading || loadQueue.length === 0) return;
+        if(loading || loadQueue.length === 0) {
+			idleCallback && idleCallback();
+			return;
+		}
 		loading = true;
         loadUnit = loadQueue.shift();
         promise = loadUnit.promise;
@@ -129,6 +136,7 @@ define(function (require, exports, module) {
 					item.loader(item, function(err, result) {
 						item.error = err;
 						item.result = result;
+						delete loadingAssetsMap[item.id];
 						if(!err) {
 							assetsMap[item.id] = item;
 							loadResult[item.id] = true;
@@ -155,6 +163,10 @@ define(function (require, exports, module) {
 		console.log(assetsMap);
 	};
 
+	exports.setIdleCallback = function(callback) {
+		idleCallback = callback;
+	};
+
     exports.load = function(items, base) {
         var i, len,
             promise,
@@ -179,6 +191,7 @@ define(function (require, exports, module) {
             item.src = exports.baseURL + item.src + '?t=' + Date.now();
             item.loader = matchLoader(item);
             items[i] = item;
+			loadingAssetsMap[item.id] = true;
         }
 
         promise = new Promise();
@@ -187,8 +200,7 @@ define(function (require, exports, module) {
             items : items,
             promise : promise
         });
-		// 暂时先这样
-        setTimeout(loadNext, 1);
+        loadNext();
         return promise;
     };
 
@@ -213,6 +225,9 @@ define(function (require, exports, module) {
         if(assetsUsingCounter[id] === 0) {
             delete assetsMap[id];
 			asset = item.result;
+			if(loadingAssetsMap[id]) {
+				return;
+			}
             if(asset && asset.dispose && typeof asset.dispose === 'function') {
                 asset.dispose();
             }
