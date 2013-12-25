@@ -457,6 +457,7 @@ define("wozlla/wozllajs/1.0.0/assets/loader-debug", [ "wozlla/wozllajs/1.0.0/uti
         if (!Arrays.is(items)) {
             items = [ items ];
         }
+        items = [].concat(items);
         for (i = 0, len = items.length; i < len; i++) {
             item = items[i];
             if (Strings.is(item)) {
@@ -2788,6 +2789,7 @@ define("wozlla/wozllajs/1.0.0/core/Transform-debug", [ "wozlla/wozllajs/1.0.0/ma
             mtx.identity();
             while (o != null) {
                 mtx.prependTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY).prependProperties(o.alpha);
+                if (!o.relative) break;
                 o = o.gameObject._parent;
                 if (o) {
                     o = o.transform;
@@ -2819,13 +2821,10 @@ define("wozlla/wozllajs/1.0.0/core/Transform-debug", [ "wozlla/wozllajs/1.0.0/ma
                 context.globalAlpha = mtx.alpha;
             }
         },
-        getAbsoluteMatrix: function(context, mtx) {
+        getAbsoluteMatrix: function(mtx) {
             var o = this;
-            var root = this.getRoot();
             mtx = mtx || matrix;
             mtx.identity().prependTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY).prependProperties(o.alpha);
-            o = root;
-            mtx.prependTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY).prependProperties(o.alpha);
             return mtx;
         },
         applyTransform: function(transform) {
@@ -3191,6 +3190,7 @@ define("wozlla/wozllajs/1.0.0/core/Stage-debug", [ "wozlla/wozllajs/1.0.0/utils/
         this._height = param.height || param.canvas.height;
         this.stageCanvas = param.canvas;
         this.stageContext = this.stageCanvas.getContext("2d");
+        this.drawCalls = [];
         Stage.root = this;
         Touch.init(this);
         this.init();
@@ -3198,10 +3198,16 @@ define("wozlla/wozllajs/1.0.0/core/Stage-debug", [ "wozlla/wozllajs/1.0.0/utils/
     Stage.root = null;
     var p = Objects.inherits(Stage, CachableGameObject);
     p.isStage = true;
+    p.addDrawCall = function(callback) {
+        this.drawCalls.push(callback);
+    };
     p.tick = function() {
         this.update();
         this.lateUpdate();
         this.draw();
+        for (var i = 0; i < this.drawCalls.length; i++) {
+            this.drawCalls[i](this.stageContext, this);
+        }
     };
     p.draw = function() {
         if (this.autoClear) {

@@ -17,6 +17,7 @@ define(function(require) {
         this._height = param.height || param.canvas.height;
         this.stageCanvas = param.canvas;
         this.stageContext = this.stageCanvas.getContext('2d');
+		this.drawCalls = [];
         Stage.root = this;
         Touch.init(this);
         this.init();
@@ -28,10 +29,17 @@ define(function(require) {
 
     p.isStage = true;
 
+	p.addDrawCall = function(callback) {
+		this.drawCalls.push(callback);
+	};
+
     p.tick = function() {
         this.update();
         this.lateUpdate();
         this.draw();
+		for(var i=0; i<this.drawCalls.length; i++) {
+			this.drawCalls[i](this.stageContext, this);
+		}
     };
 
     p.draw = function() {

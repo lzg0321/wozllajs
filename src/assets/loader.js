@@ -177,6 +177,8 @@ define(function (require, exports, module) {
             items = [items];
         }
 
+		items = [].concat(items);
+
         for(i=0,len=items.length; i<len; i++) {
             item = items[i];
             if(Strings.is(item)) {

@@ -89,6 +89,7 @@ define(function(require) {
             while (o != null) {
                 mtx.prependTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY)
                     .prependProperties(o.alpha);
+				if(!o.relative) break;
                 o = o.gameObject._parent;
 				if(o) {
 					o = o.transform;
@@ -125,15 +126,11 @@ define(function(require) {
 			}
         },
 
-		getAbsoluteMatrix : function(context, mtx) {
+		getAbsoluteMatrix : function(mtx) {
 			var o = this;
-			var root = this.getRoot();
 			mtx = mtx || matrix;
 			mtx.identity()
 				.prependTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY)
-				.prependProperties(o.alpha);
-			o = root;
-			mtx.prependTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY)
 				.prependProperties(o.alpha);
 			return mtx;
 		},
