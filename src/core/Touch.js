@@ -127,20 +127,20 @@ define(function(require) {
             if('ontouchstart' in window) {
                 canvas.addEventListener("touchstart", function(e) {
 					down++;
-					if(down === 1) {
+//					if(down === 1) {
 						onEvent(e);
-					}
+//					}
 				}, false);
                 canvas.addEventListener("touchend", function(e) {
 					down--;
-					if(down === 0) {
+//					if(down === 0) {
 						onEvent(e);
-					}
+//					}
 				}, false);
                 canvas.addEventListener("touchmove", function(e) {
-					if(down === 1) {
+//					if(down === 1) {
 						onEvent(e);
-					}
+//					}
 				}, false);
             } else {
                 canvas.addEventListener("mousedown", function(e) {

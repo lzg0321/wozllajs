@@ -112,6 +112,7 @@ define(function (require, exports, module) {
 			if(!item) continue;
             itemId = item.id;
             if(assetsMap[itemId]) {
+				delete loadingAssetsMap[item.id];
                 loadResult[itemId] = true;
                 loadedCount++;
 				if(loadedCount === items.length) {
@@ -154,6 +155,10 @@ define(function (require, exports, module) {
     }
 
     exports.baseURL = '';
+
+	exports.printLoadingAssets = function() {
+		console.log(loadingAssetsMap);
+	};
 
 	exports.printUsingCounter = function() {
 		console.log(assetsUsingCounter);
@@ -228,6 +233,7 @@ define(function (require, exports, module) {
             delete assetsMap[id];
 			asset = item.result;
 			if(loadingAssetsMap[id]) {
+
 				return;
 			}
             if(asset && asset.dispose && typeof asset.dispose === 'function') {

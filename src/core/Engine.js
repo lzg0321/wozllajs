@@ -123,7 +123,7 @@ define(function(require) {
 		 * @param use
 		 */
 		setUseRAF : function(use) {
-			useRAF = user;
+			useRAF = use;
 		},
 
 		/**

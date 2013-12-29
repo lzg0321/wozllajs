@@ -402,6 +402,7 @@ define("wozlla/wozllajs/1.0.0/assets/loader-debug", [ "wozlla/wozllajs/1.0.0/uti
             if (!item) continue;
             itemId = item.id;
             if (assetsMap[itemId]) {
+                delete loadingAssetsMap[item.id];
                 loadResult[itemId] = true;
                 loadedCount++;
                 if (loadedCount === items.length) {
@@ -443,6 +444,9 @@ define("wozlla/wozllajs/1.0.0/assets/loader-debug", [ "wozlla/wozllajs/1.0.0/uti
         }
     }
     exports.baseURL = "";
+    exports.printLoadingAssets = function() {
+        console.log(loadingAssetsMap);
+    };
     exports.printUsingCounter = function() {
         console.log(assetsUsingCounter);
     };
@@ -2157,6 +2161,13 @@ define("wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", [ "wozlla/wozllajs
 		 * @type {tags|*}
 		 */
         this.tags = params.tags;
+        this.tagsHash = {};
+        if (this.tags) {
+            var tempTags = this.tags.split(" ");
+            for (var i = 0, len = tempTags.length; i < len; i++) {
+                this.tagsHash[tempTags[i]] = true;
+            }
+        }
         /**
 		 * @type {int}
 		 * 	唯一UID, 几乎没有用途
@@ -2210,7 +2221,7 @@ define("wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", [ "wozlla/wozllajs
 	 * @returns {tags|*|tags|*|boolean}
 	 */
     p.isTagged = function(tag) {
-        return this.tags && this.tags.indexOf(tag) !== -1;
+        return this.tagsHash[tag];
     };
     /**
 	 * get parent
@@ -2242,7 +2253,7 @@ define("wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", [ "wozlla/wozllajs
         while (o && !o.isStage) {
             o = o._parent;
         }
-        return o.isStage ? o : null;
+        return o && o.isStage ? o : null;
     };
     p.indexInParent = function() {
         if (!this._parent) {
@@ -3114,7 +3125,7 @@ define("wozlla/wozllajs/1.0.0/core/Engine-debug", [ "wozlla/wozllajs/1.0.0/utils
 		 * @param use
 		 */
         setUseRAF: function(use) {
-            useRAF = user;
+            useRAF = use;
         },
         /**
 		 * @static
@@ -3359,20 +3370,17 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
             if ("ontouchstart" in window) {
                 canvas.addEventListener("touchstart", function(e) {
                     down++;
-                    if (down === 1) {
-                        onEvent(e);
-                    }
+                    //					if(down === 1) {
+                    onEvent(e);
                 }, false);
                 canvas.addEventListener("touchend", function(e) {
                     down--;
-                    if (down === 0) {
-                        onEvent(e);
-                    }
+                    //					if(down === 0) {
+                    onEvent(e);
                 }, false);
                 canvas.addEventListener("touchmove", function(e) {
-                    if (down === 1) {
-                        onEvent(e);
-                    }
+                    //					if(down === 1) {
+                    onEvent(e);
                 }, false);
             } else {
                 canvas.addEventListener("mousedown", function(e) {

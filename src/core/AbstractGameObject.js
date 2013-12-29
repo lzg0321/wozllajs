@@ -43,6 +43,13 @@ define(function(require) {
 		 * @type {tags|*}
 		 */
 		this.tags = params.tags;
+		this.tagsHash = {};
+		if(this.tags) {
+			var tempTags = this.tags.split(' ');
+			for(var i= 0,len=tempTags.length; i<len; i++) {
+				this.tagsHash[tempTags[i]] = true;
+			}
+		}
 
 		/**
 		 * @type {int}
@@ -102,7 +109,7 @@ define(function(require) {
 	 * @returns {tags|*|tags|*|boolean}
 	 */
 	p.isTagged = function(tag) {
-		return this.tags && this.tags.indexOf(tag) !== -1;
+		return this.tagsHash[tag];
 	};
 
 	/**
@@ -137,7 +144,7 @@ define(function(require) {
 		while(o && !o.isStage) {
 			o = o._parent;
 		}
-		return o.isStage ? o : null;
+		return o && o.isStage ? o : null;
 	};
 
 	p.indexInParent = function() {
