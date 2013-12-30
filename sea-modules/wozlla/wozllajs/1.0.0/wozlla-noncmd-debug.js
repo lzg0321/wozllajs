@@ -3264,9 +3264,9 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
     var stage;
     var enabled = true;
     var multiTouchEnabled = false;
+    var touchIdentifier = null;
     var touchMoveDetection = true;
     var touchstartTarget;
-    var touchendTarget;
     var touches = [];
     var canvasOffsetCache;
     function getCanvasOffset() {
@@ -3290,18 +3290,28 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
         var type = e.type;
         var target;
         var touchEvent;
+        var identifier = "MouseEvent";
+        var verifiedIdentifier = true;
         canvasOffset = getCanvasOffset();
+        if (type === "mousedown") {
+            type = TouchEvent.TOUCH_START;
+        } else if (type === "mousemove") {
+            type = TouchEvent.TOUCH_MOVE;
+        } else if (type === "mouseup") {
+            type = TouchEvent.TOUCH_END;
+        }
         // mouse event
-        if (!e.touches) {
+        if (!e.changedTouches) {
             x = e.pageX - canvasOffset.x;
             y = e.pageY - canvasOffset.y;
         } else if (e.changedTouches) {
             t = e.changedTouches[0];
+            identifier = t.identifier;
             x = t.pageX - canvasOffset.x;
             y = t.pageY - canvasOffset.y;
         }
         //if(type === 'mousedown' || type === TouchEvent.TOUCH_START || touchstartTarget) {
-        if (type === "mousemove" || type === TouchEvent.TOUCH_MOVE) {
+        if (type === TouchEvent.TOUCH_MOVE) {
             if (touchMoveDetection) {
                 target = stage.getTopObjectUnderPoint(x, y, true);
             } else {
@@ -3311,18 +3321,21 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
             target = stage.getTopObjectUnderPoint(x, y, true);
         }
         //}
-        if (type === "mousedown" || type === TouchEvent.TOUCH_START) {
-            type = TouchEvent.TOUCH_START;
-            touchstartTarget = target;
+        if (type === TouchEvent.TOUCH_START) {
             touches.length = 0;
-            touchendTarget = null;
-        } else if ((type === "mouseup" || type === TouchEvent.TOUCH_END) && touchstartTarget) {
-            type = TouchEvent.TOUCH_END;
-            touchendTarget = target;
-        } else if ((type === "mousemove" || type === TouchEvent.TOUCH_MOVE) && touchstartTarget) {
-            type = TouchEvent.TOUCH_MOVE;
+            if (touchIdentifier === null) {
+                touchIdentifier = identifier;
+                touchstartTarget = target;
+            } else {
+                verifiedIdentifier = false;
+            }
+        } else if (type === TouchEvent.TOUCH_END && touchstartTarget) {
+            verifiedIdentifier = identifier === touchIdentifier;
+        } else if (type === TouchEvent.TOUCH_MOVE && touchstartTarget) {
+            verifiedIdentifier = identifier === touchIdentifier;
         }
-        if (multiTouchEnabled && target) {
+        console.log(type, identifier, verifiedIdentifier, !!touchstartTarget);
+        if (multiTouchEnabled && verifiedIdentifier && target) {
             for (i = 0, len = touches.length; i < len; i++) {
                 if (touches[i] === target) {
                     inTouchList = true;
@@ -3331,7 +3344,7 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
             }
             !inTouchList && touches.push(target);
         }
-        if (touchstartTarget) {
+        if (touchstartTarget && verifiedIdentifier) {
             touchEvent = new TouchEvent({
                 type: type,
                 x: x,
@@ -3356,9 +3369,9 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
                         touch: target,
                         touches: touches
                     }));
-                    touchstartTarget = null;
-                    touchendTarget = null;
                 }
+                touchstartTarget = null;
+                touchIdentifier = null;
             }
         }
     }
