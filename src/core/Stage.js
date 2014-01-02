@@ -18,6 +18,14 @@ define(function(require) {
         this.stageCanvas = param.canvas;
         this.stageContext = this.stageCanvas.getContext('2d');
 		this.drawCalls = [];
+		this.lastPos = {
+			x : 0,
+			y : 0
+		};
+		this.stageDelta = {
+			x : 0,
+			y : 0
+		};
         Stage.root = this;
         Touch.init(this);
         this.init();
@@ -34,6 +42,10 @@ define(function(require) {
 	};
 
     p.tick = function() {
+		this.stageDelta.x = this.transform.x - this.lastPos.x;
+		this.stageDelta.y = this.transform.y - this.lastPos.y;
+		this.lastPos.x = this.transform.x;
+		this.lastPos.y = this.transform.y;
         this.update();
         this.lateUpdate();
         this.draw();
@@ -60,6 +72,10 @@ define(function(require) {
         this._width = width;
         this._height = height;
     };
+
+	p.getStageDelta = function() {
+		return this.stageDelta;
+	};
 
     p.getVisibleRect = function() {
         visibleRect.x = -this.transform.x;
