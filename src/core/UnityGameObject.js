@@ -402,10 +402,11 @@ define(function(require) {
 
     p.draw = function(context, visibleRect) {
         if(!this._initialized || !this._active || !this._visible) return;
-        context.save();
+        //context.save();
         this.transform.updateContext(context);
         this._draw(context, visibleRect);
-        context.restore();
+        this.transform.reupdateContext(context);
+        /// /context.restore();
         this._doDelayRemove();
     };
 

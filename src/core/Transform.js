@@ -116,15 +116,43 @@ define(function(require) {
         updateContext : function(context) {
             var mtx, o=this;
 			if(this.relative) {
-				mtx = matrix.identity().appendTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY);
-            	context.transform(mtx.a, mtx.b, mtx.c, mtx.d, mtx.tx, mtx.ty);
+				if(this.isOnlyTranslate()) {
+					context.translate(this.x, this.y);
+				} else {
+					context.save();
+					mtx = matrix.identity().appendTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY);
+					context.transform(mtx.a, mtx.b, mtx.c, mtx.d, mtx.tx, mtx.ty);
+				}
 				context.globalAlpha *= o.alpha;
 			} else {
+				context.save();
 				mtx = this.getAbsoluteMatrix();
 				context.setTransform(mtx.a, mtx.b, mtx.c, mtx.d, mtx.tx, mtx.ty);
 				context.globalAlpha = mtx.alpha;
 			}
         },
+
+		reupdateContext : function(context) {
+			if(this.isOnlyTranslate()) {
+				context.translate(-this.x, -this.y);
+				context.globalAlpha /= this.alpha;
+			} else {
+				context.restore();
+			}
+		},
+
+		isOnlyTranslate : function() {
+			if( this.scaleX === 1 &&
+				this.scaleY === 1 &&
+				this.rotation === 0 &&
+				this.regX === 0 &&
+				this.regY === 0 &&
+				this.skewX === 0 &&
+				this.skewX === 0) {
+				return true;
+			}
+			return false;
+		},
 
 		getAbsoluteMatrix : function(mtx) {
 			var o = this;

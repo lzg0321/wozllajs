@@ -359,7 +359,12 @@ define("wozlla/wozllajs/1.0.0/assets/loader-debug", [ "wozlla/wozllajs/1.0.0/uti
                 Ajax.getJSON(item.src).then(function(data) {
                     callback(null, new Texture(item.id, image, data.frames));
                 }).catchError(function(err) {
-                    callback(err);
+                    // try twice when fail
+                    Ajax.getJSON(item.src).then(function(data) {
+                        callback(null, new Texture(item.id, image, data.frames));
+                    }).catchError(function(err) {
+                        callback(err);
+                    });
                 });
             }
         });
@@ -1442,10 +1447,11 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
     };
     p.draw = function(context, visibleRect) {
         if (!this._initialized || !this._active || !this._visible) return;
-        context.save();
+        //context.save();
         this.transform.updateContext(context);
         this._draw(context, visibleRect);
-        context.restore();
+        this.transform.reupdateContext(context);
+        /// /context.restore();
         this._doDelayRemove();
     };
     p.testHit = function(x, y, onlyUseHitDelegate) {
@@ -2823,14 +2829,34 @@ define("wozlla/wozllajs/1.0.0/core/Transform-debug", [ "wozlla/wozllajs/1.0.0/ma
         updateContext: function(context) {
             var mtx, o = this;
             if (this.relative) {
-                mtx = matrix.identity().appendTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY);
-                context.transform(mtx.a, mtx.b, mtx.c, mtx.d, mtx.tx, mtx.ty);
+                if (this.isOnlyTranslate()) {
+                    context.translate(this.x, this.y);
+                } else {
+                    context.save();
+                    mtx = matrix.identity().appendTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY);
+                    context.transform(mtx.a, mtx.b, mtx.c, mtx.d, mtx.tx, mtx.ty);
+                }
                 context.globalAlpha *= o.alpha;
             } else {
+                context.save();
                 mtx = this.getAbsoluteMatrix();
                 context.setTransform(mtx.a, mtx.b, mtx.c, mtx.d, mtx.tx, mtx.ty);
                 context.globalAlpha = mtx.alpha;
             }
+        },
+        reupdateContext: function(context) {
+            if (this.isOnlyTranslate()) {
+                context.translate(-this.x, -this.y);
+                context.globalAlpha /= this.alpha;
+            } else {
+                context.restore();
+            }
+        },
+        isOnlyTranslate: function() {
+            if (this.scaleX === 1 && this.scaleY === 1 && this.rotation === 0 && this.regX === 0 && this.regY === 0 && this.skewX === 0 && this.skewX === 0) {
+                return true;
+            }
+            return false;
         },
         getAbsoluteMatrix: function(mtx) {
             var o = this;
@@ -3349,7 +3375,6 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
         } else if (type === TouchEvent.TOUCH_MOVE && touchstartTarget) {
             verifiedIdentifier = identifier === touchIdentifier;
         }
-        console.log(type, identifier, verifiedIdentifier, !!touchstartTarget);
         if (multiTouchEnabled && verifiedIdentifier && target) {
             for (i = 0, len = touches.length; i < len; i++) {
                 if (touches[i] === target) {

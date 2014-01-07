@@ -56,7 +56,12 @@ define(function (require, exports, module) {
 				Ajax.getJSON(item.src).then(function(data) {
 					callback(null, new Texture(item.id, image, data.frames));
 				}).catchError(function(err) {
-					callback(err);
+						// try twice when fail
+					Ajax.getJSON(item.src).then(function(data) {
+						callback(null, new Texture(item.id, image, data.frames));
+					}).catchError(function(err) {
+						callback(err);
+					});
 				});
 
             }

@@ -86,8 +86,6 @@ define(function(require) {
 			verifiedIdentifier = identifier === touchIdentifier;
         }
 
-		console.log(type, identifier, verifiedIdentifier, !!touchstartTarget);
-
 		if(multiTouchEnabled && verifiedIdentifier && target) {
 			for(i=0,len=touches.length; i<len; i++) {
 				if(touches[i] === target) {
