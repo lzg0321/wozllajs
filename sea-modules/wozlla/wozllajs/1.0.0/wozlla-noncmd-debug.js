@@ -1449,8 +1449,8 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
         var mask, optimized;
         if (!this._initialized || !this._active || !this._visible) return;
         //context.save();
-        mask = this.getComponent(Mask);
-        optimized = !mask;
+        //mask = this.getComponent(Mask);
+        //optimized = !mask;
         this.transform.updateContext(context, optimized);
         this._draw(context, visibleRect);
         this.transform.reupdateContext(context, optimized);
