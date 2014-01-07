@@ -113,10 +113,10 @@ define(function(require) {
          * 将当前的Transform应用到canvas的context上
          * @param context CanvasContextRenderer2d
          */
-        updateContext : function(context) {
+        updateContext : function(context, optimized) {
             var mtx, o=this;
 			if(this.relative) {
-				if(this.isOnlyTranslate()) {
+				if(optimized && this.isOnlyTranslate()) {
 					context.translate(this.x, this.y);
 				} else {
 					context.save();
@@ -128,12 +128,12 @@ define(function(require) {
 				context.save();
 				mtx = this.getAbsoluteMatrix();
 				context.setTransform(mtx.a, mtx.b, mtx.c, mtx.d, mtx.tx, mtx.ty);
-				context.globalAlpha = mtx.alpha;
+				context.globalAlpha = o.alpha;
 			}
         },
 
-		reupdateContext : function(context) {
-			if(this.isOnlyTranslate()) {
+		reupdateContext : function(context, optimized) {
+			if(this.relative && optimized && this.isOnlyTranslate()) {
 				context.translate(-this.x, -this.y);
 				context.globalAlpha /= this.alpha;
 			} else {

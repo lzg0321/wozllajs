@@ -1446,11 +1446,14 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
         this._doDelayRemove();
     };
     p.draw = function(context, visibleRect) {
+        var mask, optimized;
         if (!this._initialized || !this._active || !this._visible) return;
         //context.save();
-        this.transform.updateContext(context);
+        mask = this.getComponent(Mask);
+        optimized = !mask;
+        this.transform.updateContext(context, optimized);
         this._draw(context, visibleRect);
-        this.transform.reupdateContext(context);
+        this.transform.reupdateContext(context, optimized);
         /// /context.restore();
         this._doDelayRemove();
     };
@@ -2826,10 +2829,10 @@ define("wozlla/wozllajs/1.0.0/core/Transform-debug", [ "wozlla/wozllajs/1.0.0/ma
          * 将当前的Transform应用到canvas的context上
          * @param context CanvasContextRenderer2d
          */
-        updateContext: function(context) {
+        updateContext: function(context, optimized) {
             var mtx, o = this;
             if (this.relative) {
-                if (this.isOnlyTranslate()) {
+                if (optimized && this.isOnlyTranslate()) {
                     context.translate(this.x, this.y);
                 } else {
                     context.save();
@@ -2841,11 +2844,11 @@ define("wozlla/wozllajs/1.0.0/core/Transform-debug", [ "wozlla/wozllajs/1.0.0/ma
                 context.save();
                 mtx = this.getAbsoluteMatrix();
                 context.setTransform(mtx.a, mtx.b, mtx.c, mtx.d, mtx.tx, mtx.ty);
-                context.globalAlpha = mtx.alpha;
+                context.globalAlpha = o.alpha;
             }
         },
-        reupdateContext: function(context) {
-            if (this.isOnlyTranslate()) {
+        reupdateContext: function(context, optimized) {
+            if (this.relative && optimized && this.isOnlyTranslate()) {
                 context.translate(-this.x, -this.y);
                 context.globalAlpha /= this.alpha;
             } else {

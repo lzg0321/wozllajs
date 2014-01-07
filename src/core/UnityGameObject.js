@@ -401,11 +401,14 @@ define(function(require) {
     };
 
     p.draw = function(context, visibleRect) {
-        if(!this._initialized || !this._active || !this._visible) return;
+        var mask, optimized;
+		if(!this._initialized || !this._active || !this._visible) return;
         //context.save();
-        this.transform.updateContext(context);
+		mask = this.getComponent(Mask);
+		optimized = !mask;
+        this.transform.updateContext(context, optimized);
         this._draw(context, visibleRect);
-        this.transform.reupdateContext(context);
+        this.transform.reupdateContext(context, optimized);
         /// /context.restore();
         this._doDelayRemove();
     };
@@ -492,8 +495,8 @@ define(function(require) {
         if(children.length <= 0) {
             //gBounds = this.getGlobalBounds(helpRect);
             //if(gBounds.intersects(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height)) {
-                mask = this.getComponent(Mask);
-                mask && mask.clip(context);
+				mask = this.getComponent(Mask);
+				mask && mask.clip(context);
                 this.sendMessage('draw', arguments, Renderer);
             //}
         } else {
