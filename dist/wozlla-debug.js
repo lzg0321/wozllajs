@@ -1011,6 +1011,7 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
         this._initialized = false;
         this._components = [];
         this._delayRemoves = [];
+        this.customData = {};
     };
     var p = Objects.inherits(UnityGameObject, AbstractGameObject);
     /**

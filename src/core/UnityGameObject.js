@@ -38,6 +38,7 @@ define(function(require) {
         this._initialized = false;
         this._components = [];
         this._delayRemoves = [];
+		this.customData = {};
     };
 
     var p = Objects.inherits(UnityGameObject, AbstractGameObject);
