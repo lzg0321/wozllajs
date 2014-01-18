@@ -272,7 +272,11 @@ define("wozlla/wozllajs/1.0.0/assets/loader-debug", [ "wozlla/wozllajs/1.0.0/uti
         Ajax.getJSON(item.src).then(function(data) {
             callback(null, data);
         }).catchError(function(err) {
-            callback(err);
+            Ajax.getJSON(item.src).then(function(data) {
+                callback(null, data);
+            }).catchError(function(err) {
+                callback(err);
+            });
         });
     };
     function matchLoader(item) {

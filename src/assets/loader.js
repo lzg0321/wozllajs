@@ -72,7 +72,11 @@ define(function (require, exports, module) {
         Ajax.getJSON(item.src).then(function(data) {
             callback(null, data);
         }).catchError(function(err) {
-            callback(err);
+				Ajax.getJSON(item.src).then(function(data) {
+					callback(null, data);
+				}).catchError(function(err) {
+						callback(err);
+					});
         });
     };
 
