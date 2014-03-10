@@ -13,10 +13,19 @@ define(function(require) {
         CachableGameObject.apply(this, arguments);
         this.autoClear = param.autoClear;
 		this.bgColor = param.bgColor;
+		this.webgl = param.webgl;
         this._width = param.width || param.canvas.width;
         this._height = param.height || param.canvas.height;
         this.stageCanvas = param.canvas;
-        this.stageContext = this.stageCanvas.getContext('2d');
+		this.stageCanvas.width = this._width;
+		this.stageCanvas.height = this._height;
+
+		if(param.webgl && WebGL2D) {
+			WebGL2D.enable(this.stageCanvas);
+			this.stageContext = this.stageCanvas.getContext('webgl-2d');
+		} else {
+			this.stageContext = this.stageCanvas.getContext('2d');
+		}
 		this.drawCalls = [];
 		this.lastPos = {
 			x : 0,
@@ -56,7 +65,10 @@ define(function(require) {
 
     p.draw = function() {
         if(this.autoClear) {
-			if(this.bgColor) {
+			if(this.webgl) {
+				this.stageContext.clear(0, 0, 0, 1);
+			}
+			else if(this.bgColor) {
 				this.stageContext.fillStyle = this.bgColor;
 				this.stageContext.fillRect(0, 0, this._width, this._height);
 			} else {

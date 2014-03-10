@@ -6,9 +6,29 @@ define(function (require, exports, module) {
 		this.resourceId = resourceId;
         this.image = image;
         this.src = image && image.src;
+
+		if(AsyncImage.webGLContext) {
+			this.glTexture = null;
+			this.setupGLTexture(AsyncImage.webGLContext);
+		}
     };
 
+	AsyncImage.webGLContext = null;
+
     var p = AsyncImage.prototype;
+
+	p.setupGLTexture = function(webGLContext) {
+		var texture,
+			ctx = webGLContext;
+		texture = this.glTexture = ctx.createTexture();
+		ctx.bindTexture(ctx.TEXTURE_2D, texture);
+		ctx.texImage2D(ctx.TEXTURE_2D, 0, ctx.RGBA, ctx.RGBA, ctx.UNSIGNED_BYTE, this.image);
+		ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_MIN_FILTER, ctx.NEAREST);
+		ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_MAG_FILTER, ctx.NEAREST);
+//		ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_WRAP_S, ctx.CLAMP_TO_EDGE);
+//		ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_WRAP_T, ctx.CLAMP_TO_EDGE);
+		ctx.bindTexture(ctx.TEXTURE_2D, null);
+	};
 
     p.draw = function(context, a, b, c, d, e, f, g, h) {
 		// slice 性能差, 用最大参数数目优化
@@ -101,6 +121,10 @@ define(function (require, exports, module) {
     p.dispose = function() {
         this.image && this.image.dispose && this.image.dispose();
         this.image = null;
+		if(AsyncImage.webGLContext) {
+			AsyncImage.webGLContext.deleteTexture(this.glTexture);
+			this.glTexture = null;
+		}
     };
 
     module.exports = AsyncImage;

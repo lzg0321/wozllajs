@@ -11,6 +11,12 @@ define(function(require) {
 
     p.draw = function(context, visibleRect) {};
 
+	p.isPreparedToDraw = function() {
+		return false;
+	};
+
+	p.getTextureDescription = function() {};
+
     return Renderer;
 
 });

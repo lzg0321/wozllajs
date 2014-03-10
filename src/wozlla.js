@@ -26,6 +26,8 @@ define(function(require) {
             Mask: require('./core/Mask'),
             Renderer: require('./core/Renderer'),
             Stage: require('./core/Stage'),
+			GLGameObject : require('./core/GLGameObject'),
+			WebGLStage: require('./core/WebGLStage'),
             Time: require('./core/Time'),
             Touch: require('./core/Touch'),
             Transform: require('./core/Transform'),
@@ -36,6 +38,7 @@ define(function(require) {
             EventTarget : require('./events/EventTarget')
         },
         math : {
+			geom : require('./math/geom'),
             Matrix2D: require('./math/Matrix2D'),
             Rectangle : require('./math/Rectangle')
         },
@@ -48,7 +51,10 @@ define(function(require) {
             Strings : require('./utils/Strings'),
             Tuple : require('./utils/Tuple'),
             uniqueKey: require('./utils/uniqueKey')
-        }
+        },
+		component : {
+			Image : require('./component/Image')
+		}
     };
 
 });

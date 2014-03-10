@@ -14,6 +14,7 @@ define(function(require) {
     var Mask = require('./Mask');
     var GameObjectEvent = require('./events/GameObjectEvent');
     var createCanvas = require('../utils/createCanvas');
+	var loader = require('../assets/loader');
 
     var testHitCanvas = createCanvas(1, 1);
     var testHitContext = testHitCanvas.getContext('2d');
@@ -328,7 +329,7 @@ define(function(require) {
 	/**
 	 * 初始化该对象
 	 */
-    p.init = function() {
+    p.init = function(callback) {
         var i, len, child;
         var children = this._children;
         this.sendMessage('initComponent');
@@ -343,6 +344,10 @@ define(function(require) {
             type : GameObjectEvent.INIT,
             bubbles : true
         }));
+
+		if(callback) {
+			loader.nextCall(callback);
+		}
     };
 
 	/**
@@ -449,7 +454,7 @@ define(function(require) {
                 }
             }
         }
-		if(this._interactive) {
+        if(this._interactive) {
 			localPoint = this.transform.globalToLocal(x, y);
 			if(this.testHit(localPoint.x, localPoint.y, onlyUseHitDelegate)) {
 				return this;

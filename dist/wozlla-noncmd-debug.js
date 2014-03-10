@@ -99,7 +99,7 @@
 		}
 	};
 })();
-define("wozlla/wozllajs/1.0.0/wozlla-debug", [ "./assets/AsyncImage-debug", "./utils/Arrays-debug", "./assets/Texture-debug", "./utils/Objects-debug", "./assets/loader-debug", "./utils/Strings-debug", "./utils/Promise-debug", "./utils/Ajax-debug", "./assets/objLoader-debug", "./core/Component-debug", "./utils/uniqueKey-debug", "./core/GameObject-debug", "./core/CachableGameObject-debug", "./core/UnityGameObject-debug", "./math/Rectangle-debug", "./math/Matrix2D-debug", "./core/AbstractGameObject-debug", "./events/EventTarget-debug", "./events/Event-debug", "./core/events/GameObjectEvent-debug", "./core/Transform-debug", "./core/Behaviour-debug", "./core/Animation-debug", "./core/Time-debug", "./core/Renderer-debug", "./core/Layout-debug", "./core/HitDelegate-debug", "./core/Mask-debug", "./utils/createCanvas-debug", "./core/Filter-debug", "./core/events/TouchEvent-debug", "./core/Collider-debug", "./core/Engine-debug", "./utils/Tuple-debug", "./core/Stage-debug", "./utils/listenAppState-debug", "./core/Touch-debug" ], function(require) {
+define("wozlla/wozllajs/1.0.0/wozlla-debug", [ "./assets/AsyncImage-debug", "./utils/Arrays-debug", "./assets/Texture-debug", "./utils/Objects-debug", "./assets/loader-debug", "./utils/Strings-debug", "./utils/Promise-debug", "./utils/Ajax-debug", "./assets/objLoader-debug", "./core/Component-debug", "./utils/uniqueKey-debug", "./core/GameObject-debug", "./core/CachableGameObject-debug", "./core/UnityGameObject-debug", "./math/Rectangle-debug", "./math/Matrix2D-debug", "./core/AbstractGameObject-debug", "./events/EventTarget-debug", "./events/Event-debug", "./core/events/GameObjectEvent-debug", "./core/Transform-debug", "./core/Behaviour-debug", "./core/Animation-debug", "./core/Time-debug", "./core/Renderer-debug", "./core/Layout-debug", "./core/HitDelegate-debug", "./core/Mask-debug", "./utils/createCanvas-debug", "./core/Filter-debug", "./core/events/TouchEvent-debug", "./core/Collider-debug", "./core/Engine-debug", "./utils/Tuple-debug", "./core/Stage-debug", "./utils/listenAppState-debug", "./core/Touch-debug", "./core/GLGameObject-debug", "./core/WebGLStage-debug", "./math/geom-debug", "./component/Image-debug" ], function(require) {
     return window.wozllajs = {
         assets: {
             AsyncImage: require("./assets/AsyncImage-debug"),
@@ -126,6 +126,8 @@ define("wozlla/wozllajs/1.0.0/wozlla-debug", [ "./assets/AsyncImage-debug", "./u
             Mask: require("./core/Mask-debug"),
             Renderer: require("./core/Renderer-debug"),
             Stage: require("./core/Stage-debug"),
+            GLGameObject: require("./core/GLGameObject-debug"),
+            WebGLStage: require("./core/WebGLStage-debug"),
             Time: require("./core/Time-debug"),
             Touch: require("./core/Touch-debug"),
             Transform: require("./core/Transform-debug"),
@@ -136,6 +138,7 @@ define("wozlla/wozllajs/1.0.0/wozlla-debug", [ "./assets/AsyncImage-debug", "./u
             EventTarget: require("./events/EventTarget-debug")
         },
         math: {
+            geom: require("./math/geom-debug"),
             Matrix2D: require("./math/Matrix2D-debug"),
             Rectangle: require("./math/Rectangle-debug")
         },
@@ -148,6 +151,9 @@ define("wozlla/wozllajs/1.0.0/wozlla-debug", [ "./assets/AsyncImage-debug", "./u
             Strings: require("./utils/Strings-debug"),
             Tuple: require("./utils/Tuple-debug"),
             uniqueKey: require("./utils/uniqueKey-debug")
+        },
+        component: {
+            Image: require("./component/Image-debug")
         }
     };
 });
@@ -158,8 +164,24 @@ define("wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", [ "wozlla/wozllajs/1.0.0
         this.resourceId = resourceId;
         this.image = image;
         this.src = image && image.src;
+        if (AsyncImage.webGLContext) {
+            this.glTexture = null;
+            this.setupGLTexture(AsyncImage.webGLContext);
+        }
     };
+    AsyncImage.webGLContext = null;
     var p = AsyncImage.prototype;
+    p.setupGLTexture = function(webGLContext) {
+        var texture, ctx = webGLContext;
+        texture = this.glTexture = ctx.createTexture();
+        ctx.bindTexture(ctx.TEXTURE_2D, texture);
+        ctx.texImage2D(ctx.TEXTURE_2D, 0, ctx.RGBA, ctx.RGBA, ctx.UNSIGNED_BYTE, this.image);
+        ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_MIN_FILTER, ctx.NEAREST);
+        ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_MAG_FILTER, ctx.NEAREST);
+        //		ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_WRAP_S, ctx.CLAMP_TO_EDGE);
+        //		ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_WRAP_T, ctx.CLAMP_TO_EDGE);
+        ctx.bindTexture(ctx.TEXTURE_2D, null);
+    };
     p.draw = function(context, a, b, c, d, e, f, g, h) {
         // slice 性能差, 用最大参数数目优化
         //var args = Ext.Array.slice(arguments, 1);
@@ -225,6 +247,10 @@ define("wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", [ "wozlla/wozllajs/1.0.0
     p.dispose = function() {
         this.image && this.image.dispose && this.image.dispose();
         this.image = null;
+        if (AsyncImage.webGLContext) {
+            AsyncImage.webGLContext.deleteTexture(this.glTexture);
+            this.glTexture = null;
+        }
     };
     module.exports = AsyncImage;
 });
@@ -404,6 +430,12 @@ define("wozlla/wozllajs/1.0.0/assets/loader-debug", [ "wozlla/wozllajs/1.0.0/uti
         loadUnit = loadQueue.shift();
         promise = loadUnit.promise;
         items = loadUnit.items;
+        if (items.length === 0) {
+            promise.done();
+            loading = false;
+            loadNext();
+            return;
+        }
         loadResult = {};
         loadedCount = 0;
         for (i = 0, len = items.length; i < len; i++) {
@@ -465,6 +497,9 @@ define("wozlla/wozllajs/1.0.0/assets/loader-debug", [ "wozlla/wozllajs/1.0.0/uti
     exports.setIdleCallback = function(callback) {
         idleCallback = callback;
     };
+    exports.nextCall = function(callback) {
+        exports.load([]).then(callback);
+    };
     exports.load = function(items, base) {
         var i, len, promise, item, loadItems;
         if (!Arrays.is(items)) {
@@ -509,8 +544,9 @@ define("wozlla/wozllajs/1.0.0/assets/loader-debug", [ "wozlla/wozllajs/1.0.0/uti
         var item, asset;
         if (assetsUsingCounter[id]) assetsUsingCounter[id]--;
         item = assetsMap[id];
-        if (assetsUsingCounter[id] === 0) {
+        if (item && assetsUsingCounter[id] === 0) {
             delete assetsMap[id];
+            delete assetsUsingCounter[id];
             asset = item.result;
             if (loadingAssetsMap[id]) {
                 return;
@@ -533,6 +569,31 @@ define("wozlla/wozllajs/1.0.0/assets/loader-debug", [ "wozlla/wozllajs/1.0.0/uti
         for (id in assetsMap) {
             item = assetsMap[id];
             if (item && item.result instanceof AsyncImage) {
+                img = item.result.image;
+                size += get2Pow(img.width) * get2Pow(img.height);
+            }
+        }
+        return size * 4 / 1024 / 1024;
+    };
+    exports.computeUnpackImageMemory = function() {
+        var id, item, img;
+        var size = 0;
+        var get2Pow = function(width) {
+            var base = 2;
+            while (width > base) {
+                base *= 2;
+            }
+            return base;
+        };
+        for (id in assetsMap) {
+            item = assetsMap[id];
+            if (item && item.result instanceof Texture) {
+                var frames = item.result.frames;
+                for (var i = 0; i < frames.length; i++) {
+                    var f = frames[i].frame;
+                    size += get2Pow(f.w) * get2Pow(f.h);
+                }
+            } else if (item && item.result instanceof AsyncImage) {
                 img = item.result.image;
                 size += get2Pow(img.width) * get2Pow(img.height);
             }
@@ -1094,6 +1155,7 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
     var Mask = require("wozlla/wozllajs/1.0.0/core/Mask-debug");
     var GameObjectEvent = require("wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug");
     var createCanvas = require("wozlla/wozllajs/1.0.0/utils/createCanvas-debug");
+    var loader = require("wozlla/wozllajs/1.0.0/assets/loader-debug");
     var testHitCanvas = createCanvas(1, 1);
     var testHitContext = testHitCanvas.getContext("2d");
     var helpRect = new Rectangle();
@@ -1381,7 +1443,7 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
     /**
 	 * 初始化该对象
 	 */
-    p.init = function() {
+    p.init = function(callback) {
         var i, len, child;
         var children = this._children;
         this.sendMessage("initComponent");
@@ -1396,6 +1458,9 @@ define("wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", [ "wozlla/wozllajs/1.
             type: GameObjectEvent.INIT,
             bubbles: true
         }));
+        if (callback) {
+            loader.nextCall(callback);
+        }
     };
     /**
 	 * 销毁该对象
@@ -2961,6 +3026,10 @@ define("wozlla/wozllajs/1.0.0/core/Renderer-debug", [ "wozlla/wozllajs/1.0.0/uti
     }
     var p = Objects.inherits(Renderer, Component);
     p.draw = function(context, visibleRect) {};
+    p.isPreparedToDraw = function() {
+        return false;
+    };
+    p.getTextureDescription = function() {};
     return Renderer;
 });
 
@@ -3231,10 +3300,18 @@ define("wozlla/wozllajs/1.0.0/core/Stage-debug", [ "wozlla/wozllajs/1.0.0/utils/
         CachableGameObject.apply(this, arguments);
         this.autoClear = param.autoClear;
         this.bgColor = param.bgColor;
+        this.webgl = param.webgl;
         this._width = param.width || param.canvas.width;
         this._height = param.height || param.canvas.height;
         this.stageCanvas = param.canvas;
-        this.stageContext = this.stageCanvas.getContext("2d");
+        this.stageCanvas.width = this._width;
+        this.stageCanvas.height = this._height;
+        if (param.webgl && WebGL2D) {
+            WebGL2D.enable(this.stageCanvas);
+            this.stageContext = this.stageCanvas.getContext("webgl-2d");
+        } else {
+            this.stageContext = this.stageCanvas.getContext("2d");
+        }
         this.drawCalls = [];
         this.lastPos = {
             x: 0,
@@ -3268,7 +3345,9 @@ define("wozlla/wozllajs/1.0.0/core/Stage-debug", [ "wozlla/wozllajs/1.0.0/utils/
     };
     p.draw = function() {
         if (this.autoClear) {
-            if (this.bgColor) {
+            if (this.webgl) {
+                this.stageContext.clear(0, 0, 0, 1);
+            } else if (this.bgColor) {
                 this.stageContext.fillStyle = this.bgColor;
                 this.stageContext.fillRect(0, 0, this._width, this._height);
             } else {
@@ -3469,4 +3548,480 @@ define("wozlla/wozllajs/1.0.0/core/Touch-debug", [ "wozlla/wozllajs/1.0.0/core/e
             enabled = false;
         }
     };
+});
+
+define("wozlla/wozllajs/1.0.0/core/GLGameObject-debug", [ "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/core/CachableGameObject-debug", "wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", "wozlla/wozllajs/1.0.0/math/Rectangle-debug", "wozlla/wozllajs/1.0.0/math/Matrix2D-debug", "wozlla/wozllajs/1.0.0/utils/Promise-debug", "wozlla/wozllajs/1.0.0/utils/Arrays-debug", "wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", "wozlla/wozllajs/1.0.0/utils/uniqueKey-debug", "wozlla/wozllajs/1.0.0/events/EventTarget-debug", "wozlla/wozllajs/1.0.0/events/Event-debug", "wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug", "wozlla/wozllajs/1.0.0/core/Transform-debug", "wozlla/wozllajs/1.0.0/core/Component-debug", "wozlla/wozllajs/1.0.0/assets/loader-debug", "wozlla/wozllajs/1.0.0/utils/Strings-debug", "wozlla/wozllajs/1.0.0/utils/Ajax-debug", "wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", "wozlla/wozllajs/1.0.0/assets/Texture-debug", "wozlla/wozllajs/1.0.0/core/Behaviour-debug", "wozlla/wozllajs/1.0.0/core/Animation-debug", "wozlla/wozllajs/1.0.0/core/Time-debug", "wozlla/wozllajs/1.0.0/core/Renderer-debug", "wozlla/wozllajs/1.0.0/core/Layout-debug", "wozlla/wozllajs/1.0.0/core/HitDelegate-debug", "wozlla/wozllajs/1.0.0/core/Mask-debug", "wozlla/wozllajs/1.0.0/utils/createCanvas-debug", "wozlla/wozllajs/1.0.0/core/Filter-debug" ], function(require) {
+    /*
+		SpriteContainer: 1
+		Sprite: 2
+		BitmapText: 3
+		DOMElement: 4
+	 */
+    var idMap = {};
+    var Objects = require("wozlla/wozllajs/1.0.0/utils/Objects-debug");
+    var CachableGameObject = require("wozlla/wozllajs/1.0.0/core/CachableGameObject-debug");
+    var GameObjectEvent = require("wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug");
+    var GLGameObject = function() {
+        var me = this;
+        CachableGameObject.apply(this, arguments);
+        if (this.id) {
+            idMap[this.id] = this;
+            this.addEventListener(GameObjectEvent.DESTROY, function(e) {
+                if (e.target !== me) return;
+                e.removeListener();
+                delete idMap[me.id];
+            });
+        }
+    };
+    GLGameObject.idMap = idMap;
+    var p = Objects.inherits(GLGameObject, CachableGameObject);
+    p.isRenderable = function() {
+        return !(!this._initialized || !this._active || !this._visible);
+    };
+    p.draw = function(webGLContext, webGLStage, parentMartrix) {
+        var mask, optimized;
+        if (!this._initialized || !this._active || !this._visible) return;
+        this._draw(webGLContext, webGLStage, parentMartrix);
+        /// /context.restore();
+        this._doDelayRemove();
+    };
+    p._draw = function(webGLContext, webGLStage, parentMartrix) {
+        var i, len, child, gBounds, mask;
+        var children = this._children;
+        if (children.length <= 0) {
+            // TODO clip
+            //mask = this.getComponent(Mask);
+            //			mask && mask.clip(context);
+            this.sendMessage("draw", arguments, Renderer);
+        } else {
+            // TODO clip
+            //			mask = this.getComponent(Mask);
+            //			mask && mask.clip(context);
+            for (i = 0, len = children.length; i < len; i++) {
+                child = children[i];
+                child.draw(webGLContext, webGLStage, parentMartrix);
+            }
+        }
+    };
+    GLGameObject.getById = function(id) {
+        return idMap[id];
+    };
+    return GLGameObject;
+});
+
+define("wozlla/wozllajs/1.0.0/core/WebGLStage-debug", [ "wozlla/wozllajs/1.0.0/utils/listenAppState-debug", "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/math/Rectangle-debug", "wozlla/wozllajs/1.0.0/core/CachableGameObject-debug", "wozlla/wozllajs/1.0.0/core/UnityGameObject-debug", "wozlla/wozllajs/1.0.0/math/Matrix2D-debug", "wozlla/wozllajs/1.0.0/utils/Promise-debug", "wozlla/wozllajs/1.0.0/utils/Arrays-debug", "wozlla/wozllajs/1.0.0/core/AbstractGameObject-debug", "wozlla/wozllajs/1.0.0/utils/uniqueKey-debug", "wozlla/wozllajs/1.0.0/events/EventTarget-debug", "wozlla/wozllajs/1.0.0/events/Event-debug", "wozlla/wozllajs/1.0.0/core/events/GameObjectEvent-debug", "wozlla/wozllajs/1.0.0/core/Transform-debug", "wozlla/wozllajs/1.0.0/core/Component-debug", "wozlla/wozllajs/1.0.0/assets/loader-debug", "wozlla/wozllajs/1.0.0/utils/Strings-debug", "wozlla/wozllajs/1.0.0/utils/Ajax-debug", "wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", "wozlla/wozllajs/1.0.0/assets/Texture-debug", "wozlla/wozllajs/1.0.0/core/Behaviour-debug", "wozlla/wozllajs/1.0.0/core/Animation-debug", "wozlla/wozllajs/1.0.0/core/Time-debug", "wozlla/wozllajs/1.0.0/core/Renderer-debug", "wozlla/wozllajs/1.0.0/core/Layout-debug", "wozlla/wozllajs/1.0.0/core/HitDelegate-debug", "wozlla/wozllajs/1.0.0/core/Mask-debug", "wozlla/wozllajs/1.0.0/utils/createCanvas-debug", "wozlla/wozllajs/1.0.0/core/Filter-debug", "wozlla/wozllajs/1.0.0/core/Touch-debug", "wozlla/wozllajs/1.0.0/core/events/TouchEvent-debug", "wozlla/wozllajs/1.0.0/core/Stage-debug" ], function(require) {
+    var listenAppState = require("wozlla/wozllajs/1.0.0/utils/listenAppState-debug");
+    var Objects = require("wozlla/wozllajs/1.0.0/utils/Objects-debug");
+    var Rectangle = require("wozlla/wozllajs/1.0.0/math/Rectangle-debug");
+    var CachableGameObject = require("wozlla/wozllajs/1.0.0/core/CachableGameObject-debug");
+    var Touch = require("wozlla/wozllajs/1.0.0/core/Touch-debug");
+    var Stage = require("wozlla/wozllajs/1.0.0/core/Stage-debug");
+    var AsyncImage = require("wozlla/wozllajs/1.0.0/assets/AsyncImage-debug");
+    var Renderer = require("wozlla/wozllajs/1.0.0/core/Renderer-debug");
+    var NUM_VERTEX_PROPERTIES = 5;
+    var POINTS_PER_BOX = 4;
+    var NUM_VERTEX_PROPERTIES_PER_BOX = POINTS_PER_BOX * NUM_VERTEX_PROPERTIES;
+    var INDICES_PER_BOX = 6;
+    var MAX_INDEX_SIZE = Math.pow(2, 16);
+    var MAX_BOXES_POINTS_INCREMENT = MAX_INDEX_SIZE / 4;
+    var WebGLStage = function(param) {
+        var me = this;
+        CachableGameObject.apply(this, arguments);
+        this.autoClear = param.autoClear;
+        this.stageCanvas = param.canvas;
+        this.canvas = param.canvas;
+        // WebGL
+        this._webGLContext = null;
+        this._viewportWidth = param.width || param.canvas.width;
+        this._viewportHeight = param.height || param.canvas.height;
+        this.stageCanvas.width = this._viewportWidth;
+        this.stageCanvas.height = this._viewportHeight;
+        this._preserveDrawingBuffer = !!param.preserveDrawingBuffer;
+        this._antialias = !!param.antialias;
+        this._webGLErrorDetected = false;
+        this._projectionMatrix = null;
+        this._clearColor = null;
+        this._maxTexturesPerDraw = 1;
+        this._maxBoxesPointsPerDraw = null;
+        this._maxBoxesPerDraw = null;
+        this._maxIndicesPerDraw = null;
+        this._shaderProgram = null;
+        this._vertices = null;
+        this._verticesBuffer = null;
+        this._indices = null;
+        this._indicesBuffer = null;
+        this._currentBoxIndex = -1;
+        this._drawTexture = null;
+        this.initWebGL();
+        AsyncImage.webGLContext = this._webGLContext;
+        this.drawCalls = [];
+        this.lastPos = {
+            x: 0,
+            y: 0
+        };
+        this.stageDelta = {
+            x: 0,
+            y: 0
+        };
+        WebGLStage.root = this;
+        Stage.root = this;
+        Touch.init(this);
+        this.init();
+    };
+    WebGLStage.root = null;
+    var p = Objects.inherits(WebGLStage, CachableGameObject);
+    p.isStage = true;
+    p.updateViewport = function(width, height) {
+        this._viewportWidth = width;
+        this._viewportHeight = height;
+        if (this._webGLContext) {
+            this._webGLContext.viewport(0, 0, this._viewportWidth, this._viewportHeight);
+            if (!this._projectionMatrix) {
+                this._projectionMatrix = new Float32Array([ 0, 0, 0, 0, 0, 1, -1, 1, 1 ]);
+            }
+            this._projectionMatrix[0] = 2 / width;
+            this._projectionMatrix[4] = -2 / height;
+        }
+    };
+    p.initWebGL = function() {
+        this._clearColor = {
+            r: 0,
+            g: 0,
+            b: 0,
+            a: 0
+        };
+        if (this.stageCanvas) {
+            if (!this._webGLContext || this._webGLContext.canvas !== this.canvas) {
+                // A context hasn't been defined yet,
+                // OR the defined context belongs to a different canvas, so reinitialize.
+                this.initializeWebGLContext();
+            }
+        } else {
+            this._webGLContext = null;
+        }
+        return this._webGLContext;
+    };
+    p.initializeWebGLContext = function() {
+        var options = {
+            depth: false,
+            // Disable the depth buffer as it isn't used.
+            alpha: true,
+            // Make the canvas background transparent.
+            preserveDrawingBuffer: this._preserveDrawingBuffer,
+            antialias: this._antialias,
+            premultipliedAlpha: true
+        };
+        var ctx = this._webGLContext = this.canvas.getContext("webgl", options) || this.canvas.getContext("experimental-webgl", options);
+        if (!ctx) {
+            // WebGL is not supported in this browser.
+            return;
+        }
+        // Enforcing 1 texture per draw for now until an optimized implementation for multiple textures is made:
+        this._maxTexturesPerDraw = 1;
+        // ctx.getParameter(ctx.MAX_TEXTURE_IMAGE_UNITS);
+        // Set the default color the canvas should render when clearing:
+        this._setClearColor(this._clearColor.r, this._clearColor.g, this._clearColor.b, this._clearColor.a);
+        // Enable blending and set the blending functions that work with the premultiplied alpha settings:
+        ctx.enable(ctx.BLEND);
+        ctx.blendFuncSeparate(ctx.SRC_ALPHA, ctx.ONE_MINUS_SRC_ALPHA, ctx.ONE, ctx.ONE_MINUS_SRC_ALPHA);
+        // Do not premultiply textures' alpha channels when loading them in:
+        ctx.pixelStorei(ctx.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+        // Create the shader program that will be used for drawing:
+        this._createShaderProgram(ctx);
+        if (this._webGLErrorDetected) {
+            // Error detected during this._createShaderProgram().
+            this._webGLContext = null;
+            return;
+        }
+        // Create the vertices and indices buffers.
+        this._createBuffers(ctx);
+        // Update the viewport with the initial canvas dimensions:
+        this.updateViewport(this._viewportWidth || this.canvas.width || 0, this._viewportHeight || this.canvas.height || 0);
+    };
+    p._setClearColor = function(r, g, b, a) {
+        this._clearColor.r = r;
+        this._clearColor.g = g;
+        this._clearColor.b = b;
+        this._clearColor.a = a;
+        if (this._webGLContext) {
+            this._webGLContext.clearColor(r, g, b, a);
+        }
+    };
+    p._createShaderProgram = function(ctx) {
+        var fragmentShader = this._createShader(ctx, ctx.FRAGMENT_SHADER, "precision mediump float;" + "uniform sampler2D uSampler0;" + "varying vec3 vTextureCoord;" + "void main(void) {" + "vec4 color = texture2D(uSampler0, vTextureCoord.st);" + "gl_FragColor = vec4(color.rgb, color.a * vTextureCoord.z);" + "}");
+        var vertexShader = this._createShader(ctx, ctx.VERTEX_SHADER, "attribute vec2 aVertexPosition;" + "attribute vec3 aTextureCoord;" + "uniform mat3 uPMatrix;" + "varying vec3 vTextureCoord;" + "void main(void) {" + "vTextureCoord = aTextureCoord;" + "gl_Position = vec4((uPMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);" + "}");
+        if (this._webGLErrorDetected || !fragmentShader || !vertexShader) {
+            return;
+        }
+        var program = ctx.createProgram();
+        ctx.attachShader(program, fragmentShader);
+        ctx.attachShader(program, vertexShader);
+        ctx.linkProgram(program);
+        if (!ctx.getProgramParameter(program, ctx.LINK_STATUS)) {
+            // alert("Could not link program. " + ctx.getProgramInfoLog(program));
+            this._webGLErrorDetected = true;
+            return;
+        }
+        program.vertexPositionAttribute = ctx.getAttribLocation(program, "aVertexPosition");
+        program.textureCoordAttribute = ctx.getAttribLocation(program, "aTextureCoord");
+        program.sampler0uniform = ctx.getUniformLocation(program, "uSampler0");
+        ctx.enableVertexAttribArray(program.vertexPositionAttribute);
+        ctx.enableVertexAttribArray(program.textureCoordAttribute);
+        program.pMatrixUniform = ctx.getUniformLocation(program, "uPMatrix");
+        ctx.useProgram(program);
+        this._shaderProgram = program;
+    };
+    p._createShader = function(ctx, type, str) {
+        var shader = ctx.createShader(type);
+        ctx.shaderSource(shader, str);
+        ctx.compileShader(shader);
+        if (!ctx.getShaderParameter(shader, ctx.COMPILE_STATUS)) {
+            // alert("Could not compile shader. " + ctx.getShaderInfoLog(shader));
+            this._webGLErrorDetected = true;
+            return null;
+        }
+        return shader;
+    };
+    p._createBuffers = function(ctx) {
+        this._verticesBuffer = ctx.createBuffer();
+        ctx.bindBuffer(ctx.ARRAY_BUFFER, this._verticesBuffer);
+        var byteCount = NUM_VERTEX_PROPERTIES * 4;
+        // ctx.FLOAT = 4 bytes
+        ctx.vertexAttribPointer(this._shaderProgram.vertexPositionAttribute, 2, ctx.FLOAT, ctx.FALSE, byteCount, 0);
+        ctx.vertexAttribPointer(this._shaderProgram.textureCoordAttribute, 3, ctx.FLOAT, ctx.FALSE, byteCount, 2 * 4);
+        this._indicesBuffer = ctx.createBuffer();
+        this._setMaxBoxesPoints(ctx, MAX_BOXES_POINTS_INCREMENT);
+    };
+    p._setMaxBoxesPoints = function(ctx, value) {
+        this._maxBoxesPointsPerDraw = value;
+        this._maxBoxesPerDraw = this._maxBoxesPointsPerDraw / POINTS_PER_BOX | 0;
+        this._maxIndicesPerDraw = this._maxBoxesPerDraw * INDICES_PER_BOX;
+        ctx.bindBuffer(ctx.ARRAY_BUFFER, this._verticesBuffer);
+        this._vertices = new Float32Array(this._maxBoxesPerDraw * NUM_VERTEX_PROPERTIES_PER_BOX);
+        ctx.bufferData(ctx.ARRAY_BUFFER, this._vertices, ctx.DYNAMIC_DRAW);
+        // Set up indices for multiple boxes:
+        this._indices = new Uint16Array(this._maxIndicesPerDraw);
+        // Indices are set once and reused.
+        for (var i = 0, l = this._indices.length; i < l; i += INDICES_PER_BOX) {
+            var j = i * POINTS_PER_BOX / INDICES_PER_BOX;
+            // Indices for the 2 triangles that make the box:
+            this._indices[i] = j;
+            this._indices[i + 1] = j + 1;
+            this._indices[i + 2] = j + 2;
+            this._indices[i + 3] = j;
+            this._indices[i + 4] = j + 2;
+            this._indices[i + 5] = j + 3;
+        }
+        ctx.bindBuffer(ctx.ELEMENT_ARRAY_BUFFER, this._indicesBuffer);
+        ctx.bufferData(ctx.ELEMENT_ARRAY_BUFFER, this._indices, ctx.STATIC_DRAW);
+    };
+    p._drawWebGLKids = function(kids, ctx, parentMVMatrix) {
+        var kid, mtx, snapToPixelEnabled = false, image = null, leftSide = 0, topSide = 0, rightSide = 0, bottomSide = 0, vertices = this._vertices, numVertexPropertiesPerBox = NUM_VERTEX_PROPERTIES_PER_BOX, maxIndexSize = MAX_INDEX_SIZE, maxBoxIndex = this._maxBoxesPerDraw - 1;
+        console.log("kids length:", kids.length);
+        for (var i = 0, l = kids.length; i < l; i++) {
+            kid = kids[i];
+            if (!kid.isRenderable()) {
+                continue;
+            }
+            console.log("draw", kid.name);
+            mtx = kid.transform.getMatrix();
+            // Get the kid's global matrix (relative to the stage):
+            mtx = (parentMVMatrix ? mtx.copy(parentMVMatrix) : mtx.identity()).appendTransform(kid.x, kid.y, kid.scaleX, kid.scaleY, kid.rotation, kid.skewX, kid.skewY, kid.regX, kid.regY);
+            // Set default texture coordinates:
+            var uStart = 0, uEnd = 1, vStart = 0, vEnd = 1;
+            var renderer = kid.getComponent(Renderer);
+            console.log("isPrepared", renderer, renderer.isPreparedToDraw());
+            if (!renderer.isPreparedToDraw()) {
+                continue;
+            }
+            var tCoord = renderer.getTextureDescription();
+            var texture = tCoord.texture;
+            leftSide = tCoord.left;
+            topSide = tCoord.top;
+            rightSide = tCoord.right;
+            bottomSide = tCoord.bottom;
+            // Only use a new texture in the current draw call:
+            if (texture !== this._drawTexture) {
+                // Draw to the GPU if a texture is already in use:
+                if (this._drawTexture) {
+                    this._drawToGPU(ctx);
+                }
+                this._drawTexture = texture;
+                ctx.activeTexture(ctx.TEXTURE0);
+                ctx.bindTexture(ctx.TEXTURE_2D, texture);
+                ctx.uniform1i(this._shaderProgram.sampler0uniform, 0);
+            }
+            console.log("texture", texture);
+            if (texture !== null) {
+                // Set vertices' data:
+                var offset = ++this._currentBoxIndex * numVertexPropertiesPerBox, a = mtx.a, b = mtx.b, c = mtx.c, d = mtx.d, tx = mtx.tx, ty = mtx.ty;
+                if (snapToPixelEnabled && kid.snapToPixel) {
+                    tx = tx + (tx < 0 ? -.5 : .5) | 0;
+                    ty = ty + (ty < 0 ? -.5 : .5) | 0;
+                }
+                // Positions (calculations taken from Matrix2D.transformPoint):
+                vertices[offset] = leftSide * a + topSide * c + tx;
+                vertices[offset + 1] = leftSide * b + topSide * d + ty;
+                vertices[offset + 5] = leftSide * a + bottomSide * c + tx;
+                vertices[offset + 6] = leftSide * b + bottomSide * d + ty;
+                vertices[offset + 10] = rightSide * a + bottomSide * c + tx;
+                vertices[offset + 11] = rightSide * b + bottomSide * d + ty;
+                vertices[offset + 15] = rightSide * a + topSide * c + tx;
+                vertices[offset + 16] = rightSide * b + topSide * d + ty;
+                // Texture coordinates:
+                vertices[offset + 2] = vertices[offset + 7] = uStart;
+                vertices[offset + 12] = vertices[offset + 17] = uEnd;
+                vertices[offset + 3] = vertices[offset + 18] = vStart;
+                vertices[offset + 8] = vertices[offset + 13] = vEnd;
+                // Alphas:
+                vertices[offset + 4] = vertices[offset + 9] = vertices[offset + 14] = vertices[offset + 19] = kid.alpha;
+                // Draw to the GPU if the maximum number of boxes per a draw has been reached:
+                if (this._currentBoxIndex === maxBoxIndex) {
+                    this._drawToGPU(ctx);
+                    // Set the draw texture again:
+                    this._drawTexture = texture;
+                    ctx.activeTexture(ctx.TEXTURE0);
+                    ctx.bindTexture(ctx.TEXTURE_2D, this._drawTexture);
+                    ctx.uniform1i(this._shaderProgram.sampler0uniform, 0);
+                    // If possible, increase the amount of boxes that can be used per draw call:
+                    if (this._maxBoxesPointsPerDraw < maxIndexSize) {
+                        this._setMaxBoxesPoints(ctx, this._maxBoxesPointsPerDraw + MAX_BOXES_POINTS_INCREMENT);
+                        maxBoxIndex = this._maxBoxesPerDraw - 1;
+                    }
+                }
+            }
+            // Draw children:
+            if (kid.children) {
+                this._drawWebGLKids(kid.children, ctx, mtx);
+                maxBoxIndex = this._maxBoxesPerDraw - 1;
+            }
+        }
+    };
+    p._drawToGPU = function(ctx) {
+        console.log("draw to GPU");
+        var numBoxes = this._currentBoxIndex + 1;
+        ctx.bindBuffer(ctx.ARRAY_BUFFER, this._verticesBuffer);
+        ctx.bindBuffer(ctx.ELEMENT_ARRAY_BUFFER, this._indicesBuffer);
+        ctx.uniformMatrix3fv(this._shaderProgram.pMatrixUniform, false, this._projectionMatrix);
+        ctx.bufferSubData(ctx.ARRAY_BUFFER, 0, this._vertices);
+        ctx.drawElements(ctx.TRIANGLES, numBoxes * INDICES_PER_BOX, ctx.UNSIGNED_SHORT, 0);
+        // Reset draw vars:
+        this._currentBoxIndex = -1;
+        this._drawTexture = null;
+    };
+    p.addDrawCall = function(callback) {
+        this.drawCalls.push(callback);
+    };
+    p.tick = function() {
+        this.stageDelta.x = this.transform.x - this.lastPos.x;
+        this.stageDelta.y = this.transform.y - this.lastPos.y;
+        this.lastPos.x = this.transform.x;
+        this.lastPos.y = this.transform.y;
+        this.update();
+        this.lateUpdate();
+        this.draw();
+        for (var i = 0; i < this.drawCalls.length; i++) {
+            this.drawCalls[i](this.stageContext, this);
+        }
+    };
+    p.draw = function() {
+        //TODO clear
+        this._webGLContext.clear(this._webGLContext.COLOR_BUFFER_BIT);
+        if (!this._initialized || !this._active || !this._visible) return;
+        console.log("draw stage");
+        this._drawTexture = null;
+        this._drawWebGLKids(this._children, this._webGLContext, this.transform.getMatrix());
+    };
+    p.getStageDelta = function() {
+        return this.stageDelta;
+    };
+    return WebGLStage;
+});
+
+define("wozlla/wozllajs/1.0.0/math/geom-debug", [], function() {
+    return {
+        vectorLength: function(v) {
+            return Math.sqrt(v.x * v.x + v.y * v.y);
+        },
+        vectorNormalize: function(v) {
+            var len = Math.sqrt(v.x * v.x + v.y * v.y);
+            if (len <= Number.MIN_VALUE) {
+                return 0;
+            }
+            var invL = 1 / len;
+            v.x *= invL;
+            v.y *= invL;
+            return len;
+        },
+        rectIntersection: function(a, b) {
+            return a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+        },
+        rectIntersection2: function(ax, ay, aw, ah, bx, by, bw, bh) {
+            return ax < bx + bw && bx < ax + aw && ay < by + bh && by < ay + ah;
+        },
+        pointInRect: function(p, r) {
+            return r.x <= p.x && r.x + r.width >= p.x && r.y <= p.y && r.y + r.height >= p.y;
+        },
+        pointInRect2: function(x, y, rx, ry, rw, rh) {
+            return rx <= x && rx + rw >= x && ry <= y && ry + rh >= y;
+        }
+    };
+});
+
+define("wozlla/wozllajs/1.0.0/component/Image-debug", [ "wozlla/wozllajs/1.0.0/utils/Objects-debug", "wozlla/wozllajs/1.0.0/core/Component-debug", "wozlla/wozllajs/1.0.0/assets/loader-debug", "wozlla/wozllajs/1.0.0/utils/Strings-debug", "wozlla/wozllajs/1.0.0/utils/Arrays-debug", "wozlla/wozllajs/1.0.0/utils/Promise-debug", "wozlla/wozllajs/1.0.0/utils/Ajax-debug", "wozlla/wozllajs/1.0.0/assets/AsyncImage-debug", "wozlla/wozllajs/1.0.0/assets/Texture-debug", "wozlla/wozllajs/1.0.0/utils/uniqueKey-debug", "wozlla/wozllajs/1.0.0/core/Renderer-debug" ], function(require, exports, module) {
+    var Objects = require("wozlla/wozllajs/1.0.0/utils/Objects-debug");
+    var Component = require("wozlla/wozllajs/1.0.0/core/Component-debug");
+    var Renderer = require("wozlla/wozllajs/1.0.0/core/Renderer-debug");
+    function Image() {
+        Renderer.apply(this, arguments);
+        this.image = undefined;
+    }
+    var p = Objects.inherits(Image, Renderer);
+    p.id = "Image";
+    p.alias = "c-Image";
+    p.initComponent = function() {
+        var me = this;
+        me.applyProperties();
+    };
+    p.applyProperties = function() {
+        var me = this;
+        var src = me.properties.imageSrc;
+        if (src) {
+            me.loadResource(src).then(function() {
+                me.image = me.getResource(src);
+            });
+        }
+        me.baseline = me.properties.baseline;
+        me.align = me.properties.align;
+    };
+    p.destroyComponent = function() {
+        this.image && this.unloadResource(this.image.resourceId);
+        this.image = null;
+    };
+    p.draw = function(context, visibleRect) {
+        if (this.image) {
+            if (!(this.baseline || this.align)) this.image.draw(context, 0, 0); else {
+                var height = this.image.image.height;
+                var width = this.image.image.width;
+                var x, y;
+                if (this.baseline == "top") y = 0; else if (this.baseline == "middle") y = -height / 2; else if (this.baseline == "bottom") y = -height; else y = 0;
+                if (this.align == "start") x = 0; else if (this.align == "center") x = -width / 2; else if (this.align == "end") x = -width; else x = 0;
+                this.image.draw(context, x, y);
+            }
+        }
+    };
+    p.isPreparedToDraw = function() {
+        return !!this.image;
+    };
+    p.getTextureDescription = function() {
+        return {
+            left: 0,
+            top: 0,
+            right: this.image.image.width,
+            bottom: this.image.image.height,
+            texture: this.image.glTexture
+        };
+    };
+    Component.register(Image);
+    return Image;
 });

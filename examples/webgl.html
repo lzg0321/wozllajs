@@ -1,0 +1,68 @@
+<html>
+<head>
+    <title>WebGL</title>
+    <meta charset='utf-8'>
+    <style type="text/css">
+        body { padding: 0; margin: 0; -webkit-user-select : none; background-color: #ddd; }
+    </style>
+</head>
+<body onselectstart="return false;">
+<canvas id="main"></canvas>
+<script src="../lib/webgl-2d.js"></script>
+<script src="../sea-modules/seajs/seajs/2.1.1/sea-debug.js"></script>
+<script>
+    seajs.config({
+        base: "../",
+        debug: true,
+        alias : {
+            wozllajs : 'wozlla/wozllajs/1.0.0/wozlla-debug.js'
+        },
+        paths : {
+            wozlla : 'sea-modules/wozlla'
+        }
+    });
+    seajs.use(['wozllajs'], function(W) {
+
+        var stage = new W.core.Stage({
+            canvas : document.getElementById('main'),
+            width : 960,
+            height : 640,
+            autoClear: true,
+            webgl : true,
+            bgColor: 'white'
+        });
+
+        var gameObj = new W.core.GameObject({
+            name : 'Test'
+        });
+
+        var image = new W.component.Image();
+        image.properties.imageSrc = 'image.png';
+        gameObj.addComponent(image);
+
+        var renderer = new W.core.Renderer();
+        renderer.draw = function(context) {
+            context.fillStyle = 'red';
+            context.fillRect(0, 0, 100, 100);
+        };
+//        gameObj.addComponent(renderer);
+
+        var rotation = new W.core.Behaviour();
+        rotation.update = function() {
+            stage.stageContext.translate(10, 100);
+            stage.stageContext.rotate(1/Math.PI);
+        };
+        gameObj.addComponent(rotation);
+
+        gameObj.transform.x = 100;
+        stage.addObject(gameObj);
+
+        gameObj.init(function() {
+        });
+
+        W.core.Engine.start();
+
+    });
+</script>
+</body>
+</html>

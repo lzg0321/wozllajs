@@ -114,6 +114,14 @@ define(function (require, exports, module) {
         loadUnit = loadQueue.shift();
         promise = loadUnit.promise;
         items = loadUnit.items;
+
+		if(items.length === 0) {
+			promise.done();
+			loading = false;
+			loadNext();
+			return;
+		}
+
         loadResult = {};
         loadedCount = 0;
         for(i=0,len=items.length; i<len; i++) {
@@ -181,6 +189,10 @@ define(function (require, exports, module) {
 		idleCallback = callback;
 	};
 
+	exports.nextCall = function(callback) {
+		exports.load([]).then(callback);
+	};
+
     exports.load = function(items, base) {
         var i, len,
             promise,
@@ -238,8 +250,9 @@ define(function (require, exports, module) {
             assetsUsingCounter[id] --;
 
 		item = assetsMap[id];
-        if(assetsUsingCounter[id] === 0) {
+        if(item && assetsUsingCounter[id] === 0) {
             delete assetsMap[id];
+            delete assetsUsingCounter[id];
 			asset = item.result;
 			if(loadingAssetsMap[id]) {
 
@@ -271,6 +284,33 @@ define(function (require, exports, module) {
 			}
 		}
 		return size*4/1024/1024;
+	};
+
+	exports.computeUnpackImageMemory = function() {
+		var id, item, img;
+		var size = 0;
+		var get2Pow = function(width) {
+			var base = 2;
+			while (width > base) {
+				base *= 2;
+			}
+			return base;
+		};
+		for (id in assetsMap) {
+			item = assetsMap[id];
+			if(item && item.result instanceof Texture) {
+				var frames = item.result.frames;
+				for(var i=0; i<frames.length; i++) {
+					var f = frames[i].frame;
+					size += get2Pow(f.w) * get2Pow(f.h);
+				}
+			}
+			else if (item && item.result instanceof AsyncImage) {
+				img = item.result.image;
+				size += get2Pow(img.width) * get2Pow(img.height);
+			}
+		}
+		return size * 4 / 1024 / 1024;
 	};
 
 });
